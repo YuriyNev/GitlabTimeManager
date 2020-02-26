@@ -3,23 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GitLabTimeManager"
         xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
         xmlns:view="clr-namespace:GitLabTimeManager.View"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
         mc:Ignorable="d"
-        Title="Gitlab Time Manager" Height="450" Width="800" 
+        Height="450" Width="800" 
         Style="{StaticResource BrandedMainWindowStyle}"
-        ShowMinButton="False"
-        WindowStartupLocation="Manual"
-        WindowState="Normal"
-        IgnoreTaskbarOnMaximize="True"
-        ShowInTaskbar="True"
-        Topmost="True"
-        TitlebarHeight="20"
-        SaveWindowPosition="True"
         d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
     <mah:MetroWindow.Resources>
         <DataTemplate DataType="{x:Type viewModel:IssueListViewModel}">
@@ -28,6 +19,9 @@
         <DataTemplate DataType="{x:Type viewModel:SummaryViewModel}">
             <view:SummaryView />
         </DataTemplate>
+        <DataTemplate x:Key="TabHeaderTemplate">
+            <TextBlock Text="{Binding}" FontSize="14"/>
+        </DataTemplate>
     </mah:MetroWindow.Resources>
 
     <i:Interaction.Behaviors>
@@ -35,9 +29,15 @@
     </i:Interaction.Behaviors>
 
     <Grid Margin="8">
-        <!--<ContentControl Content="{Binding IssueListVm, Mode=OneWay}"/>-->
-        <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"/>
-        <mah:ProgressRing VerticalAlignment="Center" HorizontalAlignment="Center" 
-                          IsLarge="True" IsActive="{Binding IsProgress, Mode=OneWay}"/>
+        <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems">
+            <TabItem Header="Общая" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                <ContentControl Content="{Binding SummaryVm, Mode=OneWay}" />
+            </TabItem>
+            <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                <ContentControl Content="{Binding IssueListVm, Mode=OneWay}"/>
+            </TabItem>
+        </mah:MetroAnimatedTabControl>
+        <mah:MetroProgressBar VerticalAlignment="Bottom" 
+                              IsIndeterminate="True" Visibility="{Binding IsProgress, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </Grid>
 </mah:MetroWindow>

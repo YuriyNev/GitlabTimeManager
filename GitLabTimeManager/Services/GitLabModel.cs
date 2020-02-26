@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Markup;
 using Catel.Collections;
 using GitLabApiClient;
-using GitLabApiClient.Internal.Paths;
 using GitLabApiClient.Models;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Responses;
 using GitLabTimeManager.Tools;
-using GitLabTimeManager.ViewModel;
 
 namespace GitLabTimeManager.Services
 {
@@ -25,45 +19,27 @@ namespace GitLabTimeManager.Services
         private const string InDistributiveLabel = "* В дистрибутиве";
         private const string RevisionLabel = "* Ревизия";
 
-        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
-        //private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
-        //private const string Uri = "http://gitlab.domination";
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
+        private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
+        private const string Uri = "http://gitlab.domination";
 
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 16992252 };
-        private const string Token = "KajKr2cVJ4amosry9p4v";
-        private const string Uri = "https://gitlab.com";
+        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 16992252 };
+        //private const string Token = "KajKr2cVJ4amosry9p4v";
+        //private const string Uri = "https://gitlab.com";
 
         public static DateTime Today => DateTime.Today;
-        //public static DateTime Today => DateTime.Today.AddMonths(-1);
+        //public static DateTime Today => DateTime.Today.AddMonths(-2);
         public static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
         public static DateTime MonthEnd => MonthStart.AddMonths(1);
 
-        private Dictionary<Issue, IList<Note>> OpenNotes = new Dictionary<Issue, IList<Note>>();
-        private Dictionary<Issue, IList<Note>> ClosedNotes = new Dictionary<Issue, IList<Note>>();
+        private Dictionary<Issue, IList<Note>> OpenNotes { get; set; } = new Dictionary<Issue, IList<Note>>();
+        private Dictionary<Issue, IList<Note>> ClosedNotes { get; set; } = new Dictionary<Issue, IList<Note>>();
 
         // Задачи открытые на текущий момент
         public ObservableCollection<Issue> OpenIssues { get; set; } = new ObservableCollection<Issue>();
         
         // Задачи закрытые в этом месяце
         public ObservableCollection<Issue> ClosedIssues { get; set; } = new ObservableCollection<Issue>();
-
-        // Число открытых задач
-        public int OpenIssuesCount => OpenIssues.Count;
-
-        // Число закрытых задач
-        public int ClosedIssuesCount => ClosedIssues.Count;
-
-        // Полное ОЦЕНОЧНОЕ время всех закрытых задач в этом месяце
-        public int ClosedTotalEstimate { get; set; }
-
-        // Полное ОЦЕНОЧНОЕ время всех открытых задач
-        public int OpenTotalEstimate { get; set; }
-
-        // Полное ПОТРАЧЕННОЕ время всех открытых задач
-        public int OpenTotalSpent { get; set; }
-
-        // Полное ПОТРАЧЕННОЕ время закрытых задач
-        public int ClosedTotalSpent { get; set; }
 
         // Necessary
         // Оценочное время открытых задач, начатых в этом месяце
@@ -138,16 +114,6 @@ namespace GitLabTimeManager.Services
             OpenIssues = await GetOpenIssues();
             OpenNotes = await GetNotes(OpenIssues);
             ClosedNotes = await GetNotes(ClosedIssues);
-
-            
-
-
-            OpenTotalSpent = (int)((double)OpenIssues.Sum(x => x.TimeStats.TotalTimeSpent)).SecondsToHours();
-            OpenTotalEstimate = (int)((double)OpenIssues.Sum(x => x.TimeStats.TimeEstimate)).SecondsToHours();
-
-            ClosedTotalSpent = (int)((double)ClosedIssues.Sum(x => x.TimeStats.TotalTimeSpent)).SecondsToHours();
-            ClosedTotalEstimate = (int)((double)ClosedIssues.Sum(x => x.TimeStats.TimeEstimate)).SecondsToHours();
-
 
             // Most need issues
             // in month
@@ -307,10 +273,13 @@ namespace GitLabTimeManager.Services
             return allIssues;
         }
 
-        private static TimeSpan CollectSpendTime(IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
+        private static TimeSpan CollectSpendTime(IEnumerable<Note> notes, DateTime? startTime = null, DateTime? endTime = null)
         {
+            var start = startTime ?? DateTime.MinValue;
+            var end = endTime ?? DateTime.MaxValue;
+
             var hoursList = notes
-                .Where(x => x.CreatedAt > startTime && x.CreatedAt < endTime)
+                .Where(x => x.CreatedAt > start && x.CreatedAt < end)
                 .Select(x => x.Body.ParseSpent());
 
             var seconds = hoursList.Sum();

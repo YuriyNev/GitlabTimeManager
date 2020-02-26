@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Models;
@@ -38,13 +34,26 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData OpenSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendsStartedBefore);
         public static readonly PropertyData ClosedSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendsStartedBefore);
         public static readonly PropertyData EstimatesInPeriodProperty = RegisterProperty<SummaryViewModel, SeriesCollection>(x => x.EstimatesSeries);
+        public static readonly PropertyData ShowingEarningProperty = RegisterProperty<SummaryViewModel, bool>(x => x.ShowingEarning);
+        public static readonly PropertyData EarningProperty = RegisterProperty<SummaryViewModel, double>(x => x.Earning);
+
+        public double Earning
+        {
+            get { return (double) GetValue(EarningProperty); }
+            set { SetValue(EarningProperty, value); }
+        }
+
+        public bool ShowingEarning
+        {
+            get { return (bool) GetValue(ShowingEarningProperty); }
+            set { SetValue(ShowingEarningProperty, value); }
+        }
 
         public SeriesCollection EstimatesSeries
         {
             get { return (SeriesCollection) GetValue(EstimatesInPeriodProperty); }
             set { SetValue(EstimatesInPeriodProperty, value); }
         }
-
 
         public double TotalEstimatesStartedBefore
         {
@@ -156,12 +165,14 @@ namespace GitLabTimeManager.ViewModel
 
         public Func<double, string> Formatter => (x => x.ToString("F1"));
 
+        public Command ShowEarningsCommand { get; }
+
 
         public SummaryViewModel()
         {
             SpendSeries = new SeriesCollection();
             EstimatesSeries = new SeriesCollection();
-
+            ShowEarningsCommand = new Command(() => ShowingEarning = !ShowingEarning, () => true);
         }
 
         public void UpdateData(GitResponse data)
@@ -190,6 +201,10 @@ namespace GitLabTimeManager.ViewModel
             
             TotalSpendsStartedBefore = OpenSpendsStartedBefore + ClosedSpendsStartedBefore;
             TotalEstimatesStartedBefore = OpenEstimatesStartedBefore + ClosedEstimatesStartedBefore;
+            //=(70 +(A6-100))*1000
+            Earning = (ClosedEstimatesStartedInPeriod - 30) * 1000;
+            var minimalEarning = 14000;
+            Earning = Math.Max(Earning, minimalEarning);
 
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые задачи", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Закрытые задачи", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);
