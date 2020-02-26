@@ -16,9 +16,20 @@ namespace GitLabTimeManager.Services
 
     public class GitResponse
     {
-        public int ClosedSpendInPeriod { get; set; }
+        /// <summary> Most need properties  </summary>
+        public double OpenEstimatesStartedInPeriod { get; set; }
+        public double ClosedEstimatesStartedInPeriod { get; set; }
+        public double ClosedSpendsStartedInPeriod { get; set; }
+        public double OpenSpendsStartedInPeriod { get; set; }
+        public double OpenEstimatesStartedBefore { get; set; }
+        public double ClosedEstimatesStartedBefore { get; set; }
+        public double OpenSpendsStartedBefore { get; set; }
+        public double ClosedSpendsStartedBefore { get; set; }
 
-        public int OpenSpendInPeriod { get; set; }
+        public double ClosedSpendInPeriod { get; set; }
+        public double OpenSpendInPeriod { get; set; }
+        public double OpenSpendBefore { get; set; }
+        public double ClosedSpendBefore { get; set; }
 
         /// <summary> Фактическое время за месяц </summary>
         public int TotalSpendInPeriod { get; set; }
@@ -42,5 +53,7 @@ namespace GitLabTimeManager.Services
         public DateTime SpendPerMonth { get; set; }
 
         public DateTime EstimatePerMonth { get; set; }
+
+
     }
 }

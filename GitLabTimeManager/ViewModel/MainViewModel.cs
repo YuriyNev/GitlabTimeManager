@@ -70,7 +70,7 @@ namespace GitLabTimeManager.ViewModel
 
                 IsProgress = false;
                 SummaryVm.UpdateData(data);
-                await Task.Delay(10_000, cancellationToken);
+                await Task.Delay(120_000, cancellationToken);
             }
         }
 

@@ -156,9 +156,11 @@
     </ApplicationDefinition>
     <Compile Include="Behavior\CancelClosingWindowBehavior.cs" />
     <Compile Include="Behavior\TopMostBehavior.cs" />
+    <Compile Include="Models\StatsBlock.cs" />
     <Compile Include="Services\GitLabModel.cs" />
     <Compile Include="Services\ISourceControl.cs" />
     <Compile Include="Tools\LocalTimeSpan.cs" />
+    <Compile Include="Tools\NotifyObject.cs" />
     <Compile Include="Tools\TimerHelper.cs" />
     <Compile Include="Tools\DetailedIssueTime.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -225,8 +227,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

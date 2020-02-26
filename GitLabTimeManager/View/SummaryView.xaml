@@ -6,9 +6,90 @@
              xmlns:local="clr-namespace:GitLabTimeManager.View"
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:models="clr-namespace:GitLabTimeManager.Models"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
+    <UserControl.Resources>
+        <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models:StatsBlock}">
+            <Border BorderBrush="LightGray" BorderThickness="1" MaxWidth="200">
+                <Grid Margin="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               Text="{Binding Title, Mode=OneWay}"
+                               HorizontalAlignment="Center"
+                               FontFamily="{StaticResource ContentFontFamily}"/>
+                    <StackPanel Grid.Row="1" 
+                                Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F0}}" FontSize="16"
+                                   FontWeight="Bold" Margin="8"/>
+                        <TextBlock Text="/" FontSize="16" Margin="8"/>
+                        <TextBlock Text="{Binding Total, Mode=OneWay, StringFormat={}{0:F0}}" FontSize="16"
+                                   FontWeight="Bold" Margin="8"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
     <Grid>
-        <wpf:PieChart Series="{Binding SpendInPeriodSeries, Mode=OneWay}"/>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Grid.Column="0" 
+                   Text="Начатые в этом месяце"
+                   FontFamily="{StaticResource HeaderFontFamily}"
+                   FontSize="18" Margin="4"/>
+        <ItemsControl Grid.Row="1"  Grid.Column="0" 
+                      ItemsSource="{Binding OnlyMonthStatsBlocks, Mode=OneWay}"
+                      ItemTemplate="{StaticResource StatsItemTemplate}"
+                      Margin="4">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+        <TextBlock Grid.Row="0" Grid.Column="1" 
+                   Text="Задачи начатые ранее"
+                   FontFamily="{StaticResource HeaderFontFamily}"
+                   FontSize="18" Margin="4"/>
+        <ItemsControl Grid.Row="1" Grid.Column="1" 
+                      ItemsSource="{Binding EarlyStatsBlocks, Mode=OneWay}"
+                      ItemTemplate="{StaticResource StatsItemTemplate}"
+                      Margin="4">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+        <wpf:PieChart Grid.Row="2" Grid.Column="0"
+                      Series="{Binding SpendSeries, Mode=OneWay}"
+                      MinHeight="200"
+                      InnerRadius="30"
+                      LegendLocation="Bottom"
+                      DataTooltip="{x:Null}"/>
+        <wpf:Gauge Grid.Row="2" Grid.Column="1"
+                   MinHeight="200"
+                   From="0" To="100"
+                   Value="{Binding ClosedEstimatesStartedInPeriod, Mode=OneWay}"
+                   LabelFormatter="{Binding Formatter, Mode=OneWay}"
+                   Uses360Mode="True"
+                   />
+
     </Grid>
 </UserControl>
