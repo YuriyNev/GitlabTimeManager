@@ -52,7 +52,7 @@ namespace GitLabTimeManager.ViewModel
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             SourceControl = new GitLabModel();
 
-            //IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
+            IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
 
             RequestDataAsync(LifeTime.Token);
@@ -70,7 +70,8 @@ namespace GitLabTimeManager.ViewModel
 
                 IsProgress = false;
                 SummaryVm.UpdateData(data);
-                await Task.Delay(120_000, cancellationToken);
+                IssueListVm.UpdateData(data);
+                await Task.Delay(12000_000, cancellationToken);
             }
         }
 

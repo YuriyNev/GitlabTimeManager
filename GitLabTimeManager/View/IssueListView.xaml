@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:GitLabTimeManager.View"
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
-             xmlns:responses="clr-namespace:GitLabApiClient.Models.Issues.Responses;assembly=GitLabApiClient"
-             xmlns:catel="http://schemas.catelproject.com"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:services="clr-namespace:GitLabTimeManager.Services"
+             xmlns:responses="clr-namespace:GitLabApiClient.Models.Issues.Responses;assembly=GitLabApiClient"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              d:DataContext="{d:DesignInstance viewModel:IssueListViewModel}">
@@ -18,117 +18,95 @@
             <Setter Property="FontSize" Value="12"/>
         </Style>
 
-        <DataTemplate x:Key="IssueTemplate" DataType="{x:Type responses:Issue}">
-            <Grid Margin="0 4 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" SharedSizeGroup="Progress"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+        <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services:WrappedIssue}">
+           <Border BorderThickness="0 0 0 0"
+                    BorderBrush="#99CCCCCC">
+                <Grid Margin="0 4 0 4">
+                    <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="PlayPause"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Issue"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Progress" MinWidth="100"/>
+                    <ColumnDefinition Width="*" SharedSizeGroup="Title"/>
                 </Grid.ColumnDefinitions>
-                
-                <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Bottom">
-                    <TextBlock>
-                        <TextBlock.Style>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TimeStats.HumanTotalTimeSpent, Mode=OneWay}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding TimeStats.HumanTimeEstimate, Mode=OneWay}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0} / {1}">
-                                <Binding Path="TimeStats.HumanTotalTimeSpent" />
-                                <Binding Path="TimeStats.HumanTimeEstimate" />
-                            </MultiBinding>
-                        </TextBlock.Text>
+                    <Button Grid.Column="0" Style="{StaticResource ChromelessButtonStyle}">
+                        <iconPacks:MaterialLight Kind="Play"
+                                                 Width="10"
+                                                 Height="10"/>
+                    </Button>
+
+                    <TextBlock Grid.Column="1" Margin="4 0 8 0">
+                        <Hyperlink NavigateUri="{Binding Issue.WebUrl, Mode=OneWay}" TargetName="_top" RequestNavigate="Hyperlink_OnRequestNavigate">
+                            <TextBlock Text="{Binding Issue.Iid, Mode=OneWay}"/>
+                        </Hyperlink>
                     </TextBlock>
 
-                    <mah:MetroProgressBar Background="LightGray"
-                                          Maximum="{Binding TimeStats.TimeEstimate, Mode=OneWay}"
-                                          Value="{Binding TimeStats.TotalTimeSpent, Mode=OneWay}"
-                                          Height="1"
-                                          VerticalAlignment="Bottom">
-                        <mah:MetroProgressBar.Style>
-                            <Style TargetType="{x:Type mah:MetroProgressBar}" BasedOn="{StaticResource {x:Type mah:MetroProgressBar}}">
+                    <ProgressBar Grid.Column="2"
+                                          Background="LightGray"
+                                          Foreground="DarkCyan"
+                                          Opacity="0.8"
+                                          Maximum="{Binding Issue.TimeStats.TimeEstimate, Mode=OneWay}"
+                                          Value="{Binding Issue.TimeStats.TotalTimeSpent, Mode=OneWay}"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch" >
+                        <ProgressBar.Style>
+                            <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TimeStats.HumanTotalTimeSpent, Mode=OneWay}" Value="{x:Null}">
+                                    <DataTrigger Binding="{Binding Issue.TimeStats.HumanTotalTimeSpent, Mode=OneWay}" Value="{x:Null}">
                                         <Setter Property="Foreground" Value="#666"/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding TimeStats.HumanTimeEstimate, Mode=OneWay}" Value="{x:Null}">
+                                    <DataTrigger Binding="{Binding Issue.TimeStats.HumanTimeEstimate, Mode=OneWay}" Value="{x:Null}">
                                         <Setter Property="Foreground" Value="#666"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </mah:MetroProgressBar.Style>
-                    </mah:MetroProgressBar>
-                </StackPanel>
+                        </ProgressBar.Style>
+                    </ProgressBar>
 
+                    <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Stretch" Margin="4 0 0 0">
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Issue.TimeStats.HumanTotalTimeSpent, Mode=OneWay}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Issue.TimeStats.HumanTimeEstimate, Mode=OneWay}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} / {1}">
+                                    <Binding Path="Issue.TimeStats.HumanTotalTimeSpent" />
+                                    <Binding Path="Issue.TimeStats.HumanTimeEstimate" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <TextBlock Grid.Column="3"
+                               Text="{Binding Issue.Title, Mode=OneWay}"
+                               TextTrimming="WordEllipsis"
+                               Style="{StaticResource TextBlockStyle}"
+                               IsHyphenationEnabled="True"
+                               TextWrapping="NoWrap"
+                               Margin="4 0"/>
                 
-                <TextBlock Grid.Column="4"
-                           Text="{Binding Title, Mode=OneWay}"
-                           Style="{StaticResource TextBlockStyle}"
-                           IsHyphenationEnabled="True"
-                           TextWrapping="WrapWithOverflow"
-                           FontSize="14"
-                           Margin="4 0">
-                   
-                </TextBlock>
+                <!--<TextBlock Grid.Column="5"
+                           Text="{Binding Issue.State}"></TextBlock>-->
             </Grid>
+            </Border>
         </DataTemplate>
     </UserControl.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0"  Visibility="Collapsed">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Total"/>
-            <TextBlock Grid.Column="1" TextAlignment="Left" Margin="8 0 0 0">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} / {1}">
-                        <Binding Path="TotalSpent" />
-                        <Binding Path="TotalEstimate" />
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
-        </Grid>
-
-        <Grid Grid.Row="1" Visibility="Collapsed">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Closed"/>
-            <TextBlock Grid.Column="1" TextAlignment="Left" Margin="8 0 0 0">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} / {1}">
-                        <Binding Path="ClosedTotalSpent" />
-                        <Binding Path="ClosedTotalEstimate" />
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
-        </Grid>
-
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Style="{DynamicResource TinyScrollViewerStyle}">
-            <ItemsControl ItemsSource="{Binding OpenIssues, Mode=OneWay}"
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Style="{DynamicResource TinyScrollViewerStyle}">
+            <ItemsControl ItemsSource="{Binding WrappedIssues, Mode=OneWay}"
                           ItemTemplate="{StaticResource IssueTemplate}"
                           Grid.IsSharedSizeScope="True">
             </ItemsControl>
 
         </ScrollViewer>
-        
     </Grid>
 </UserControl>

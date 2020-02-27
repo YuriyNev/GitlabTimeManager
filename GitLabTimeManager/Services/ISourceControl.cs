@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using GitLabApiClient;
@@ -53,7 +54,6 @@ namespace GitLabTimeManager.Services
         public DateTime SpendPerMonth { get; set; }
 
         public DateTime EstimatePerMonth { get; set; }
-
-
+        public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
     }
 }
