@@ -14,6 +14,8 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class SummaryViewModel : ViewModelBase
     {
+        public ISourceControl SourceControl { get; }
+
         #region Properties
         public static readonly PropertyData TotalSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedInPeriod);
         public static readonly PropertyData TotalEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalEstimatesStartedInPeriod);
@@ -168,8 +170,9 @@ namespace GitLabTimeManager.ViewModel
         public Command ShowEarningsCommand { get; }
 
 
-        public SummaryViewModel()
+        public SummaryViewModel([NotNull] ISourceControl sourceControl)
         {
+            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             SpendSeries = new SeriesCollection();
             EstimatesSeries = new SeriesCollection();
             ShowEarningsCommand = new Command(() => ShowingEarning = !ShowingEarning, () => true);

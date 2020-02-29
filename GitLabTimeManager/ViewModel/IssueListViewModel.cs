@@ -14,6 +14,7 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class IssueListViewModel : ViewModelBase
     {
+        public ISourceControl SourceControl { get; }
         public static readonly PropertyData PropertyDataProperty = RegisterProperty<IssueListViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
 
         public ObservableCollection<WrappedIssue> WrappedIssues
@@ -22,9 +23,9 @@ namespace GitLabTimeManager.ViewModel
             set { SetValue(PropertyDataProperty, value); }
         }
 
-        public IssueListViewModel()
+        public IssueListViewModel([NotNull] ISourceControl sourceControl)
         {
-           
+            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
         }
 
         protected override Task InitializeAsync()

@@ -224,7 +224,7 @@
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Models\StatsBlock.cs" />
     <Compile Include="Services\WrappedIssue.cs" />
-    <Compile Include="Services\GitLabModel.cs" />
+    <Compile Include="Services\SourceControl.cs" />
     <Compile Include="Services\ISourceControl.cs" />
     <Compile Include="Tools\LocalTimeSpan.cs" />
     <Compile Include="Tools\NotifyObject.cs" />

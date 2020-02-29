@@ -9,6 +9,7 @@ using Catel.Data;
 using Catel.IoC;
 using Catel.Logging;
 using Catel.MVVM;
+using ControlzEx.Standard;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
 using Timer = Catel.Threading.Timer;
@@ -50,10 +51,10 @@ namespace GitLabTimeManager.ViewModel
             LifeTime = new CancellationTokenSource();
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
-            SourceControl = new GitLabModel();
+            SourceControl = new SourceControl();
 
-            IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
-            SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
+            IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(SourceControl);
+            SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(SourceControl);
 
             RequestDataAsync(LifeTime.Token);
         }

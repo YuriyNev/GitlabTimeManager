@@ -12,70 +12,71 @@ using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
 {
-    class GitLabModel : ISourceControl
+    internal class SourceControl : ISourceControl
     {
         private const string CanDoLabel = "* Можно выполнять";
         private const string InWorkLabel = "* В работе";
         private const string InDistributiveLabel = "* В дистрибутиве";
         private const string RevisionLabel = "* Ревизия";
 
-        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
-        //private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
-        //private const string Uri = "http://gitlab.domination";
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
+        private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
+        private const string Uri = "http://gitlab.domination";
 
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
-        private const string Token = "KajKr2cVJ4amosry9p4v";
-        private const string Uri = "https://gitlab.com";
+        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
+        //private const string Token = "KajKr2cVJ4amosry9p4v";
+        //private const string Uri = "https://gitlab.com";
 
-        public static DateTime Today => DateTime.Today;
+        private static DateTime Today => DateTime.Today;
         //public static DateTime Today => DateTime.Today.AddMonths(-2);
-        public static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
-        public static DateTime MonthEnd => MonthStart.AddMonths(1);
+        private static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
+        private static DateTime MonthEnd => MonthStart.AddMonths(1);
 
         private Dictionary<Issue, IList<Note>> AllNotes { get; set; } = new Dictionary<Issue, IList<Note>>();
-        
-        public ObservableCollection<WrappedIssue> WrappedIssues { get; private set; } = new ObservableCollection<WrappedIssue>();
-        public ObservableCollection<Issue> AllIssues { get; set; } = new ObservableCollection<Issue>();
+
+        private ObservableCollection<WrappedIssue> WrappedIssues { get; set; } = new ObservableCollection<WrappedIssue>();
+
+        private ObservableCollection<Issue> AllIssues { get; set; } = new ObservableCollection<Issue>();
         // Necessary
         // Оценочное время открытых задач, начатых в этом месяце
-        public double OpenEstimatesStartedInPeriod { get; private set; }
+        private double OpenEstimatesStartedInPeriod { get; set; }
 
         // Оценочное время закрытых задач, начатых в этом месяце
-        public double ClosedEstimatesStartedInPeriod { get; set; }
+        private double ClosedEstimatesStartedInPeriod { get; set; }
 
         // Потраченное время открытых задач, начатых в этом месяце
-        public double OpenSpendsStartedInPeriod { get; set; }
+        private double OpenSpendsStartedInPeriod { get; set; }
 
         // Потраченное время закрытых задач, начатых ранее
-        public double ClosedSpendsStartedInPeriod { get; set; }
+        private double ClosedSpendsStartedInPeriod { get; set; }
 
         // Оценочное время открытых задач, начатых ранее
-        public double OpenEstimatesStartedBefore { get; set; }
+        private double OpenEstimatesStartedBefore { get; set; }
 
         // Оценочное время закрытых задач, начатых ранее
-        public double ClosedEstimatesStartedBefore { get; set; }
+        private double ClosedEstimatesStartedBefore { get; set; }
 
         // Потраченное время открытых задач, начатых ранее
-        public double OpenSpendsStartedBefore { get; set; }
+        private double OpenSpendsStartedBefore { get; set; }
 
         // Потраченное время закрытых задач, начатых ранее
-        public double ClosedSpendsStartedBefore { get; set; }
+        private double ClosedSpendsStartedBefore { get; set; }
 
         // Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в текущем месяце
-        public double ClosedSpendInPeriod { get; set; }
+        private double ClosedSpendInPeriod { get; set; }
 
         // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в текущем месяце
-        public double OpenSpendInPeriod { get; set; }
+        private double OpenSpendInPeriod { get; set; }
         
         // Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в этом месяце открытые ранее
-        public double ClosedSpendBefore { get; set; }
+        private double ClosedSpendBefore { get; set; }
 
         // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее
-        public double OpenSpendBefore { get; set; }
+        private double OpenSpendBefore { get; set; }
 
-        private GitLabClient GitLabClient { get; }
+        public GitLabClient GitLabClient { get; }
 
-        protected internal GitLabModel()
+        protected internal SourceControl()
         {
             GitLabClient = new GitLabClient(Uri, Token);
         }
