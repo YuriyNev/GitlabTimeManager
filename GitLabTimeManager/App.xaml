@@ -25,6 +25,8 @@
 
                 <ResourceDictionary Source="pack://application:,,,/Controls/TinyScrollBarStyle.xaml" />
 
+                <ResourceDictionary Source="Resources/BaseStyles.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
 
             <Storyboard x:Key="OverlayFastSemiFadeIn"
@@ -51,8 +53,8 @@
                 <Setter Property="OverlayFadeOut" Value="{StaticResource OverlayFastSemiFadeOut}"/>
 
                 <!-- Window title settings -->
-                <Setter Property="WindowTitleBrush" Value="#CCC"/>
-                <Setter Property="NonActiveWindowTitleBrush" Value="#DDD"/>
+                <Setter Property="WindowTitleBrush" Value="#DDD"/>
+                <Setter Property="NonActiveWindowTitleBrush" Value="#EEE"/>
                 <Setter Property="TitleForeground" Value="{DynamicResource AccentBaseColorBrush}"/>
                 <Setter Property="TitleCharacterCasing" Value="Normal"/>
                 <Setter Property="TitleAlignment" Value="Left"/>
@@ -70,7 +72,7 @@
                 <Setter Property="WindowTransitionsEnabled" Value="True"/>
                 <Setter Property="IsWindowDraggable" Value="True"/>
                 <Setter Property="ShowTitleBar" Value="True"/>
-                <Setter Property="IgnoreTaskbarOnMaximize" Value="True"/>
+                <Setter Property="IgnoreTaskbarOnMaximize" Value="False"/>
                 <Setter Property="ShowSystemMenuOnRightClick" Value="True"/>
 
                 <Setter Property="IsMinButtonEnabled" Value="True"/>
@@ -86,21 +88,24 @@
                 <Setter Property="ShowMinButton" Value="False"/>
                 <Setter Property="WindowState" Value="Normal"/>
                 <Setter Property="Topmost" Value="True"/>
-                <Setter Property="TitlebarHeight" Value="18"/>
+                <Setter Property="TitlebarHeight" Value="30"/>
                 <Setter Property="SaveWindowPosition" Value="True"/>
                 <Setter Property="ShowMaxRestoreButton" Value="False"/>
             </Style>
 
             <Style x:Key="CustomLightMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource LightMetroWindowButtonStyle}">
                 <Setter Property="Foreground" Value="Gray" />
-                <Setter Property="Width" Value="20" />
-                <Setter Property="Height" Value="20" />
+                <Setter Property="Width" Value="30" />
+                <Setter Property="Height" Value="30" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+
             </Style>
 
             <Style x:Key="CustomDarkMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource DarkMetroWindowButtonStyle}">
                 <Setter Property="Foreground" Value="Gray" />
-                <Setter Property="Width" Value="20" />
-                <Setter Property="Height" Value="20" />
+                <Setter Property="Width" Value="30" />
+                <Setter Property="Height" Value="30" />
+                <Setter Property="VerticalAlignment" Value="Top" />
             </Style>
 
             <Style TargetType="{x:Type mah:WindowButtonCommands}" BasedOn="{StaticResource {x:Type mah:WindowButtonCommands}}">

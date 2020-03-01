@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace GitLabTimeManager.Tools
 {
-    internal static class TimerHelper
+    internal static class TimeHelper
     {
         private static readonly string monthUnit = "mo";
         private static readonly string weekUnit = "w";
@@ -61,7 +61,9 @@ namespace GitLabTimeManager.Tools
                        
         private static double MonthsToHours(double mo) => WeeksToHours(mo * 4);
 
-
-
+        public static string ConvertSpent(this TimeSpan ts)
+        {
+            return $@"/spend {ts.TotalMinutes:####}m";
+        }
     }
 }

@@ -36,12 +36,21 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\icons8_time_limit_96_Cij_icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Catel.Core, Version=5.12.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Catel.Core.5.12.3\lib\net47\Catel.Core.dll</HintPath>
     </Reference>
     <Reference Include="Catel.MVVM, Version=5.12.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Catel.MVVM.5.12.3\lib\net47\Catel.MVVM.dll</HintPath>
+    </Reference>
+    <Reference Include="CircularGauge, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CircularGauge.1.0.0\lib\Net40-Client\CircularGauge.dll</HintPath>
     </Reference>
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
@@ -52,11 +61,17 @@
     <Reference Include="JetBrains.Annotations, Version=2019.1.3.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\packages\JetBrains.Annotations.2019.1.3\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
+    <Reference Include="LambdaConverters.Wpf, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6258cb5075259882, processorArchitecture=MSIL">
+      <HintPath>..\packages\LambdaConverters.4.0.0\lib\net46\LambdaConverters.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
     </Reference>
     <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="LoadingIndicators.WPF, Version=0.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\LoadingIndicators.WPF.0.0.1\lib\LoadingIndicators.WPF.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
@@ -222,19 +237,23 @@
     </ApplicationDefinition>
     <Compile Include="Behavior\CancelClosingWindowBehavior.cs" />
     <Compile Include="Behavior\TopMostBehavior.cs" />
-    <Compile Include="Models\StatsBlock.cs" />
+    <Compile Include="Converters\LamdaConverters.cs" />
+    <Compile Include="Services\GitResponse.cs" />
+    <Compile Include="Types\StatsBlock.cs" />
     <Compile Include="Services\WrappedIssue.cs" />
     <Compile Include="Services\SourceControl.cs" />
-    <Compile Include="Services\ISourceControl.cs" />
-    <Compile Include="Tools\LocalTimeSpan.cs" />
     <Compile Include="Tools\NotifyObject.cs" />
-    <Compile Include="Tools\TimerHelper.cs" />
+    <Compile Include="Tools\TimeHelper.cs" />
     <Compile Include="Tools\DetailedIssueTime.cs" />
+    <Compile Include="ViewModel\IssueTimerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\IssueListViewModel.cs" />
     <Compile Include="ViewModel\SummaryViewModel.cs" />
     <Compile Include="View\IssueListView.xaml.cs">
       <DependentUpon>IssueListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\IssueTimerView.xaml.cs">
+      <DependentUpon>IssueTimerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SummaryView.xaml.cs">
       <DependentUpon>SummaryView.xaml</DependentUpon>
@@ -255,7 +274,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resources\BaseStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\IssueListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\IssueTimerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -294,6 +321,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\icons8_time_limit_96_Cij_icon.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

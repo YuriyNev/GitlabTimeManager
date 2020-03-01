@@ -8,6 +8,7 @@
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                  xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
+                 xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
                  Style="{StaticResource BrandedMainWindowStyle}"
@@ -20,22 +21,37 @@
             <view:SummaryView />
         </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
-            <TextBlock Text="{Binding}" FontSize="14"/>
+            <Grid>
+                <TextBlock Text="{Binding}" FontSize="14"/>
+            </Grid>
         </DataTemplate>
     </mah:MetroWindow.Resources>
 
     <i:Interaction.Behaviors>
-        <behavior:CancelClosingWindowBehavior CanCloseWindow="True" />
+        <behavior:CancelClosingWindowBehavior CanCloseWindow="False" />
     </i:Interaction.Behaviors>
 
-    <Grid Margin="8">
-        <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems">
-            <TabItem Header="Общая" HeaderTemplate="{StaticResource TabHeaderTemplate}">
-                <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
+    <Grid>
+        <Grid.Style>
+            <Style TargetType="{x:Type Grid}">
+                <Setter Property="Margin" Value="8 -26 8 8"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                        <Setter Property="Margin" Value="0 0 0 0"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
+                                     Background="Transparent">
+            <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
                                 Margin="0 8 0 0"/>
             </TabItem>
-            <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}">
-                <ContentControl Content="{Binding IssueListVm, Mode=OneWay}"
+            <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
                                 Margin="0 8 0 0"/>
             </TabItem>
         </mah:MetroAnimatedTabControl>

@@ -4,24 +4,42 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Catel.Collections;
+using Catel.Windows.Interactivity;
 using GitLabApiClient;
 using GitLabApiClient.Models;
+using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
+using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
 using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
 {
+    public interface ISourceControl
+    {
+        Task<GitResponse> RequestData();
+        Task AddSpend(Issue issue, TimeSpan timeSpan);
+
+        Task<bool> StartIssue(Issue issue);
+        Task<bool> PauseIssue(Issue issue);
+        Task<bool> FinishIssue(Issue issue);
+    }
+
     internal class SourceControl : ISourceControl
     {
-        private const string CanDoLabel = "* Можно выполнять";
-        private const string InWorkLabel = "* В работе";
+        private const string ToDoLabel = "* Можно выполнять";
+        private const string DoingLabel = "* В работе";
         private const string InDistributiveLabel = "* В дистрибутиве";
         private const string RevisionLabel = "* Ревизия";
 
         private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
         private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
         private const string Uri = "http://gitlab.domination";
+
+        //private const string ToDoLabel = "To Do";
+        //private const string DoingLabel = "Doing";
+        //private const string DistributiveLabel = "";
+        //private const string RevisionLabel = "Revision";
 
         //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
         //private const string Token = "KajKr2cVJ4amosry9p4v";
@@ -37,6 +55,8 @@ namespace GitLabTimeManager.Services
         private ObservableCollection<WrappedIssue> WrappedIssues { get; set; } = new ObservableCollection<WrappedIssue>();
 
         private ObservableCollection<Issue> AllIssues { get; set; } = new ObservableCollection<Issue>();
+
+        #region Stats Properties
         // Necessary
         // Оценочное время открытых задач, начатых в этом месяце
         private double OpenEstimatesStartedInPeriod { get; set; }
@@ -74,7 +94,9 @@ namespace GitLabTimeManager.Services
         // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее
         private double OpenSpendBefore { get; set; }
 
-        public GitLabClient GitLabClient { get; }
+        #endregion
+
+        private GitLabClient GitLabClient { get; }
 
         protected internal SourceControl()
         {
@@ -106,6 +128,77 @@ namespace GitLabTimeManager.Services
             return response;
         }
 
+        public async Task AddSpend(Issue issue, TimeSpan timeSpan)
+        {
+            if (timeSpan < TimeSpan.FromSeconds(10))
+            {
+                await Task.Delay(1);
+                return;
+            }
+            var request = new CreateIssueNoteRequest(timeSpan.ConvertSpent() + "\n" + "[]");
+            var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request);
+            await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id);
+        }
+
+        public async Task<bool> StartIssue(Issue issue)
+        {
+            if (issue.Labels.Contains(DoingLabel))
+            {
+                await Task.Delay(0);
+                return true;
+            }
+            
+            issue.Labels.Remove(ToDoLabel);
+            issue.Labels.Remove(RevisionLabel);
+
+            issue.Labels.Add(DoingLabel);
+
+            var request = new UpdateIssueRequest
+            {
+                Labels = issue.Labels
+            };
+            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
+            return true;
+        }
+        
+        public async Task<bool> PauseIssue(Issue issue)
+        {
+            if (!issue.Labels.Contains(DoingLabel))
+            {
+                await Task.Delay(0);
+                return true;
+            }
+            
+            issue.Labels.Remove(DoingLabel);
+            issue.Labels.Add(ToDoLabel);
+
+            var request = new UpdateIssueRequest
+            {
+                Labels = issue.Labels
+            };
+            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
+            return true;
+        }
+
+        public async Task<bool> FinishIssue(Issue issue)
+        {
+            if (!issue.Labels.Contains(DoingLabel))
+            {
+                await Task.Delay(0);
+                return true;
+            }
+            
+            issue.Labels.Remove(DoingLabel);
+            issue.Labels.Add(RevisionLabel);
+
+            var request = new UpdateIssueRequest
+            {
+                Labels = issue.Labels
+            };
+            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
+            return true;
+        }
+
         private async Task ComputeStatistics()
         {
             AllIssues = await RequestAllIssues();
@@ -120,38 +213,38 @@ namespace GitLabTimeManager.Services
             // in month
             OpenEstimatesStartedInPeriod = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
 
             ClosedEstimatesStartedInPeriod = closedIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd) &&
                                 FinishedInPeriod(issue, MonthStart, MonthEnd))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
             
             OpenSpendsStartedInPeriod = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
             ClosedSpendsStartedInPeriod = closedIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd) &&
                                 FinishedInPeriod(issue, MonthStart, MonthEnd))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
             
             // before
             OpenEstimatesStartedBefore = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
 
             ClosedEstimatesStartedBefore = closedIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
 
             OpenSpendsStartedBefore = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
             ClosedSpendsStartedBefore = closedIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimerHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
 
             // Потраченное время только в этом месяце
@@ -275,5 +368,25 @@ namespace GitLabTimeManager.Services
                                           && issue.ClosedAt <  endTime 
                    || issue.Labels.Contains(RevisionLabel);
         }
+    }
+
+    public class GitResponse
+    {
+        /// <summary> Most need properties  </summary>
+        public double OpenEstimatesStartedInPeriod { get; set; }
+        public double ClosedEstimatesStartedInPeriod { get; set; }
+        public double ClosedSpendsStartedInPeriod { get; set; }
+        public double OpenSpendsStartedInPeriod { get; set; }
+        public double OpenEstimatesStartedBefore { get; set; }
+        public double ClosedEstimatesStartedBefore { get; set; }
+        public double OpenSpendsStartedBefore { get; set; }
+        public double ClosedSpendsStartedBefore { get; set; }
+
+        public double ClosedSpendInPeriod { get; set; }
+        public double OpenSpendInPeriod { get; set; }
+        public double OpenSpendBefore { get; set; }
+        public double ClosedSpendBefore { get; set; }
+
+        public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
     }
 }

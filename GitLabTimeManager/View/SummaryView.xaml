@@ -34,7 +34,7 @@
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1.5*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -42,7 +42,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MaxHeight="500"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
@@ -82,20 +82,18 @@
                       Series="{Binding SpendSeries, Mode=OneWay}"
                       InnerRadius="30"
                       LegendLocation="Bottom"
-                      
-                      MaxWidth="400">
+                      HoverPushOut="20">
 
             <wpf:PieChart.DataTooltip>
                 <wpf:DefaultTooltip IsWrapped="True"
                                     ShowTitle="False"
-                                    ShowSeries="False" 
+                                    ShowSeries="True" 
                                     SelectionMode="OnlySender">
                 </wpf:DefaultTooltip>
             </wpf:PieChart.DataTooltip>
             <wpf:PieChart.ChartLegend>
-                <wpf:DefaultLegend BulletSize="8"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"></wpf:DefaultLegend>
+                <wpf:DefaultLegend BulletSize="12"
+                                   Foreground="DarkSlateGray"/>
             </wpf:PieChart.ChartLegend>
         </wpf:PieChart>
         <wpf:Gauge Grid.Row="4" Grid.Column="1"
@@ -103,7 +101,7 @@
                    Value="{Binding ClosedEstimatesStartedInPeriod, Mode=OneWay}"
                    LabelFormatter="{Binding Formatter, Mode=OneWay}"
                    Uses360Mode="True"
-                   MaxWidth="400"/>
+                   Margin="0 0 0 20"/>
         
         <Border Grid.ColumnSpan="2" Grid.RowSpan="5"
                 Grid.Column="0" Grid.Row="0"

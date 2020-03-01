@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using Catel.Data;
 using Catel.IoC;
-using Catel.Logging;
 using Catel.MVVM;
-using ControlzEx.Standard;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
-using Timer = Catel.Threading.Timer;
 
 namespace GitLabTimeManager.ViewModel
 {
@@ -24,13 +16,23 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
         public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
         public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsProgress);
+        public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
 
+        [ViewModelToModel]
+        public bool IsFullscreen
+        {
+            get => (bool) GetValue(IsFullscreenProperty);
+            set => SetValue(IsFullscreenProperty, value);
+        }
 
         public SummaryViewModel SummaryVm
         {
             get => (SummaryViewModel)GetValue(SummaryVmProperty);
             set => SetValue(SummaryVmProperty, value);
         }
+
+        [Model(SupportIEditableObject = false), NotNull]
+        [UsedImplicitly]
         public IssueListViewModel IssueListVm
         {
             get => (IssueListViewModel)GetValue(IssueListVmProperty);
@@ -44,7 +46,6 @@ namespace GitLabTimeManager.ViewModel
         }
 
         private ISourceControl SourceControl { get; }
-        private Timer RequestTimer { get; }
 
         public MainViewModel()
         {
@@ -72,7 +73,7 @@ namespace GitLabTimeManager.ViewModel
                 IsProgress = false;
                 SummaryVm.UpdateData(data);
                 IssueListVm.UpdateData(data);
-                await Task.Delay(12000_000, cancellationToken);
+                await Task.Delay(600_000, cancellationToken);
             }
         }
 
@@ -83,15 +84,12 @@ namespace GitLabTimeManager.ViewModel
             return base.CloseAsync();
         }
 
-    }
-
-    public class ModelProperty
-    {
-        public ISourceControl SourceControl { get; }
-
-        public ModelProperty([NotNull] ISourceControl sourceControl)
+        protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {
-            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+            base.OnPropertyChanged(e);
+            if (e.PropertyName == nameof(IsFullscreen))
+            {
+            }
         }
     }
 }

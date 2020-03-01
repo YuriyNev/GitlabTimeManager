@@ -15,6 +15,22 @@ namespace GitLabTimeManager.Services
         public double SpendIn { get; set; }
 
         public double SpendBefore { get; set; }
+
         public bool StartedIn { get; set; }
+
+        public double Spend => TimeHelper.SecondsToHours(Issue.TimeStats.TotalTimeSpent);
+        public double Estimate => TimeHelper.SecondsToHours(Issue.TimeStats.TimeEstimate);
+
+        private bool _inProgress;
+        public bool InProgress
+        {
+            get => _inProgress;
+            set
+            {
+                if (value == _inProgress) return;
+                _inProgress = value;
+                OnPropertyChanged();
+            }
+        }
     }
 }

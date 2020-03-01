@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="GitLabTimeManager.View.IssueTimerView"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:liveCharts="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="400"
+             d:DataContext="{d:DesignInstance viewModel:IssueTimerViewModel}">
+    <Grid>
+        
+        <Grid HorizontalAlignment="Center">
+            <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0"
+                       Text="{Binding Time, Mode=OneWay}"
+                       FontSize="48"
+                       FontFamily="{StaticResource HeaderFontFamily}"
+                       TextAlignment="Center"
+                       FontWeight="ExtraBold"/>
+
+            <Grid Grid.Row="1" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Column="0" VerticalAlignment="Center"
+                        Style="{StaticResource FlatButton}"  
+                        Width="25" Height="25"
+                        Command="{Binding StopTimeCommand, Mode=OneWay}">
+                    <Button.Content>
+                        <iconPacks:MaterialLight Kind="Stop" Width="14" Height="14" />
+                    </Button.Content>
+                </Button>
+
+                <Button Grid.Column="1" BorderThickness="0" Height="60" Width="60">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource FlatCircleButton}">
+                            <Setter Property="Padding" Value="4 0 0 0"/>
+                            <Setter Property="Content" Value="{iconPacks:MaterialLight Play, Height=15, Width=15}"/>
+                            <Setter Property="Command" Value="{Binding DataContext.StartTimeCommand, ElementName=Root, Mode=OneWay}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsStarted, Mode=OneWay}" Value="True">
+                                    <Setter Property="Padding" Value="2 0 0 0"/>
+                                    <Setter Property="Content" Value="{iconPacks:MaterialLight Pause, Height=15, Width=15}"/>
+                                    <Setter Property="Command" Value="{Binding DataContext.PauseTimeCommand, ElementName=Root, Mode=OneWay}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <liveCharts:Gauge Grid.Column="1" Value="{Binding Time.TotalSeconds, Mode=OneWay}" 
+                                  To="{Binding EstimateTime.TotalSeconds, Mode=OneWay}"
+                                  Foreground="Transparent"
+                                  Uses360Mode="True"
+                                  LabelsVisibility="Collapsed"
+                                  InnerRadius="23"
+                                  AnimationsSpeed="0:0:0.2" 
+                                  LabelFormatter="{x:Null}"
+                                  Margin="4"
+                                  IsHitTestVisible="False"/>
+
+                <Button Grid.Column="2" VerticalAlignment="Center"
+                        Style="{StaticResource FlatButton}"  
+                        Width="25" Height="25"
+                        Command="{Binding FullscreenCommand, Mode=OneWay}">
+                    <Button.Content>
+                        <iconPacks:PackIconEntypo Kind="ResizeFullScreen" Width="14" Height="14" />
+                    </Button.Content>
+                </Button>
+            </Grid>
+            
+            <TextBlock Grid.Row="2" Text="{Binding Title, Mode=OneWay}"
+                       TextAlignment="Center"
+                       TextWrapping="WrapWithOverflow"/>
+
+            <TextBlock Grid.Row="3"
+                       Text="{Binding EstimateTime, Mode=OneWay}"
+                       FontSize="24"
+                       FontFamily="{StaticResource HeaderFontFamily}"
+                       Margin="8 0 8 0"
+                       TextAlignment="Center"
+                       FontWeight="Black"/>
+        </Grid>
+    </Grid>
+</UserControl>

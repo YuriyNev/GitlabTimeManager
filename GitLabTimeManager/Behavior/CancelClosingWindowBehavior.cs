@@ -19,7 +19,10 @@ namespace GitLabTimeManager.Behavior
         private void AssociatedObject_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (!CanCloseWindow)
+            {
+                AssociatedObject.WindowState = WindowState.Minimized;
                 e.Cancel = true;
+            }
         }
 
         protected override void OnAttached()
