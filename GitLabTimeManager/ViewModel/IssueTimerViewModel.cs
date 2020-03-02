@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Catel.Data;
@@ -17,62 +12,63 @@ namespace GitLabTimeManager.ViewModel
     {
         public static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
         public static readonly PropertyData TotalTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.EstimateTime);
-        public static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Title);
+        public static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
         public static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
 
         public bool IsFullscreen
         {
             get => (bool) GetValue(IsFullscreenProperty);
-            set => SetValue(IsFullscreenProperty, value);
+            private set => SetValue(IsFullscreenProperty, value);
         }
 
         public bool IsStarted
         {
             get => (bool) GetValue(IsStartedProperty);
-            set => SetValue(IsStartedProperty, value);
+            private set => SetValue(IsStartedProperty, value);
         }
 
-        public string Title
+        public string Description
         {
             get => (string) GetValue(TitleProperty);
-            set => SetValue(TitleProperty, value);
+            private set => SetValue(TitleProperty, value);
         }
 
         public TimeSpan EstimateTime
         {
             get => (TimeSpan) GetValue(TotalTimeProperty);
-            set => SetValue(TotalTimeProperty, value);
+            private set => SetValue(TotalTimeProperty, value);
         }
 
         public TimeSpan Time
         {
             get => (TimeSpan) GetValue(TimeProperty);
-            set => SetValue(TimeProperty, value);
+            private set => SetValue(TimeProperty, value);
         }
 
         private ISourceControl SourceControl { get; }
         private WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
-        private TimeSpan AccumulatedTime { get; set; }
-        private TimeSpan SavePeriod { get; } = TimeSpan.FromSeconds(60);
+
+#if DEBUG
+        private TimeSpan SavePeriod { get; } = TimeSpan.FromMinutes(1);
+#else
+        private TimeSpan SavePeriod { get; } = TimeSpan.FromHours(1);
+#endif
 
         private DispatcherTimer _timer;
-        private TimeSpan _time;
 
         public Command StartTimeCommand { get; }
         public Command PauseTimeCommand { get; }
         public Command StopTimeCommand { get; }
-        
         public Command FullscreenCommand { get; }
 
         public IssueTimerViewModel([NotNull] ISourceControl sourceControl, [NotNull] WrappedIssue issue)
         {
-            
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             Issue = issue ?? throw new ArgumentNullException(nameof(issue));
 
-            Title = Issue.Issue.Title;
+            Description = Issue.Issue.Title;
             Time = LastSaveTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TotalTimeSpent);
             EstimateTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TimeEstimate);
 
@@ -82,20 +78,11 @@ namespace GitLabTimeManager.ViewModel
             StopTimeCommand = new Command(StopTime);
 
             CreateTimer();
-
-            LateAssignment();
         }
 
         private void Fullscreen()
         {
             IsFullscreen = !IsFullscreen;
-        }
-
-        private async void LateAssignment()
-        {
-            await Task.Delay(1);
-            Time = Time.Add(TimeSpan.FromTicks(1));
-            Time = Time.Subtract(TimeSpan.FromTicks(1));
         }
 
         private void StartTime()
@@ -152,24 +139,24 @@ namespace GitLabTimeManager.ViewModel
             }
         }
 
-        private async void SaveSpend(TimeSpan timeSpan)
+        private void SaveSpend(TimeSpan timeSpan)
         {
-            await SourceControl.AddSpend(Issue.Issue, timeSpan);
+            SourceControl.AddSpendAsync(Issue.Issue, timeSpan);
         }
 
-        private async void StartIssue(WrappedIssue issue)
+        private void StartIssue(WrappedIssue issue)
         {
-            await SourceControl.StartIssue(issue.Issue);
+            SourceControl.StartIssueAsync(issue.Issue);
         }
         
-        private async void PauseIssue(WrappedIssue issue)
+        private void PauseIssue(WrappedIssue issue)
         {
-            await SourceControl.PauseIssue(issue.Issue);
+            SourceControl.PauseIssueAsync(issue.Issue);
         }
 
-        private async void FinishIssue(WrappedIssue issue)
+        private void FinishIssue(WrappedIssue issue)
         {
-            await SourceControl.FinishIssue(issue.Issue);
+            SourceControl.FinishIssueAsync(issue.Issue);
         }
     }
 }

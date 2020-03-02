@@ -17,36 +17,37 @@ namespace GitLabTimeManager.Services
 {
     public interface ISourceControl
     {
-        Task<GitResponse> RequestData();
-        Task AddSpend(Issue issue, TimeSpan timeSpan);
+        Task<GitResponse> RequestDataAsync();
+        Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
 
-        Task<bool> StartIssue(Issue issue);
-        Task<bool> PauseIssue(Issue issue);
-        Task<bool> FinishIssue(Issue issue);
+        Task<bool> StartIssueAsync(Issue issue);
+        Task<bool> PauseIssueAsync(Issue issue);
+        Task<bool> FinishIssueAsync(Issue issue);
     }
 
     internal class SourceControl : ISourceControl
     {
+#if DEBUG
+        private const string ToDoLabel = "To Do";
+        private const string DoingLabel = "Doing";
+        private const string DistributiveLabel = "";
+        private const string RevisionLabel = "Revision";
+
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
+        private const string Token = "KajKr2cVJ4amosry9p4v";
+        private const string Uri = "https://gitlab.com";
+#else
         private const string ToDoLabel = "* Можно выполнять";
         private const string DoingLabel = "* В работе";
-        private const string InDistributiveLabel = "* В дистрибутиве";
+        private const string DistributiveLabel = "* В дистрибутиве";
         private const string RevisionLabel = "* Ревизия";
 
         private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
         private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
         private const string Uri = "http://gitlab.domination";
-
-        //private const string ToDoLabel = "To Do";
-        //private const string DoingLabel = "Doing";
-        //private const string DistributiveLabel = "";
-        //private const string RevisionLabel = "Revision";
-
-        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
-        //private const string Token = "KajKr2cVJ4amosry9p4v";
-        //private const string Uri = "https://gitlab.com";
+#endif
 
         private static DateTime Today => DateTime.Today;
-        //public static DateTime Today => DateTime.Today.AddMonths(-2);
         private static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
         private static DateTime MonthEnd => MonthStart.AddMonths(1);
 
@@ -56,7 +57,7 @@ namespace GitLabTimeManager.Services
 
         private ObservableCollection<Issue> AllIssues { get; set; } = new ObservableCollection<Issue>();
 
-        #region Stats Properties
+#region Stats Properties
         // Necessary
         // Оценочное время открытых задач, начатых в этом месяце
         private double OpenEstimatesStartedInPeriod { get; set; }
@@ -94,7 +95,7 @@ namespace GitLabTimeManager.Services
         // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее
         private double OpenSpendBefore { get; set; }
 
-        #endregion
+#endregion
 
         private GitLabClient GitLabClient { get; }
 
@@ -103,7 +104,7 @@ namespace GitLabTimeManager.Services
             GitLabClient = new GitLabClient(Uri, Token);
         }
 
-        public async Task<GitResponse> RequestData()
+        public async Task<GitResponse> RequestDataAsync()
         {
             await ComputeStatistics();
             var response = new GitResponse
@@ -128,23 +129,23 @@ namespace GitLabTimeManager.Services
             return response;
         }
 
-        public async Task AddSpend(Issue issue, TimeSpan timeSpan)
+        public async Task AddSpendAsync(Issue issue, TimeSpan timeSpan)
         {
             if (timeSpan < TimeSpan.FromSeconds(10))
             {
-                await Task.Delay(1);
+                await Task.Delay(0);
                 return;
             }
             var request = new CreateIssueNoteRequest(timeSpan.ConvertSpent() + "\n" + "[]");
-            var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request);
-            await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id);
+            var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
+            await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id).ConfigureAwait(false);
         }
 
-        public async Task<bool> StartIssue(Issue issue)
+        public async Task<bool> StartIssueAsync(Issue issue)
         {
             if (issue.Labels.Contains(DoingLabel))
             {
-                await Task.Delay(0);
+                await Task.Delay(0).ConfigureAwait(false);
                 return true;
             }
             
@@ -157,11 +158,11 @@ namespace GitLabTimeManager.Services
             {
                 Labels = issue.Labels
             };
-            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
+            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             return true;
         }
         
-        public async Task<bool> PauseIssue(Issue issue)
+        public async Task<bool> PauseIssueAsync(Issue issue)
         {
             if (!issue.Labels.Contains(DoingLabel))
             {
@@ -176,11 +177,11 @@ namespace GitLabTimeManager.Services
             {
                 Labels = issue.Labels
             };
-            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
+            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             return true;
         }
 
-        public async Task<bool> FinishIssue(Issue issue)
+        public async Task<bool> FinishIssueAsync(Issue issue)
         {
             if (!issue.Labels.Contains(DoingLabel))
             {
@@ -195,14 +196,14 @@ namespace GitLabTimeManager.Services
             {
                 Labels = issue.Labels
             };
-            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
+            await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             return true;
         }
 
         private async Task ComputeStatistics()
         {
-            AllIssues = await RequestAllIssues();
-            AllNotes = await GetNotes(AllIssues);
+            AllIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
+            AllNotes = await GetNotes(AllIssues).ConfigureAwait(false);
 
             var openIssues = AllIssues.Where(x => x.State == IssueState.Opened).ToList();
             var closedIssues = AllIssues.Where(x => x.State == IssueState.Closed).ToList();
@@ -249,8 +250,8 @@ namespace GitLabTimeManager.Services
 
             // Потраченное время только в этом месяце
             // На задачи начатые в этом месяце
-            OpenSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Opened && x.StartedIn == false).Sum(x => x.SpendBefore);
-            ClosedSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Closed && x.StartedIn == false).Sum(x => x.SpendBefore);
+            OpenSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Opened && x.StartedIn == false).Sum(x => x.SpendIn);
+            ClosedSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Closed && x.StartedIn == false).Sum(x => x.SpendIn);
             OpenSpendInPeriod = WrappedIssues.Where(x => x.Issue.State == IssueState.Opened && x.StartedIn).Sum(x => x.SpendIn);
             ClosedSpendInPeriod = WrappedIssues.Where(x => x.Issue.State == IssueState.Closed && x.StartedIn).Sum(x => x.SpendIn);
         }
@@ -284,36 +285,14 @@ namespace GitLabTimeManager.Services
             var dict = new Dictionary<Issue, IList<Note>>();
             foreach (var issue in issues)
             {
-                var notes = await GetNotes(Convert.ToInt32(issue.ProjectId), issue.Iid);
+                var notes = await GetNotesAsync(Convert.ToInt32(issue.ProjectId), issue.Iid);
                 dict.Add(issue, notes);
             }
 
             return dict;
         }
 
-        private async Task<ObservableCollection<Issue>> GetClosedIssues()
-        {
-            var allIssues = new ObservableCollection<Issue>();
-            foreach (var projectId in ProjectIds)
-            {
-                var issues = await GitLabClient.Issues.GetAsync(projectId, options =>
-                {
-                    options.State = IssueState.Closed;
-                    options.Scope = Scope.AssignedToMe;
-                    options.CreatedAfter = Today.AddMonths(-6);
-                });
-                allIssues.AddRange(issues.Where(x =>
-                    x.ClosedAt != null && x.ClosedAt > MonthStart && x.ClosedAt < MonthEnd));
-            }
-            return allIssues;
-        }
-
-        private async Task<ObservableCollection<Issue>> GetOpenIssues()
-        {
-            return await RequestAllIssues();
-        }
-
-        private async Task<ObservableCollection<Issue>> RequestAllIssues()
+        private async Task<ObservableCollection<Issue>> RequestAllIssuesAsync()
         {
             var allIssues = new ObservableCollection<Issue>();
             foreach (var projectId in ProjectIds)
@@ -323,7 +302,7 @@ namespace GitLabTimeManager.Services
                     options.Scope = Scope.AssignedToMe;
                     options.CreatedAfter = Today.AddMonths(-6);
                     options.State = IssueState.All;
-                });
+                }).ConfigureAwait(false);
 
                 issues = issues.Where(x => x.State == IssueState.Closed && 
                                            x.ClosedAt != null && 
@@ -351,9 +330,9 @@ namespace GitLabTimeManager.Services
             return ts;
         }
 
-        private async Task<IList<Note>> GetNotes(int projectId, int issueId)
+        private async Task<IList<Note>> GetNotesAsync(int projectId, int issueId)
         {
-            var notes = await GitLabClient.Issues.GetNotesAsync(projectId, issueId);
+            var notes = await GitLabClient.Issues.GetNotesAsync(projectId, issueId).ConfigureAwait(false);
             return notes;
         }
 

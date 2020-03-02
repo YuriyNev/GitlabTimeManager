@@ -262,16 +262,6 @@ namespace GitLabTimeManager.ViewModel
                 },
                 
             };
-
-            //EstimatesSeries = new SeriesCollection
-            //{
-            //    new Gauge()
-            //    {
-            //        Value = OpenEstimatesStartedInPeriod + ClosedEstimatesStartedInPeriod,
-            //        From = 0,
-            //        To = 100,
-            //    }
-            //};
         }
     }
 }

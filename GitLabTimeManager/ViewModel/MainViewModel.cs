@@ -1,8 +1,14 @@
-﻿using System.Threading;
+﻿using System;
+using System.Net.Mime;
+using System.Security.Policy;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using Catel.Data;
 using Catel.IoC;
 using Catel.MVVM;
+using Catel.Services;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
 
@@ -67,13 +73,19 @@ namespace GitLabTimeManager.ViewModel
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 IsProgress = true;
-                
-                var data = await SourceControl.RequestData();
+
+                //var data = new GitResponse();
+                //if (Application.Current.Dispatcher != null)
+                //    _ = Application.Current.Dispatcher.InvokeAsync(async () =>
+                //       {
+                //           return data = await SourceControl.RequestDataAsync().ConfigureAwait(false);
+                //       });
+                var data = await SourceControl.RequestDataAsync().ConfigureAwait(true);
 
                 IsProgress = false;
                 SummaryVm.UpdateData(data);
                 IssueListVm.UpdateData(data);
-                await Task.Delay(600_000, cancellationToken);
+                await Task.Delay(Int32.MaxValue, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -82,14 +94,6 @@ namespace GitLabTimeManager.ViewModel
             LifeTime.Cancel();
             LifeTime.Dispose();
             return base.CloseAsync();
-        }
-
-        protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-            if (e.PropertyName == nameof(IsFullscreen))
-            {
-            }
         }
     }
 }

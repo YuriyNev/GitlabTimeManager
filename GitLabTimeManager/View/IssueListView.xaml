@@ -171,12 +171,5 @@
 
         <ContentControl Grid.Column="1" Content="{Binding IssueTimerVm, Mode=OneWay}"/>
 
-        <TextBlock Grid.Column="1" 
-                   VerticalAlignment="Center" HorizontalAlignment="Center"
-                   Style="{StaticResource TextBlockStyle}"
-                   Foreground="{StaticResource GrayBrush3}"
-                   FontSize="14"
-                   Text="Выберите задачу"
-                   Visibility="{Binding SelectedIssue, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNull}}"/>
     </Grid>
 </UserControl>

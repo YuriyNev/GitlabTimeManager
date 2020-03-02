@@ -94,7 +94,7 @@
                 </Button>
             </Grid>
             
-            <TextBlock Grid.Row="2" Text="{Binding Title, Mode=OneWay}"
+            <TextBlock Grid.Row="2" Text="{Binding Description, Mode=OneWay}"
                        TextAlignment="Center"
                        TextWrapping="WrapWithOverflow"/>
 
