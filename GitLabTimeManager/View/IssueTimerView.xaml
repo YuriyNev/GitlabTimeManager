@@ -37,7 +37,8 @@
                        TextAlignment="Center"
                        FontWeight="ExtraBold"/>
 
-            <Grid Grid.Row="1" HorizontalAlignment="Center">
+            <Grid Grid.Row="1" HorizontalAlignment="Center" 
+                  Margin="0 8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="Auto"/>
