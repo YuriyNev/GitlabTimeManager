@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Catel.Data;
@@ -80,6 +81,13 @@ namespace GitLabTimeManager.ViewModel
             CreateTimer();
         }
 
+        protected override Task OnClosingAsync()
+        {
+            PauseTime();
+
+            return base.OnClosingAsync();
+        }
+
         private void Fullscreen()
         {
             IsFullscreen = !IsFullscreen;
@@ -96,23 +104,25 @@ namespace GitLabTimeManager.ViewModel
         {
             PauseIssue(Issue);
 
+            SaveSpend();
+            RedrawIssue();
             _timer.Stop();
-
-            SaveSpend(Time - LastSaveTime);
-            LastSaveTime = Time;
-
             IsStarted = false;
+        }
+
+        private void RedrawIssue()
+        {
+            var needAddTime = (int)Time.TotalHours - Issue.Issue.TimeStats.TotalTimeSpent;
+            Issue.Issue.TimeStats.TotalTimeSpent += needAddTime;
         }
 
         private void StopTime()
         {
             FinishIssue(Issue);
 
+            SaveSpend();
+            RedrawIssue();
             _timer.Stop();
-
-            SaveSpend(Time - LastSaveTime);
-            LastSaveTime = Time;
-
             IsStarted = false;
         }
 
@@ -132,14 +142,18 @@ namespace GitLabTimeManager.ViewModel
             {
                 if (Time >= LastSaveTime + SavePeriod)
                 {
-                    var accumulatedPeriod = Time - LastSaveTime;
-                    SaveSpend(accumulatedPeriod);
-                    LastSaveTime = Time;
+                    SaveSpend();
                 }
             }
         }
 
-        private void SaveSpend(TimeSpan timeSpan)
+        private void SaveSpend()
+        {
+            SaveSpendInternal(Time - LastSaveTime);
+            LastSaveTime = Time;
+        }
+
+        private void SaveSpendInternal(TimeSpan timeSpan)
         {
             SourceControl.AddSpendAsync(Issue.Issue, timeSpan);
         }

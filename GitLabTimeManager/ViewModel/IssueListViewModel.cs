@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Catel.MVVM;
 using JetBrains.Annotations;
 using Catel.Data;
@@ -71,6 +72,12 @@ namespace GitLabTimeManager.ViewModel
             {
                 IssueTimerVm = new IssueTimerViewModel(SourceControl, SelectedIssue);
             }
+        }
+
+        protected override Task OnClosingAsync()
+        {
+            IssueTimerVm?.CancelAndCloseViewModelAsync();
+            return base.OnClosingAsync();
         }
     }
 

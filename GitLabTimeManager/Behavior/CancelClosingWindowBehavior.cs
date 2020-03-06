@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Interactivity;
 using MahApps.Metro.Controls;
 
@@ -6,6 +7,10 @@ namespace GitLabTimeManager.Behavior
 {
     public class CancelClosingWindowBehavior : Behavior<MetroWindow>
     {
+        public static readonly DependencyProperty ShowOnTaskbarProperty =
+            DependencyProperty.Register(nameof(ShowOnTaskbar), typeof(bool), typeof(CancelClosingWindowBehavior),
+                new PropertyMetadata(true));
+
         public static readonly DependencyProperty CanCloseWindowProperty =
             DependencyProperty.Register(nameof(CanCloseWindow), typeof(bool), typeof(CancelClosingWindowBehavior),
                 new PropertyMetadata(true));
@@ -15,12 +20,19 @@ namespace GitLabTimeManager.Behavior
             get => (bool)GetValue(CanCloseWindowProperty);
             set => SetValue(CanCloseWindowProperty, value);
         }
+        
+        public bool ShowOnTaskbar
+        {
+            get => (bool)GetValue(ShowOnTaskbarProperty);
+            set => SetValue(ShowOnTaskbarProperty, value);
+        }
 
         private void AssociatedObject_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (!CanCloseWindow)
             {
                 AssociatedObject.WindowState = WindowState.Minimized;
+                ShowOnTaskbar = false;
                 e.Cancel = true;
             }
         }
@@ -32,6 +44,18 @@ namespace GitLabTimeManager.Behavior
             if (AssociatedObject != null)
             {
                 AssociatedObject.Closing += AssociatedObject_Closing;
+                AssociatedObject.StateChanged += AssociatedObject_StateChanged;
+            }
+        }
+
+        private void AssociatedObject_StateChanged(object sender, EventArgs e)
+        {
+            if (sender is MainWindow window)
+            {
+                if (window.WindowState != WindowState.Minimized)
+                {
+                    ShowOnTaskbar = true;
+                }
             }
         }
 
@@ -39,6 +63,7 @@ namespace GitLabTimeManager.Behavior
         {
             if (AssociatedObject != null)
             {
+                AssociatedObject.StateChanged -= AssociatedObject_StateChanged;
                 AssociatedObject.Closing -= AssociatedObject_Closing;
             }
 

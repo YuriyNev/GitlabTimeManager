@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Catel.Collections;
-using Catel.Windows.Interactivity;
 using GitLabApiClient;
 using GitLabApiClient.Models;
 using GitLabApiClient.Models.Issues.Requests;
@@ -106,7 +105,7 @@ namespace GitLabTimeManager.Services
 
         public async Task<GitResponse> RequestDataAsync()
         {
-            await ComputeStatistics();
+            await ComputeStatistics().ConfigureAwait(true);
             var response = new GitResponse
             {
                 OpenEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod,

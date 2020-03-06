@@ -75,9 +75,9 @@
                        </Style.Triggers>
                    </Style>
                </Border.Style>
-               <Grid Margin="0 4 0 4">
+               <Grid Margin="0 4">
                    <Grid.RowDefinitions>
-                       <RowDefinition Height="Auto" SharedSizeGroup="IssueHeight" MinHeight="50"/>
+                        <RowDefinition Height="Auto" SharedSizeGroup="IssueHeight" MinHeight="40" MaxHeight="60"/>
                    </Grid.RowDefinitions>
                    <Grid.ColumnDefinitions>
                        <ColumnDefinition Width="Auto" SharedSizeGroup="Issue"/>
@@ -139,26 +139,44 @@
         </DataTemplate>
     </UserControl.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition>
-                <ColumnDefinition.Style>
-                    <Style TargetType="{x:Type ColumnDefinition}">
-                        <Setter Property="Width" Value="*"/>
-                        <Setter Property="MinWidth" Value="100"/>
+        <Grid.RowDefinitions>
+            <RowDefinition>
+                <RowDefinition.Style>
+                    <Style TargetType="{x:Type RowDefinition}">
+                        <Setter Property="Height" Value="Auto"/>
+                        <Setter Property="MinHeight" Value="100"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
-                                <Setter Property="Width" Value="0*"/>
-                                <Setter Property="MinWidth" Value="0"/>
+                                <Setter Property="Height" Value="*"/>
+                                <Setter Property="MinHeight" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>
+            </RowDefinition>
+
+            <RowDefinition>
+                <RowDefinition.Style>
+                    <Style TargetType="{x:Type RowDefinition}">
+                        <Setter Property="Height" Value="*"/>
+                        <Setter Property="MinHeight" Value="100"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
+                                <Setter Property="Height" Value="0*"/>
+                                <Setter Property="MinHeight" Value="0"/>
 
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </ColumnDefinition.Style>
-            </ColumnDefinition>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        
-        <ListBox Grid.Column="0"
+                </RowDefinition.Style>
+            </RowDefinition>
+
+        </Grid.RowDefinitions>
+
+        <ContentControl Grid.Row="0" Content="{Binding IssueTimerVm, Mode=OneWay}"
+                        Margin="8"/>
+
+        <ListBox Grid.Row="1"
                  ItemsSource="{Binding WrappedIssues, Mode=OneWay}"
                  ItemTemplate="{StaticResource IssueTemplate}"
                  ItemContainerStyle="{StaticResource IssueItemStyle}"
@@ -166,10 +184,7 @@
                  SelectionMode="Single"
                  SelectedItem="{Binding SelectedIssue, Mode=TwoWay}"
                  IsEnabled="{Binding IssueTimerVm.IsStarted, Mode=OneWay, Converter={catel:BooleanToOppositeBooleanConverter}}"
-                 Grid.IsSharedSizeScope="True">
-        </ListBox>
-
-        <ContentControl Grid.Column="1" Content="{Binding IssueTimerVm, Mode=OneWay}"/>
+                 Grid.IsSharedSizeScope="True"/>
 
     </Grid>
 </UserControl>

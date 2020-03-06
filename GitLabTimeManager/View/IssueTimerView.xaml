@@ -7,6 +7,7 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:liveCharts="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:catel="http://schemas.catelproject.com"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance viewModel:IssueTimerViewModel}">
@@ -30,12 +31,23 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+
             <TextBlock Grid.Row="0"
                        Text="{Binding Time, Mode=OneWay}"
-                       FontSize="48"
                        FontFamily="{StaticResource HeaderFontFamily}"
                        TextAlignment="Center"
-                       FontWeight="ExtraBold"/>
+                       FontWeight="ExtraBold">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <Setter Property="FontSize" Value="36"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                                <Setter Property="FontSize" Value="50"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
             <Grid Grid.Row="1" HorizontalAlignment="Center" 
                   Margin="0 8">
@@ -57,16 +69,16 @@
                     </Button.Content>
                 </Button>
 
-                <Button Grid.Column="1" BorderThickness="0" Height="60" Width="60">
+                <Button Grid.Column="1" BorderThickness="0" Height="70" Width="70">
                     <Button.Style>
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource FlatCircleButton}">
                             <Setter Property="Padding" Value="4 0 0 0"/>
-                            <Setter Property="Content" Value="{iconPacks:MaterialLight Play, Height=15, Width=15}"/>
+                            <Setter Property="Content" Value="{iconPacks:MaterialLight Play, Height=16, Width=16}"/>
                             <Setter Property="Command" Value="{Binding DataContext.StartTimeCommand, ElementName=Root, Mode=OneWay}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsStarted, Mode=OneWay}" Value="True">
                                     <Setter Property="Padding" Value="2 0 0 0"/>
-                                    <Setter Property="Content" Value="{iconPacks:MaterialLight Pause, Height=15, Width=15}"/>
+                                    <Setter Property="Content" Value="{iconPacks:MaterialLight Pause, Height=16, Width=16}"/>
                                     <Setter Property="Command" Value="{Binding DataContext.PauseTimeCommand, ElementName=Root, Mode=OneWay}"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -76,10 +88,10 @@
 
                 <liveCharts:Gauge Grid.Column="1" Value="{Binding Time.TotalSeconds, Mode=OneWay}" 
                                   To="{Binding EstimateTime.TotalSeconds, Mode=OneWay}"
-                                  Foreground="Transparent"
+                                  Foreground="Transparent" 
                                   Uses360Mode="True"
                                   LabelsVisibility="Collapsed"
-                                  InnerRadius="23"
+                                  InnerRadius="29"
                                   AnimationsSpeed="0:0:0.2" 
                                   LabelFormatter="{x:Null}"
                                   Margin="4"
@@ -94,7 +106,7 @@
                     </Button.Content>
                 </Button>
             </Grid>
-            
+
             <TextBlock Grid.Row="2" Text="{Binding Description, Mode=OneWay}"
                        TextAlignment="Center"
                        TextWrapping="WrapWithOverflow"/>
@@ -103,7 +115,7 @@
                        Text="{Binding EstimateTime, Mode=OneWay}"
                        FontSize="24"
                        FontFamily="{StaticResource HeaderFontFamily}"
-                       Margin="8 0 8 0"
+                       Margin="8 0"
                        TextAlignment="Center"
                        FontWeight="Black"/>
         </Grid>

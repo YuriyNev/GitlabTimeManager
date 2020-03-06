@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Net.Mime;
-using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using Catel.Data;
 using Catel.IoC;
 using Catel.MVVM;
-using Catel.Services;
+using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
 
@@ -23,7 +20,14 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
         public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsProgress);
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
+        public static readonly PropertyData ShowOnTaskbarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskbar, true);
 
+        public bool ShowOnTaskbar
+        {
+            get => (bool) GetValue(ShowOnTaskbarProperty);
+            set => SetValue(ShowOnTaskbarProperty, value);
+        }
+        
         [ViewModelToModel]
         public bool IsFullscreen
         {
@@ -53,6 +57,7 @@ namespace GitLabTimeManager.ViewModel
 
         private ISourceControl SourceControl { get; }
 
+
         public MainViewModel()
         {
             LifeTime = new CancellationTokenSource();
@@ -63,10 +68,17 @@ namespace GitLabTimeManager.ViewModel
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(SourceControl);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(SourceControl);
 
-            RequestDataAsync(LifeTime.Token);
+            RequestDataAsync(LifeTime.Token).Watch("Bad =(");
+
+            Application.Current.Exit += Current_Exit;
         }
 
-        private async void RequestDataAsync(CancellationToken cancellationToken)
+        private void Current_Exit(object sender, ExitEventArgs e)
+        {
+            CloseViewModelAsync(false);
+        }
+
+        private async Task RequestDataAsync(CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -74,12 +86,6 @@ namespace GitLabTimeManager.ViewModel
                     return;
                 IsProgress = true;
 
-                //var data = new GitResponse();
-                //if (Application.Current.Dispatcher != null)
-                //    _ = Application.Current.Dispatcher.InvokeAsync(async () =>
-                //       {
-                //           return data = await SourceControl.RequestDataAsync().ConfigureAwait(false);
-                //       });
                 var data = await SourceControl.RequestDataAsync().ConfigureAwait(true);
 
                 IsProgress = false;
@@ -94,6 +100,13 @@ namespace GitLabTimeManager.ViewModel
             LifeTime.Cancel();
             LifeTime.Dispose();
             return base.CloseAsync();
+        }
+
+
+        protected override Task OnClosingAsync()
+        {
+            IssueListVm.CancelAndCloseViewModelAsync();
+            return base.OnClosingAsync();
         }
     }
 }

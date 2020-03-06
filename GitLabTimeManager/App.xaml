@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             StartupUri="MainWindow.xaml">
+             StartupUri="MainWindow.xaml"
+             ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -21,11 +22,13 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.ToggleSwitch.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Tooltip.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/lime.xaml" />
-
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/baselight.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.AnimatedSingleRowTabControl.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Controls/TinyScrollBarStyle.xaml" />
 
                 <ResourceDictionary Source="Resources/BaseStyles.xaml"/>
+
+                <ResourceDictionary Source="Resources/TrayIconResources.xaml"/>
 
 
             </ResourceDictionary.MergedDictionaries>
@@ -52,7 +55,7 @@
 
                 <Setter Property="OverlayFadeIn" Value="{StaticResource OverlayFastSemiFadeIn}"/>
                 <Setter Property="OverlayFadeOut" Value="{StaticResource OverlayFastSemiFadeOut}"/>
-                <Setter Property="MinWidth" Value="320"/>
+                <Setter Property="MinWidth" Value="325"/>
                 <Setter Property="MinHeight" Value="420"/>
 
                 <!-- Window title settings -->
@@ -88,7 +91,7 @@
                 <Setter Property="RightWindowCommandsOverlayBehavior" Value="Never"/>
                 <Setter Property="WindowButtonCommandsOverlayBehavior" Value="Always"/>
 
-                <Setter Property="ShowMinButton" Value="False"/>
+                <Setter Property="ShowMinButton" Value="True"/>
                 <Setter Property="WindowState" Value="Normal"/>
                 <Setter Property="Topmost" Value="True"/>
                 <Setter Property="TitlebarHeight" Value="30"/>
