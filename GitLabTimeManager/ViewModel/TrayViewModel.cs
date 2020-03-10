@@ -1,10 +1,12 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using Catel.MVVM;
+using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
 {
-    class TrayViewModel : ViewModelBase
+    [UsedImplicitly]
+    internal class TrayViewModel : ViewModelBase
     {
         public ICommand IconDoubleClickCommand { get; }
         public ICommand ExitApplicationCommand { get; }

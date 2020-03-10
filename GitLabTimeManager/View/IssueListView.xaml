@@ -10,6 +10,8 @@
              xmlns:catel="http://schemas.catelproject.com"
              xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              d:DataContext="{d:DesignInstance viewModel:IssueListViewModel}">
@@ -88,7 +90,11 @@
 
                    <TextBlock Grid.Column="0" Margin="4 0 8 0"
                                VerticalAlignment="Center">
-                        <Hyperlink NavigateUri="{Binding Issue.WebUrl, Mode=OneWay}" TargetName="_top" RequestNavigate="Hyperlink_OnRequestNavigate">
+                        <Hyperlink NavigateUri="{Binding Issue.WebUrl, Mode=OneWay}">
+                            <i:Interaction.Behaviors>
+                                <behavior:HyperLinkBehavior />
+                            </i:Interaction.Behaviors>
+
                             <TextBlock Text="{Binding Issue.Iid, Mode=OneWay}"/>
                         </Hyperlink>
                     </TextBlock>
@@ -174,7 +180,7 @@
         </Grid.RowDefinitions>
 
         <ContentControl Grid.Row="0" Content="{Binding IssueTimerVm, Mode=OneWay}"
-                        Margin="8"/>
+                        Margin="4"/>
 
         <ListBox Grid.Row="1"
                  ItemsSource="{Binding WrappedIssues, Mode=OneWay}"

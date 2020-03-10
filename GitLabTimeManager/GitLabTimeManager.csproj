@@ -239,9 +239,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Behavior\CancelClosingWindowBehavior.cs" />
+    <Compile Include="Behavior\HyperLinkBehavior.cs" />
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Converters\LamdaConverters.cs" />
     <Compile Include="Helpers\TaskHelper.cs" />
+    <Compile Include="Helpers\UriNavigateHelper.cs" />
     <Compile Include="Services\GitResponse.cs" />
     <Compile Include="Types\StatsBlock.cs" />
     <Compile Include="Services\WrappedIssue.cs" />

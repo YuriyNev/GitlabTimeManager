@@ -13,6 +13,5 @@ namespace GitLabTimeManager
 
             DataContext = new MainViewModel();
         }
-
     }
 }

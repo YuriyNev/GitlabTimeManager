@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Catel.Data;
 using Catel.MVVM;
+using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
 
@@ -48,7 +50,7 @@ namespace GitLabTimeManager.ViewModel
         }
 
         private ISourceControl SourceControl { get; }
-        private WrappedIssue Issue { get; }
+        public WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
 
 #if DEBUG
@@ -63,6 +65,7 @@ namespace GitLabTimeManager.ViewModel
         public Command PauseTimeCommand { get; }
         public Command StopTimeCommand { get; }
         public Command FullscreenCommand { get; }
+        public Command<string> GoToBrowserCommand { get; }
 
         public IssueTimerViewModel([NotNull] ISourceControl sourceControl, [NotNull] WrappedIssue issue)
         {
@@ -78,7 +81,17 @@ namespace GitLabTimeManager.ViewModel
             FullscreenCommand = new Command(Fullscreen);
             StopTimeCommand = new Command(StopTime);
 
+            GoToBrowserCommand = new Command<string>(GoToBrowser);
+
             CreateTimer();
+        }
+
+        private static void GoToBrowser(string textUri)
+        {
+            if (string.IsNullOrWhiteSpace(textUri))
+                return;
+            var uri = new Uri(textUri);
+            uri.GoToBrowser();
         }
 
         protected override Task OnClosingAsync()

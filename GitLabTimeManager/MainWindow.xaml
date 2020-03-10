@@ -49,12 +49,12 @@
             <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                      Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                 <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
-                                Margin="0 8 0 0"/>
+                                Margin="0 4 0 0"/>
             </TabItem>
             <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                      Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                 <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
-                                Margin="0 8 0 0"/>
+                                Margin="0 4 0 0"/>
             </TabItem>
         </TabControl>
         <mah:MetroProgressBar VerticalAlignment="Bottom" 
