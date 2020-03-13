@@ -37,7 +37,7 @@
     <LangVersion>8</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\icons8_time_limit_96_Cij_icon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\icons8_time_64_PRs_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
@@ -160,6 +160,9 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PublicHoliday, Version=2.0.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PublicHoliday.2.0.7\lib\net46\PublicHoliday.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
@@ -242,9 +245,10 @@
     <Compile Include="Behavior\HyperLinkBehavior.cs" />
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Converters\LamdaConverters.cs" />
+    <Compile Include="Helpers\HolidaysHelper.cs" />
     <Compile Include="Helpers\TaskHelper.cs" />
     <Compile Include="Helpers\UriNavigateHelper.cs" />
-    <Compile Include="Services\GitResponse.cs" />
+    <Compile Include="Services\WorkingCalendar.cs" />
     <Compile Include="Types\StatsBlock.cs" />
     <Compile Include="Services\WrappedIssue.cs" />
     <Compile Include="Services\SourceControl.cs" />
@@ -333,8 +337,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\icons8_time_limit_96_Cij_icon.ico" />
+    <Resource Include="Resources\icons8_time_64_PRs_icon.ico" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

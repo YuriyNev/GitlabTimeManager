@@ -65,5 +65,21 @@ namespace GitLabTimeManager.Tools
         {
             return $@"/spend {ts.TotalMinutes:####}m";
         }
+
+        public static TimeSpan GetWorkingTime(DateTime startDate, DateTime endDate)
+        {
+            var curDate = startDate;
+            int holydays = 0;
+            int allDays = (int)(endDate - startDate).TotalDays;
+            while (curDate <= endDate)
+            {
+                if (curDate.DayOfWeek == DayOfWeek.Saturday ||
+                    curDate.DayOfWeek == DayOfWeek.Sunday)
+                    holydays++;
+                curDate = curDate.AddDays(1);
+            }
+
+            return TimeSpan.FromHours((allDays - holydays) * 8);
+        }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Catel.Collections;
 using Catel.MVVM;
 using JetBrains.Annotations;
 using Catel.Data;
@@ -60,7 +62,16 @@ namespace GitLabTimeManager.ViewModel
 
         public void UpdateData(GitResponse data)
         {
-            WrappedIssues = data.WrappedIssues;
+            if (SelectedIssue != null)
+            {
+                WrappedIssues = new ObservableCollection<WrappedIssue> {SelectedIssue};
+                WrappedIssues.AddRange(data.WrappedIssues.Where(x => x.Issue.Iid != SelectedIssue.Issue.Iid));
+            }
+            else
+            {
+                WrappedIssues = data.WrappedIssues;
+            }
+
             if (SelectedIssue == null)
                 SelectedIssue = WrappedIssues.FirstOrDefault();
         }
@@ -70,13 +81,14 @@ namespace GitLabTimeManager.ViewModel
             base.OnPropertyChanged(e);
             if (e.PropertyName == nameof(SelectedIssue))
             {
-                IssueTimerVm = new IssueTimerViewModel(SourceControl, SelectedIssue);
+                if (SelectedIssue != null)
+                    IssueTimerVm = new IssueTimerViewModel(SourceControl, SelectedIssue);
             }
         }
 
         protected override Task OnClosingAsync()
         {
-            IssueTimerVm?.CancelAndCloseViewModelAsync();
+            IssueTimerVm.CancelAndCloseViewModelAsync();
             return base.OnClosingAsync();
         }
     }

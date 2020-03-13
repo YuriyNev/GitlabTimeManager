@@ -108,6 +108,8 @@ namespace GitLabTimeManager.Services
             await ComputeStatistics().ConfigureAwait(true);
             var response = new GitResponse
             {
+                StartDate = MonthStart,
+                EndDate = MonthEnd,
                 OpenEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod,
                 ClosedEstimatesStartedInPeriod = ClosedEstimatesStartedInPeriod,
                 OpenSpendsStartedInPeriod = OpenSpendsStartedInPeriod,
@@ -132,7 +134,7 @@ namespace GitLabTimeManager.Services
         {
             if (timeSpan < TimeSpan.FromSeconds(10))
             {
-                await Task.Delay(0);
+                await Task.Delay(0).ConfigureAwait(false);
                 return;
             }
             var request = new CreateIssueNoteRequest(timeSpan.ConvertSpent() + "\n" + "[]");
@@ -246,7 +248,6 @@ namespace GitLabTimeManager.Services
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
-
             // Потраченное время только в этом месяце
             // На задачи начатые в этом месяце
             OpenSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Opened && x.StartedIn == false).Sum(x => x.SpendIn);
@@ -265,15 +266,30 @@ namespace GitLabTimeManager.Services
                 var startDate = note != null && note.Count > 0 ? (DateTime?)note.Min(x => x.CreatedAt) : null;
                 var startedIn = note != null && note.Count > 0 && note.Any(x => x.CreatedAt > monthStart && x.CreatedAt < monthEnd);
 
+                var spendIn = CollectSpendTime(note, monthStart, monthEnd).TotalHours;
+                var spendBefore = CollectSpendTime(note, DateTime.MinValue, monthStart).TotalHours;
+
+                // spend is set when issue was created
+                var spendPreset = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent) - (spendIn + spendBefore);
+                if (spendPreset > 0)
+                {
+                    if (startedIn)
+                        spendIn += spendPreset;
+                    else
+                        spendBefore += spendPreset;
+                }
+
+
                 var extIssue = new WrappedIssue
                 {
                     Issue = issue,
                     Started = startDate,
                     Finished = issue.ClosedAt,
-                    SpendIn = CollectSpendTime(note, monthStart, monthEnd).TotalHours,
-                    SpendBefore = CollectSpendTime(note, DateTime.MinValue, monthStart).TotalHours,
+                    SpendIn = spendIn,
+                    SpendBefore = spendBefore,
                     StartedIn = startedIn,
                 };
+                
                 issues.Add(extIssue);
             }
             return issues;
@@ -350,6 +366,8 @@ namespace GitLabTimeManager.Services
 
     public class GitResponse
     {
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         /// <summary> Most need properties  </summary>
         public double OpenEstimatesStartedInPeriod { get; set; }
         public double ClosedEstimatesStartedInPeriod { get; set; }

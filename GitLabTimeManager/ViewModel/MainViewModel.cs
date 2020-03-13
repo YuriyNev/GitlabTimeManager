@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Catel.Data;
 using Catel.IoC;
 using Catel.MVVM;
+using Catel.Threading;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
@@ -18,7 +20,7 @@ namespace GitLabTimeManager.ViewModel
 
         public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
         public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
-        public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsProgress);
+        public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFirstLoading, true);
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
         public static readonly PropertyData ShowOnTaskbarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskbar, true);
 
@@ -38,7 +40,7 @@ namespace GitLabTimeManager.ViewModel
         public SummaryViewModel SummaryVm
         {
             get => (SummaryViewModel)GetValue(SummaryVmProperty);
-            set => SetValue(SummaryVmProperty, value);
+            private set => SetValue(SummaryVmProperty, value);
         }
 
         [Model(SupportIEditableObject = false), NotNull]
@@ -49,10 +51,10 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(IssueListVmProperty, value);
         }
 
-        public bool IsProgress
+        public bool IsFirstLoading
         {
             get => (bool) GetValue(IsProgressProperty);
-            set => SetValue(IsProgressProperty, value);
+            private set => SetValue(IsProgressProperty, value);
         }
 
         private ISourceControl SourceControl { get; }
@@ -60,6 +62,10 @@ namespace GitLabTimeManager.ViewModel
 
         public MainViewModel()
         {
+            var calendar = new WorkingCalendar();
+            var task = Task.Run(() => calendar.LoadingCalendarAsync());
+            var result = task.WaitAndUnwrapException();
+
             LifeTime = new CancellationTokenSource();
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
@@ -73,6 +79,11 @@ namespace GitLabTimeManager.ViewModel
             Application.Current.Exit += Current_Exit;
         }
 
+        private void LoadingFinished()
+        {
+            IsFirstLoading = false;
+        }
+
         private void Current_Exit(object sender, ExitEventArgs e)
         {
             CloseViewModelAsync(false);
@@ -84,14 +95,18 @@ namespace GitLabTimeManager.ViewModel
             {
                 if (cancellationToken.IsCancellationRequested)
                     return;
-                IsProgress = true;
 
                 var data = await SourceControl.RequestDataAsync().ConfigureAwait(true);
 
-                IsProgress = false;
                 SummaryVm.UpdateData(data);
                 IssueListVm.UpdateData(data);
-                await Task.Delay(Int32.MaxValue, cancellationToken).ConfigureAwait(false);
+
+                LoadingFinished();
+#if DEBUG
+                await Task.Delay(20_000, cancellationToken).ConfigureAwait(true);
+#else
+                await Task.Delay(60_60_000, cancellationToken).ConfigureAwait(true);
+#endif
             }
         }
 

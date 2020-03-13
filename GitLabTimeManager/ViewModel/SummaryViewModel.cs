@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Media;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Models;
 using GitLabTimeManager.Services;
+using GitLabTimeManager.Tools;
 using JetBrains.Annotations;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -167,8 +169,10 @@ namespace GitLabTimeManager.ViewModel
 
         public Func<double, string> Formatter => (x => x.ToString("F1"));
 
-        public Command ShowEarningsCommand { get; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
 
+        public Command ShowEarningsCommand { get; }
 
         public SummaryViewModel([NotNull] ISourceControl sourceControl)
         {
@@ -180,6 +184,9 @@ namespace GitLabTimeManager.ViewModel
 
         public void UpdateData(GitResponse data)
         {
+            StartDate = data.StartDate;
+            EndDate = data.EndDate;
+
             // Время по задачам 
             OpenEstimatesStartedInPeriod = data.OpenEstimatesStartedInPeriod;
             ClosedEstimatesStartedInPeriod = data.ClosedEstimatesStartedInPeriod;
@@ -191,13 +198,11 @@ namespace GitLabTimeManager.ViewModel
             OpenSpendsStartedBefore = data.OpenSpendsStartedBefore;
             ClosedSpendsStartedBefore = data.ClosedSpendsStartedBefore;
 
-
             // Время по задачам фактически за период
             OpenSpendInPeriod = data.OpenSpendInPeriod;
             ClosedSpendInPeriod = data.ClosedSpendInPeriod;
             OpenSpendBefore = data.OpenSpendBefore;
             ClosedSpendBefore = data.ClosedSpendBefore;
-
 
             TotalSpendsStartedInPeriod = OpenSpendsStartedInPeriod + ClosedSpendsStartedInPeriod;
             TotalEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod + ClosedEstimatesStartedInPeriod;
@@ -221,6 +226,7 @@ namespace GitLabTimeManager.ViewModel
             FillCharts();
         }
 
+        
         private static void UpdateOrAddStatsBlock(ObservableCollection<StatsBlock> collection, string title, double value, double total)
         {
             if (collection == null) return;
@@ -238,27 +244,37 @@ namespace GitLabTimeManager.ViewModel
 
         private void FillCharts()
         {
-            SpendSeries = new SeriesCollection()
+            var workDaysInMonth = TimeHelper.GetWorkingTime(StartDate, DateTime.Today);
+            var remained =
+                Math.Max(workDaysInMonth.TotalHours - (ClosedSpendInPeriod + OpenSpendInPeriod + ClosedSpendBefore + OpenSpendBefore), 0);
+
+            SpendSeries = new SeriesCollection
             {
                 new PieSeries
                 {
-                    Values = new ChartValues<double> {ClosedSpendInPeriod},
+                    Values = new ChartValues<double> {Math.Round(ClosedSpendInPeriod, 1)},
                     Title = "Закрытые",
                 },
                 new PieSeries
                 {
-                    Values = new ChartValues<double> {OpenSpendInPeriod},
+                    Values = new ChartValues<double> { Math.Round(OpenSpendInPeriod, 1)},
                     Title = "Открытые",
                 },
                 new PieSeries
                 {
-                    Values = new ChartValues<double> {ClosedSpendBefore},
+                    Values = new ChartValues<double> { Math.Round(ClosedSpendBefore, 1)},
                     Title = "Закрытые (старые)",
                 },
                 new PieSeries
                 {
-                    Values = new ChartValues<double> {OpenSpendBefore},
+                    Values = new ChartValues<double> { Math.Round(OpenSpendBefore, 1)},
                     Title = "Открытые (старые)",
+                },
+                new PieSeries
+                {
+                    Values = new ChartValues<double> { Math.Round(remained, 1)},
+                    Fill = new SolidColorBrush(Colors.DarkGray),
+                    Title = "Незаполненные часы",
                 },
                 
             };

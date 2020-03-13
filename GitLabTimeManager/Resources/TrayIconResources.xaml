@@ -63,7 +63,7 @@
                     Visibility="Visible"
                     ContextMenu="{StaticResource TrayMenu}"
                     ToolTipText="GitLab TimeManager"
-                    IconSource="icons8_time_limit_96_Cij_icon.ico"
+                    IconSource="icons8_time_64_PRs_icon.ico"
                     MenuActivation="RightClick"
                     DoubleClickCommand="{Binding IconDoubleClickCommand, Mode=OneTime}"
                     LeftClickCommand="{Binding IconDoubleClickCommand, Mode=OneTime}"

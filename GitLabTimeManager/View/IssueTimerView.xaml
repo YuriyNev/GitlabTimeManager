@@ -7,8 +7,6 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:liveCharts="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance viewModel:IssueTimerViewModel}">
@@ -87,25 +85,33 @@
                     </Button.Style>
                 </Button>
 
-                <liveCharts:Gauge Grid.Column="1" Value="{Binding Time.TotalSeconds, Mode=OneWay}" 
-                                  To="{Binding EstimateTime.TotalSeconds, Mode=OneWay}"
-                                  Foreground="Transparent" 
-                                  Uses360Mode="True"
-                                  LabelsVisibility="Collapsed"
-                                  InnerRadius="29"
-                                  AnimationsSpeed="0:0:0.2" 
-                                  LabelFormatter="{x:Null}"
-                                  Margin="4"
-                                  IsHitTestVisible="False"/>
-
-                <Button Grid.Column="2" VerticalAlignment="Center"
+                <Button Grid.Column="2" 
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Style="{StaticResource FlatButton}"  
-                        Width="25" Height="25"
                         Command="{Binding FullscreenCommand, Mode=OneWay}">
                     <Button.Content>
                         <iconPacks:PackIconEntypo Kind="ResizeFullScreen" Width="14" Height="14" />
                     </Button.Content>
                 </Button>
+
+                <liveCharts:Gauge Grid.Column="1" Value="{Binding Time.TotalSeconds, Mode=OneWay}" 
+                                  To="{Binding EstimateTime.TotalSeconds, Mode=OneWay}"
+                                  Foreground="Transparent" 
+                                  Uses360Mode="True"
+                                  LabelsVisibility="Collapsed"
+                                  InnerRadius="26"
+                                  AnimationsSpeed="0:0:0.2" 
+                                  Margin="0 0 -1 0"
+                                  LabelFormatter="{x:Null}"
+                                  IsHitTestVisible="False"
+                                  RenderTransformOrigin="0.50 0.50">
+                    <liveCharts:Gauge.RenderTransform>
+                        <RotateTransform Angle="90" />
+                    </liveCharts:Gauge.RenderTransform>
+                </liveCharts:Gauge>
+
+                
             </Grid>
 
             <Button Grid.Row="2"

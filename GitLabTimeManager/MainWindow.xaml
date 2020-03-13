@@ -36,7 +36,7 @@
     <Grid>
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">
-                <Setter Property="Margin" Value="4 -30 4 8"/>
+                <Setter Property="Margin" Value="4 -26 4 8"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
                         <Setter Property="Margin" Value="0 0 0 0"/>
@@ -44,8 +44,8 @@
                 </Style.Triggers>
             </Style>
         </Grid.Style>
-        <TabControl mah:TabControlHelper.Underlined="TabItems" 
-                                     Background="Transparent">
+        <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
+                                     Background="{x:Null}">
             <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                      Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                 <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
@@ -56,8 +56,7 @@
                 <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
                                 Margin="0 4 0 0"/>
             </TabItem>
-        </TabControl>
-        <mah:MetroProgressBar VerticalAlignment="Bottom" 
-                              IsIndeterminate="True" Visibility="{Binding IsProgress, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </mah:MetroAnimatedTabControl>
+        <mah:ProgressRing Visibility="{Binding IsFirstLoading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </Grid>
 </mah:MetroWindow>

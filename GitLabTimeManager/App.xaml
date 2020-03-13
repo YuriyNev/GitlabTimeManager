@@ -22,7 +22,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.ToggleSwitch.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Tooltip.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/baselight.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.AnimatedSingleRowTabControl.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Controls/TinyScrollBarStyle.xaml" />
 
@@ -59,7 +59,7 @@
                 <Setter Property="MinHeight" Value="420"/>
 
                 <!-- Window title settings -->
-                <Setter Property="WindowTitleBrush" Value="#DDD"/>
+                <Setter Property="WindowTitleBrush" Value="#88DDDDDD"/>
                 <Setter Property="NonActiveWindowTitleBrush" Value="#EEE"/>
                 <Setter Property="TitleForeground" Value="{DynamicResource AccentBaseColorBrush}"/>
                 <Setter Property="TitleCharacterCasing" Value="Normal"/>

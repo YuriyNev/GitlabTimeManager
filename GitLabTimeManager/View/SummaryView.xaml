@@ -79,29 +79,30 @@
 
         <wpf:PieChart Grid.Row="4" Grid.Column="0" 
                       Series="{Binding SpendSeries, Mode=OneWay}"
-                      InnerRadius="30"
-                      LegendLocation="Bottom"
-                      Margin="0 20 0 0"
-                      HoverPushOut="20">
+                      InnerRadius="45"
+                      LegendLocation="None"
+                      HoverPushOut="2"
+                      Margin="0 28"
+                      AnimationsSpeed="0:0:0.2">
 
             <wpf:PieChart.DataTooltip>
                 <wpf:DefaultTooltip IsWrapped="True"
-                                    ShowTitle="False"
+                                    ShowTitle="True"
                                     ShowSeries="True" 
-                                    SelectionMode="OnlySender">
+                                    SelectionMode="OnlySender"
+                                    CornerRadius="5">
                 </wpf:DefaultTooltip>
             </wpf:PieChart.DataTooltip>
             <wpf:PieChart.ChartLegend>
                 <wpf:DefaultLegend BulletSize="12"
-                                   Foreground="DarkSlateGray"/>
+                                   Foreground="DarkSlateGray" />
             </wpf:PieChart.ChartLegend>
         </wpf:PieChart>
         <wpf:Gauge Grid.Row="4" Grid.Column="1"
                    From="0" To="100"
                    Value="{Binding ClosedEstimatesStartedInPeriod, Mode=OneWay}"
                    LabelFormatter="{Binding Formatter, Mode=OneWay}"
-                   Uses360Mode="True"
-                   Margin="0 20 0 20"/>
+                   Uses360Mode="True"/>
         
         <Border Grid.ColumnSpan="2" Grid.RowSpan="5"
                 Grid.Column="0" Grid.Row="0"
