@@ -62,17 +62,20 @@ namespace GitLabTimeManager.ViewModel
 
         public MainViewModel()
         {
-            var calendar = new WorkingCalendar();
-            var task = Task.Run(() => calendar.LoadingCalendarAsync());
-            var result = task.WaitAndUnwrapException();
-
             LifeTime = new CancellationTokenSource();
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             SourceControl = new SourceControl();
 
-            IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(SourceControl);
-            SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(SourceControl);
+            var calendar = new WorkingCalendar();
+
+            var superParameter = new SuperParameter
+            {
+                Calendar = calendar,
+                SourceControl = SourceControl
+            };
+            IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(superParameter);
+            SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(superParameter);
 
             RequestDataAsync(LifeTime.Token).Watch("Bad =(");
 
@@ -123,5 +126,11 @@ namespace GitLabTimeManager.ViewModel
             IssueListVm.CancelAndCloseViewModelAsync();
             return base.OnClosingAsync();
         }
+    }
+
+    public class SuperParameter
+    {
+        public ISourceControl SourceControl { get; set; }
+        public ICalendar Calendar { get; set; }
     }
 }

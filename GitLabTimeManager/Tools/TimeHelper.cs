@@ -54,32 +54,34 @@ namespace GitLabTimeManager.Tools
         public static double SecondsToHours(this double s) => MinutesToHours(s / 60);
 
         private static double MinutesToHours(double m) => m / 60;
-        
-        private static double DaysToHours(double d) => d * 8;
+
+        public static double DaysToHours(double d) => d * 8;
                        
         private static double WeeksToHours(double w) => DaysToHours(w * 5);
                        
         private static double MonthsToHours(double mo) => WeeksToHours(mo * 4);
+
+        public static double HoursToDays(double day) => day / 8;
 
         public static string ConvertSpent(this TimeSpan ts)
         {
             return $@"/spend {ts.TotalMinutes:####}m";
         }
 
-        public static TimeSpan GetWorkingTime(DateTime startDate, DateTime endDate)
+        public static TimeSpan GetWeekdaysTime(DateTime startDate, DateTime endDate)
         {
             var curDate = startDate;
-            int holydays = 0;
-            int allDays = (int)(endDate - startDate).TotalDays;
+            var holidays = 0;
+            var allDays = (int)(endDate - startDate).TotalDays;
             while (curDate <= endDate)
             {
                 if (curDate.DayOfWeek == DayOfWeek.Saturday ||
                     curDate.DayOfWeek == DayOfWeek.Sunday)
-                    holydays++;
+                    holidays++;
                 curDate = curDate.AddDays(1);
             }
 
-            return TimeSpan.FromHours((allDays - holydays) * 8);
+            return TimeSpan.FromHours((allDays - holidays) * 8);
         }
     }
 }

@@ -55,7 +55,7 @@
 
                 <Setter Property="OverlayFadeIn" Value="{StaticResource OverlayFastSemiFadeIn}"/>
                 <Setter Property="OverlayFadeOut" Value="{StaticResource OverlayFastSemiFadeOut}"/>
-                <Setter Property="MinWidth" Value="325"/>
+                <Setter Property="MinWidth" Value="340"/>
                 <Setter Property="MinHeight" Value="420"/>
 
                 <!-- Window title settings -->

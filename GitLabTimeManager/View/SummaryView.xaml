@@ -34,7 +34,7 @@
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -53,10 +53,10 @@
                       ItemsSource="{Binding OnlyMonthStatsBlocks, Mode=OneWay}"
                       ItemTemplate="{StaticResource StatsItemTemplate}"
                       HorizontalAlignment="Center"
-                      Margin="0 4">
+                      Margin="-12 4 0 4">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel/>
+                    <WrapPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
@@ -69,10 +69,10 @@
                       ItemsSource="{Binding EarlyStatsBlocks, Mode=OneWay}"
                       ItemTemplate="{StaticResource StatsItemTemplate}"
                       HorizontalAlignment="Center"
-                      Margin="0 4">
-            <ItemsControl.ItemsPanel>
+                      Margin="-12 4 0 4">
+            <ItemsControl.ItemsPanel >
                 <ItemsPanelTemplate>
-                    <WrapPanel/>
+                    <WrapPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
@@ -82,7 +82,7 @@
                       InnerRadius="45"
                       LegendLocation="None"
                       HoverPushOut="2"
-                      Margin="0 28"
+                      Margin="8 28"
                       AnimationsSpeed="0:0:0.2">
 
             <wpf:PieChart.DataTooltip>
@@ -100,6 +100,7 @@
         </wpf:PieChart>
         <wpf:Gauge Grid.Row="4" Grid.Column="1"
                    From="0" To="100"
+                   Margin="8 28"
                    Value="{Binding ClosedEstimatesStartedInPeriod, Mode=OneWay}"
                    LabelFormatter="{Binding Formatter, Mode=OneWay}"
                    Uses360Mode="True"/>

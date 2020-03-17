@@ -55,9 +55,10 @@ namespace GitLabTimeManager.ViewModel
 
         private ISourceControl SourceControl { get; }
 
-        public IssueListViewModel([NotNull] ISourceControl sourceControl)
+        public IssueListViewModel([NotNull] SuperParameter superParameter)
         {
-            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+            if (superParameter == null) throw new ArgumentNullException(nameof(superParameter));
+            SourceControl = superParameter.SourceControl ?? throw new ArgumentNullException(nameof(superParameter.SourceControl));
         }
 
         public void UpdateData(GitResponse data)

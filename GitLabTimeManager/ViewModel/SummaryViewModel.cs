@@ -17,6 +17,7 @@ namespace GitLabTimeManager.ViewModel
     public class SummaryViewModel : ViewModelBase
     {
         public ISourceControl SourceControl { get; }
+        public ICalendar Calendar { get; }
 
         #region Properties
         public static readonly PropertyData TotalSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedInPeriod);
@@ -174,9 +175,12 @@ namespace GitLabTimeManager.ViewModel
 
         public Command ShowEarningsCommand { get; }
 
-        public SummaryViewModel([NotNull] ISourceControl sourceControl)
+        public SummaryViewModel([NotNull] SuperParameter superParameter)
         {
-            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+            if (superParameter == null) throw new ArgumentNullException(nameof(superParameter));
+            SourceControl = superParameter.SourceControl ?? throw new ArgumentNullException(nameof(superParameter.SourceControl));
+            Calendar = superParameter.Calendar ?? throw new ArgumentNullException(nameof(superParameter.Calendar));
+        
             SpendSeries = new SeriesCollection();
             EstimatesSeries = new SeriesCollection();
             ShowEarningsCommand = new Command(() => ShowingEarning = !ShowingEarning, () => true);
@@ -242,11 +246,18 @@ namespace GitLabTimeManager.ViewModel
             }
         }
 
-        private void FillCharts()
+        private async void FillCharts()
         {
-            var workDaysInMonth = TimeHelper.GetWorkingTime(StartDate, DateTime.Today);
+            var workTime = TimeHelper.GetWeekdaysTime(StartDate, DateTime.Today).TotalHours;
+
+            var holidays = await Calendar.GetHolidaysAsync(StartDate, DateTime.Today).ConfigureAwait(true);
+            var holidayTime = holidays?.Where(x => x.Key > StartDate && x.Key <= DateTime.Today).Sum(x => x.Value.TotalHours) ?? 0;
+
+            workTime -= holidayTime;
+            if (workTime < 0) workTime = 0;
+
             var remained =
-                Math.Max(workDaysInMonth.TotalHours - (ClosedSpendInPeriod + OpenSpendInPeriod + ClosedSpendBefore + OpenSpendBefore), 0);
+                Math.Max(workTime - (ClosedSpendInPeriod + OpenSpendInPeriod + ClosedSpendBefore + OpenSpendBefore), 0);
 
             SpendSeries = new SeriesCollection
             {
@@ -274,9 +285,8 @@ namespace GitLabTimeManager.ViewModel
                 {
                     Values = new ChartValues<double> { Math.Round(remained, 1)},
                     Fill = new SolidColorBrush(Colors.DarkGray),
-                    Title = "Незаполненные часы",
+                    Title = "Пропущенные часы",
                 },
-                
             };
         }
     }
