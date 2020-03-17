@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Threading;
 using Catel.Data;
 using Catel.MVVM;
@@ -56,7 +55,7 @@ namespace GitLabTimeManager.ViewModel
 #if DEBUG
         private TimeSpan SavePeriod { get; } = TimeSpan.FromMinutes(1);
 #else
-        private TimeSpan SavePeriod { get; } = TimeSpan.FromHours(1);
+        private TimeSpan SavePeriod { get; } = TimeSpan.FromHours(2);
 #endif
 
         private DispatcherTimer _timer;

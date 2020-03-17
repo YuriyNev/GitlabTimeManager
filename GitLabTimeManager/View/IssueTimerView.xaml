@@ -119,8 +119,10 @@
                     Command="{Binding GoToBrowserCommand, Mode=OneWay}"
                     CommandParameter="{Binding Issue.Issue.WebUrl, Mode=OneWay}"
                     Style="{StaticResource ChromelessButtonStyle}"
+                    VerticalAlignment="Center"
+                    Height="30"
                     Cursor="Hand">
-                <TextBlock TextAlignment="Center"
+                <TextBlock TextAlignment="Center" 
                            TextWrapping="WrapWithOverflow"
                            Text="{Binding Description, Mode=OneWay}"/>
             </Button>

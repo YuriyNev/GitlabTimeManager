@@ -105,7 +105,7 @@ namespace GitLabTimeManager.Services
 
         public async Task<GitResponse> RequestDataAsync()
         {
-            await ComputeStatistics().ConfigureAwait(true);
+            await ComputeStatisticsAsync().ConfigureAwait(true);
             var response = new GitResponse
             {
                 StartDate = MonthStart,
@@ -166,11 +166,8 @@ namespace GitLabTimeManager.Services
         public async Task<bool> PauseIssueAsync(Issue issue)
         {
             if (!issue.Labels.Contains(DoingLabel))
-            {
-                await Task.Delay(0);
                 return true;
-            }
-            
+
             issue.Labels.Remove(DoingLabel);
             issue.Labels.Add(ToDoLabel);
 
@@ -201,10 +198,10 @@ namespace GitLabTimeManager.Services
             return true;
         }
 
-        private async Task ComputeStatistics()
+        private async Task ComputeStatisticsAsync()
         {
             AllIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
-            AllNotes = await GetNotes(AllIssues).ConfigureAwait(false);
+            AllNotes = await GetNotesAsync(AllIssues).ConfigureAwait(false);
 
             var openIssues = AllIssues.Where(x => x.State == IssueState.Opened).ToList();
             var closedIssues = AllIssues.Where(x => x.State == IssueState.Closed).ToList();
@@ -295,12 +292,12 @@ namespace GitLabTimeManager.Services
             return issues;
         }
 
-        private async Task<Dictionary<Issue, IList<Note>>> GetNotes(IEnumerable<Issue> issues)
+        private async Task<Dictionary<Issue, IList<Note>>> GetNotesAsync(IEnumerable<Issue> issues)
         {
             var dict = new Dictionary<Issue, IList<Note>>();
             foreach (var issue in issues)
             {
-                var notes = await GetNotesAsync(Convert.ToInt32(issue.ProjectId), issue.Iid);
+                var notes = await GetNotesAsync(Convert.ToInt32(issue.ProjectId), issue.Iid).ConfigureAwait(false);
                 dict.Add(issue, notes);
             }
 
