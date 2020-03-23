@@ -41,7 +41,13 @@ namespace GitLabTimeManager.Services
         private const string DistributiveLabel = "* В дистрибутиве";
         private const string RevisionLabel = "* Ревизия";
 
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 14, 16 };
+        private static int ClientDominationId = 14;
+        private static int AnalyticsServerId = 16;
+
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int>
+        {
+            ClientDominationId, AnalyticsServerId
+        };
         private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
         private const string Uri = "http://gitlab.domination";
 #endif
@@ -132,11 +138,7 @@ namespace GitLabTimeManager.Services
 
         public async Task AddSpendAsync(Issue issue, TimeSpan timeSpan)
         {
-            if (timeSpan < TimeSpan.FromSeconds(10))
-            {
-                await Task.Delay(0).ConfigureAwait(false);
-                return;
-            }
+            if (timeSpan < TimeSpan.FromSeconds(10)) return;
             var request = new CreateIssueNoteRequest(timeSpan.ConvertSpent() + "\n" + "[]");
             var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id).ConfigureAwait(false);
@@ -145,10 +147,7 @@ namespace GitLabTimeManager.Services
         public async Task<bool> StartIssueAsync(Issue issue)
         {
             if (issue.Labels.Contains(DoingLabel))
-            {
-                await Task.Delay(0).ConfigureAwait(false);
                 return true;
-            }
             
             issue.Labels.Remove(ToDoLabel);
             issue.Labels.Remove(RevisionLabel);
@@ -182,11 +181,8 @@ namespace GitLabTimeManager.Services
         public async Task<bool> FinishIssueAsync(Issue issue)
         {
             if (!issue.Labels.Contains(DoingLabel))
-            {
-                await Task.Delay(0);
                 return true;
-            }
-            
+
             issue.Labels.Remove(DoingLabel);
             issue.Labels.Add(RevisionLabel);
 
@@ -203,8 +199,8 @@ namespace GitLabTimeManager.Services
             AllIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
             AllNotes = await GetNotesAsync(AllIssues).ConfigureAwait(false);
 
-            var openIssues = AllIssues.Where(x => x.State == IssueState.Opened).ToList();
-            var closedIssues = AllIssues.Where(x => x.State == IssueState.Closed).ToList();
+            var openIssues = AllIssues.Where(IsOpen).ToList();
+            var closedIssues = AllIssues.Where(x => !IsOpen(x)).ToList();
 
             WrappedIssues = ExtentIssues(AllIssues, AllNotes, MonthStart, MonthEnd);
 
@@ -247,10 +243,17 @@ namespace GitLabTimeManager.Services
 
             // Потраченное время только в этом месяце
             // На задачи начатые в этом месяце
-            OpenSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Opened && x.StartedIn == false).Sum(x => x.SpendIn);
-            ClosedSpendBefore = WrappedIssues.Where(x => x.Issue.State == IssueState.Closed && x.StartedIn == false).Sum(x => x.SpendIn);
-            OpenSpendInPeriod = WrappedIssues.Where(x => x.Issue.State == IssueState.Opened && x.StartedIn).Sum(x => x.SpendIn);
-            ClosedSpendInPeriod = WrappedIssues.Where(x => x.Issue.State == IssueState.Closed && x.StartedIn).Sum(x => x.SpendIn);
+            OpenSpendBefore = WrappedIssues.Where(x => IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
+            ClosedSpendBefore = WrappedIssues.Where(x => !IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
+            OpenSpendInPeriod = WrappedIssues.Where(x => IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+            ClosedSpendInPeriod = WrappedIssues.Where(x => !IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+         }
+        /// <summary> Задача открыта и не находится на проверке </summary>
+        private static bool IsOpen(Issue issue)
+        {
+            return issue.State == IssueState.Opened && 
+                   !issue.Labels.Contains(RevisionLabel) &&
+                   !issue.Labels.Contains(DistributiveLabel);
         }
 
         private static ObservableCollection<WrappedIssue> ExtentIssues(IEnumerable<Issue> sourceIssues, IReadOnlyDictionary<Issue, IList<Note>> notes,
@@ -260,22 +263,32 @@ namespace GitLabTimeManager.Services
             foreach (var issue in sourceIssues)
             {
                 notes.TryGetValue(issue, out var note);
-                var startDate = note != null && note.Count > 0 ? (DateTime?)note.Min(x => x.CreatedAt) : null;
-                var startedIn = note != null && note.Count > 0 && note.Any(x => x.CreatedAt > monthStart && x.CreatedAt < monthEnd);
 
-                var spendIn = CollectSpendTime(note, monthStart, monthEnd).TotalHours;
-                var spendBefore = CollectSpendTime(note, DateTime.MinValue, monthStart).TotalHours;
+                DateTime? startDate = null;
+                bool startedIn = false;
+                double spendIn = 0;
+                double spendBefore = 0;
 
+                double totalSpend = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent);
+                if (note != null && note.Count > 0)
+                { 
+                    // if more 0 notes then getting data from notes
+                    startDate = note.Min(x => x.CreatedAt);
+                    startedIn = !note.Any(x => x.CreatedAt < monthStart);
+
+                    spendIn = CollectSpendTime(note, monthStart, monthEnd).TotalHours;
+                    spendBefore = CollectSpendTime(note, DateTime.MinValue, monthStart).TotalHours;
+                }
+                
                 // spend is set when issue was created
-                var spendPreset = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent) - (spendIn + spendBefore);
-                if (spendPreset > 0)
+                var startSpend = totalSpend - (spendIn + spendBefore);
+                if (startSpend > 0)
                 {
                     if (startedIn)
-                        spendIn += spendPreset;
+                        spendIn += startSpend;
                     else
-                        spendBefore += spendPreset;
+                        spendBefore += startSpend;
                 }
-
 
                 var extIssue = new WrappedIssue
                 {
@@ -337,9 +350,8 @@ namespace GitLabTimeManager.Services
                 .Where(x => x.CreatedAt > start && x.CreatedAt < end)
                 .Select(x => x.Body.ParseSpent());
 
-            var seconds = hoursList.Sum();
-            var ts = TimeSpan.FromHours(seconds);
-            return ts;
+            var hours = hoursList.Sum();
+            return TimeSpan.FromHours(hours);
         }
 
         private async Task<IList<Note>> GetNotesAsync(int projectId, int issueId)

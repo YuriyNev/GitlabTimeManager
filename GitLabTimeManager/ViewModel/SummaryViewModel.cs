@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Media;
@@ -41,71 +42,78 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData EstimatesInPeriodProperty = RegisterProperty<SummaryViewModel, SeriesCollection>(x => x.EstimatesSeries);
         public static readonly PropertyData ShowingEarningProperty = RegisterProperty<SummaryViewModel, bool>(x => x.ShowingEarning);
         public static readonly PropertyData EarningProperty = RegisterProperty<SummaryViewModel, double>(x => x.Earning);
+        public static readonly PropertyData AllClosedEstimatesProperty = RegisterProperty<SummaryViewModel, double>(x => x.AllClosedEstimates);
+
+        public double AllClosedEstimates
+        {
+            get => (double) GetValue(AllClosedEstimatesProperty);
+            set => SetValue(AllClosedEstimatesProperty, value);
+        }
 
         public double Earning
         {
-            get { return (double) GetValue(EarningProperty); }
-            set { SetValue(EarningProperty, value); }
+            get => (double) GetValue(EarningProperty);
+            set => SetValue(EarningProperty, value);
         }
 
         public bool ShowingEarning
         {
-            get { return (bool) GetValue(ShowingEarningProperty); }
-            set { SetValue(ShowingEarningProperty, value); }
+            get => (bool) GetValue(ShowingEarningProperty);
+            set => SetValue(ShowingEarningProperty, value);
         }
 
         public SeriesCollection EstimatesSeries
         {
-            get { return (SeriesCollection) GetValue(EstimatesInPeriodProperty); }
-            set { SetValue(EstimatesInPeriodProperty, value); }
+            get => (SeriesCollection) GetValue(EstimatesInPeriodProperty);
+            set => SetValue(EstimatesInPeriodProperty, value);
         }
 
         public double TotalEstimatesStartedBefore
         {
-            get { return (double)GetValue(TotalEstimatesStaredBeforeProperty); }
-            set { SetValue(TotalEstimatesStaredBeforeProperty, value); }
+            get => (double)GetValue(TotalEstimatesStaredBeforeProperty);
+            set => SetValue(TotalEstimatesStaredBeforeProperty, value);
         }
 
         public double TotalSpendsStartedBefore
         {
-            get { return (double)GetValue(TotalSpendsStartedBeforeProperty); }
-            set { SetValue(TotalSpendsStartedBeforeProperty, value); }
+            get => (double)GetValue(TotalSpendsStartedBeforeProperty);
+            set => SetValue(TotalSpendsStartedBeforeProperty, value);
         }
 
         public double ClosedSpendsStartedBefore
         {
-            get { return (double) GetValue(ClosedSpendsStartedBeforeProperty); }
-            set { SetValue(ClosedSpendsStartedBeforeProperty, value); }
+            get => (double) GetValue(ClosedSpendsStartedBeforeProperty);
+            set => SetValue(ClosedSpendsStartedBeforeProperty, value);
         }
 
         public double OpenSpendsStartedBefore
         {
-            get { return (double) GetValue(OpenSpendsStartedBeforeProperty); }
-            set { SetValue(OpenSpendsStartedBeforeProperty, value); }
+            get => (double) GetValue(OpenSpendsStartedBeforeProperty);
+            set => SetValue(OpenSpendsStartedBeforeProperty, value);
         }
 
         public double ClosedEstimatesStartedBefore
         {
-            get { return (double) GetValue(ClosedEstimatesStartedBeforeProperty); }
-            set { SetValue(ClosedEstimatesStartedBeforeProperty, value); }
+            get => (double) GetValue(ClosedEstimatesStartedBeforeProperty);
+            set => SetValue(ClosedEstimatesStartedBeforeProperty, value);
         }
 
         public double OpenEstimatesStartedBefore
         {
-            get { return (double) GetValue(OpenEstimatesStartedBeforeProperty); }
-            set { SetValue(OpenEstimatesStartedBeforeProperty, value); }
+            get => (double) GetValue(OpenEstimatesStartedBeforeProperty);
+            set => SetValue(OpenEstimatesStartedBeforeProperty, value);
         }
 
         public double OpenSpendBefore
         {
-            get { return (double)GetValue(OpenSpendBeforeProperty); }
-            set { SetValue(OpenSpendBeforeProperty, value); }
+            get => (double)GetValue(OpenSpendBeforeProperty);
+            set => SetValue(OpenSpendBeforeProperty, value);
         }
 
         public double ClosedSpendBefore
         {
-            get { return (double)GetValue(ClosedSpendBeforeProperty); }
-            set { SetValue(ClosedSpendBeforeProperty, value); }
+            get => (double)GetValue(ClosedSpendBeforeProperty);
+            set => SetValue(ClosedSpendBeforeProperty, value);
         }
 
         public double TotalEstimatesStartedInPeriod
@@ -168,7 +176,7 @@ namespace GitLabTimeManager.ViewModel
         public ObservableCollection<StatsBlock> OnlyMonthStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
         public ObservableCollection<StatsBlock> EarlyStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
 
-        public Func<double, string> Formatter => (x => x.ToString("F1"));
+        public static Func<double, string> Formatter => (x => x.ToString("F1"));
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -213,10 +221,10 @@ namespace GitLabTimeManager.ViewModel
             
             TotalSpendsStartedBefore = OpenSpendsStartedBefore + ClosedSpendsStartedBefore;
             TotalEstimatesStartedBefore = OpenEstimatesStartedBefore + ClosedEstimatesStartedBefore;
-            //=(70 +(A6-100))*1000
-            Earning = (ClosedEstimatesStartedInPeriod - 30) * 1000;
-            var minimalEarning = 14000;
-            Earning = Math.Max(Earning, minimalEarning);
+
+            AllClosedEstimates = ClosedEstimatesStartedInPeriod + ClosedEstimatesStartedBefore;
+            var moneyCalculator = new MoneyCalculator();
+            Earning = moneyCalculator.Calculate(TimeSpan.FromHours(AllClosedEstimates));
 
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые задачи", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Закрытые задачи", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);
@@ -226,12 +234,11 @@ namespace GitLabTimeManager.ViewModel
             UpdateOrAddStatsBlock(EarlyStatsBlocks, "Закрытые задачи", ClosedSpendsStartedBefore, ClosedEstimatesStartedBefore);
             UpdateOrAddStatsBlock(EarlyStatsBlocks, "Всего", TotalSpendsStartedBefore, TotalEstimatesStartedBefore);
 
-
             FillCharts();
         }
 
         
-        private static void UpdateOrAddStatsBlock(ObservableCollection<StatsBlock> collection, string title, double value, double total)
+        private static void UpdateOrAddStatsBlock(ICollection<StatsBlock> collection, string title, double value, double total)
         {
             if (collection == null) return;
             var f = collection.FirstOrDefault(x => x.Title == title);

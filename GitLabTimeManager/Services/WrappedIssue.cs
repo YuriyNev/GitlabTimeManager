@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
 {
+    [DebuggerDisplay("{Issue.Title} {Started} - {Finished} {StartedIn} {SpendIn} {SpendBefore}")]
     public class WrappedIssue : NotifyObject
     {
         public Issue Issue { get; set; }
@@ -32,5 +34,7 @@ namespace GitLabTimeManager.Services
                 OnPropertyChanged();
             }
         }
+
+        public override string ToString() => $"{Issue.Iid}\t{Started}\t{Finished}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}";
     }
 }

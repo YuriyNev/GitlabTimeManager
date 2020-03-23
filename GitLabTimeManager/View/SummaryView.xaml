@@ -101,7 +101,7 @@
         <wpf:Gauge Grid.Row="4" Grid.Column="1"
                    From="0" To="100"
                    Margin="8 28"
-                   Value="{Binding ClosedEstimatesStartedInPeriod, Mode=OneWay}"
+                   Value="{Binding AllClosedEstimates, Mode=OneWay}"
                    LabelFormatter="{Binding Formatter, Mode=OneWay}"
                    Uses360Mode="True"/>
         

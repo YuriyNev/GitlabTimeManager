@@ -5,35 +5,58 @@ namespace GitLabTimeManager.Tools
 {
     internal static class TimeHelper
     {
-        private static readonly string monthUnit = "mo";
-        private static readonly string weekUnit = "w";
-        private static readonly string dayUnit = "d";
-        private static readonly string hourUnit = "h";
-        private static readonly string minuteUnit = "m";
-        private static readonly string secondUnit = "s";
+        private const string MonthUnit = "mo";
+        private const string WeekUnit = "w";
+        private const string DayUnit = "d";
+        private const string HourUnit = "h";
+        private const string MinuteUnit = "m";
+        private const string SecondUnit = "s";
+
+        private static string TimeSpentKeyPhrase => "of time spent";
+        private static string EstimateKeyPhrase => "changed time estimate to";
+        private static string SubtractedKeyPhrase => "subtracted";
+        private static string AddedKeyPhrase => "added";
+
+        private const double HoursPerDay = 8;
+        private const double DaysPerWeek = 5;
+        private const double WeeksPerMonth = 4;
 
         // Parse spent time in hours
-        public static double ParseSpent(this string textDate) => ParseTime(textDate, "of time spent");
+        public static double ParseSpent(this string textDate) => ParseTime(textDate, TimeSpentKeyPhrase);
 
         // Parse estimate time in hours
-        public static double ParseEstimate(this string textDate) => ParseTime(textDate, "changed time estimate to");
+        public static double ParseEstimate(this string textDate) => ParseTime(textDate, EstimateKeyPhrase);
 
         private static double ParseTime(string textDate, string keyPhase)
         {
-            if (!textDate.Contains(keyPhase)) return 0;
-            var months = ParseNumberBefore(textDate, monthUnit);
-            var weeks = ParseNumberBefore(textDate, weekUnit);
-            var days = ParseNumberBefore(textDate, dayUnit);
-            var hours = ParseNumberBefore(textDate, hourUnit);
-            var minutes = ParseNumberBefore(textDate, minuteUnit);
-            var seconds = ParseNumberBefore(textDate, secondUnit);
+            var sign = SpendSign(textDate);
 
-            return MonthsToHours(months) +
+            if (!textDate.Contains(keyPhase)) return 0;
+            var months = ParseNumberBefore(textDate, MonthUnit);
+            var weeks = ParseNumberBefore(textDate, WeekUnit);
+            var days = ParseNumberBefore(textDate, DayUnit);
+            var hours = ParseNumberBefore(textDate, HourUnit);
+            var minutes = ParseNumberBefore(textDate, MinuteUnit);
+            var seconds = ParseNumberBefore(textDate, SecondUnit);
+
+            return sign * 
+                   (MonthsToHours(months) +
                    WeeksToHours(weeks) +
                    DaysToHours(days) +
                    hours +
                    MinutesToHours(minutes) +
-                   SecondsToHours(seconds);
+                   SecondsToHours(seconds));
+        }
+
+        private static int SpendSign(string textDate)
+        {
+            var isAdded = textDate.Contains(AddedKeyPhrase);
+            var isSubtracted = textDate.Contains(SubtractedKeyPhrase);
+            if (isAdded)
+                return +1;
+            if (isSubtracted)
+                return -1;
+            return 0;
         }
 
         private static int ParseNumberBefore(string source, string before)
@@ -51,17 +74,17 @@ namespace GitLabTimeManager.Tools
             }
         }
 
-        public static double SecondsToHours(this double s) => MinutesToHours(s / 60);
+        public static double SecondsToHours(this double s) => TimeSpan.FromSeconds(s).TotalHours;
 
-        private static double MinutesToHours(double m) => m / 60;
+        private static double MinutesToHours(double m) => TimeSpan.FromMinutes(m).TotalHours;
 
-        public static double DaysToHours(double d) => d * 8;
+        private static double DaysToHours(double d) => d * HoursPerDay;
                        
-        private static double WeeksToHours(double w) => DaysToHours(w * 5);
+        private static double WeeksToHours(double w) => DaysToHours(w * DaysPerWeek);
                        
-        private static double MonthsToHours(double mo) => WeeksToHours(mo * 4);
+        private static double MonthsToHours(double mo) => WeeksToHours(mo * WeeksPerMonth);
 
-        public static double HoursToDays(double day) => day / 8;
+        public static double HoursToDays(double day) => day / HoursPerDay;
 
         public static string ConvertSpent(this TimeSpan ts)
         {
@@ -81,7 +104,7 @@ namespace GitLabTimeManager.Tools
                 curDate = curDate.AddDays(1);
             }
 
-            return TimeSpan.FromHours((allDays - holidays) * 8);
+            return TimeSpan.FromHours((allDays - holidays) * HoursPerDay);
         }
     }
 }
