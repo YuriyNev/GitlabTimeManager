@@ -248,6 +248,7 @@
     <Compile Include="Helpers\HolidaysHelper.cs" />
     <Compile Include="Helpers\TaskHelper.cs" />
     <Compile Include="Helpers\UriNavigateHelper.cs" />
+    <Compile Include="Services\MoneyCalculator.cs" />
     <Compile Include="Services\WorkingCalendar.cs" />
     <Compile Include="Types\StatsBlock.cs" />
     <Compile Include="Services\WrappedIssue.cs" />
