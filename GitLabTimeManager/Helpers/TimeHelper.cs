@@ -111,7 +111,7 @@ namespace GitLabTimeManager.Helpers
         {
             get
             {
-                const int nightHour = 10;
+                const int nightHour = 22;
                 var nightTime = DateTime.Today.AddHours(nightHour);
 
                 return DateTime.Now > nightTime;
