@@ -254,7 +254,7 @@
     <Compile Include="Services\WrappedIssue.cs" />
     <Compile Include="Services\SourceControl.cs" />
     <Compile Include="Tools\NotifyObject.cs" />
-    <Compile Include="Tools\TimeHelper.cs" />
+    <Compile Include="Helpers\TimeHelper.cs" />
     <Compile Include="Tools\DetailedIssueTime.cs" />
     <Compile Include="ViewModel\IssueTimerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

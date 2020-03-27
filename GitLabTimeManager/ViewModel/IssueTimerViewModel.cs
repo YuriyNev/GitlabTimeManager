@@ -53,7 +53,7 @@ namespace GitLabTimeManager.ViewModel
         private TimeSpan LastSaveTime { get; set; }
 
 #if DEBUG
-        private TimeSpan SavePeriod { get; } = TimeSpan.FromMinutes(1);
+        private TimeSpan SavePeriod { get; } = TimeSpan.FromMinutes(2);
 #else
         private TimeSpan SavePeriod { get; } = TimeSpan.FromHours(2);
 #endif
@@ -142,10 +142,19 @@ namespace GitLabTimeManager.ViewModel
         {
             _timer = new DispatcherTimer(TimeSpan.FromSeconds(1), 
                 DispatcherPriority.Normal, 
-                (sender, args) => Time = Time.Add(TimeSpan.FromSeconds(1)), 
+                IncrementTimer, 
                 Application.Current.Dispatcher ?? throw new InvalidOperationException());
             _timer.Stop();
         }
+
+        private void IncrementTimer(object sender, EventArgs args)
+        {
+            Time = Time.Add(TimeSpan.FromSeconds(1));
+            if (TimeHelper.IsNightBreak)
+                PauseTime();
+        }
+
+       
 
         protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace GitLabTimeManager.Tools
+namespace GitLabTimeManager.Helpers
 {
     internal static class TimeHelper
     {
@@ -105,6 +105,17 @@ namespace GitLabTimeManager.Tools
             }
 
             return TimeSpan.FromHours((allDays - holidays) * HoursPerDay);
+        }
+
+        public static bool IsNightBreak
+        {
+            get
+            {
+                const int nightHour = 10;
+                var nightTime = DateTime.Today.AddHours(nightHour);
+
+                return DateTime.Now > nightTime;
+            }
         }
     }
 }

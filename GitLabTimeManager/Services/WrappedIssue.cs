@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using GitLabApiClient.Models.Issues.Responses;
+using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
@@ -35,6 +36,6 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public override string ToString() => $"{Issue.Iid}\t{Started}\t{Finished}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}";
+        public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{Started}\t{Finished}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}";
     }
 }

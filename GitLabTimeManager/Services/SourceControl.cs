@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Catel.Collections;
@@ -10,7 +11,7 @@ using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
-using GitLabTimeManager.Tools;
+using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
 {
@@ -138,7 +139,7 @@ namespace GitLabTimeManager.Services
 
         public async Task AddSpendAsync(Issue issue, TimeSpan timeSpan)
         {
-            if (timeSpan < TimeSpan.FromSeconds(10)) return;
+            if (timeSpan < TimeSpan.FromMinutes(5)) return;
             var request = new CreateIssueNoteRequest(timeSpan.ConvertSpent() + "\n" + "[]");
             var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id).ConfigureAwait(false);
@@ -247,13 +248,27 @@ namespace GitLabTimeManager.Services
             ClosedSpendBefore = WrappedIssues.Where(x => !IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
             OpenSpendInPeriod = WrappedIssues.Where(x => IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
             ClosedSpendInPeriod = WrappedIssues.Where(x => !IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
-         }
+
+            foreach (var wrappedIssue in WrappedIssues) Debug.WriteLine(wrappedIssue);
+        }
         /// <summary> Задача открыта и не находится на проверке </summary>
         private static bool IsOpen(Issue issue)
         {
             return issue.State == IssueState.Opened && 
                    !issue.Labels.Contains(RevisionLabel) &&
                    !issue.Labels.Contains(DistributiveLabel);
+        }
+
+        private static DateTime? FinishTime(Issue issue)
+        {
+            if (issue.ClosedAt != null)
+                return issue.ClosedAt;
+
+            if (issue.Labels.Contains(RevisionLabel) ||
+                issue.Labels.Contains(DistributiveLabel))
+                return issue.UpdatedAt;
+
+            return null;
         }
 
         private static ObservableCollection<WrappedIssue> ExtentIssues(IEnumerable<Issue> sourceIssues, IReadOnlyDictionary<Issue, IList<Note>> notes,
@@ -289,12 +304,12 @@ namespace GitLabTimeManager.Services
                     else
                         spendBefore += startSpend;
                 }
-
+                // TODO Calc closedAt
                 var extIssue = new WrappedIssue
                 {
                     Issue = issue,
                     Started = startDate,
-                    Finished = issue.ClosedAt,
+                    Finished = FinishTime(issue),
                     SpendIn = spendIn,
                     SpendBefore = spendBefore,
                     StartedIn = startedIn,
