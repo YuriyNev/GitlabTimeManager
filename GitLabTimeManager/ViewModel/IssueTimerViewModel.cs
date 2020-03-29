@@ -17,6 +17,13 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
         public static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
+        public static readonly PropertyData OverallTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.OverallTime);
+
+        public TimeSpan OverallTime
+        {
+            get => GetValue<TimeSpan>(OverallTimeProperty);
+            set => SetValue(OverallTimeProperty, value);
+        }
 
         public bool IsFullscreen
         {
@@ -48,6 +55,7 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(TimeProperty, value);
         }
 
+
         private ISourceControl SourceControl { get; }
         public WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
@@ -74,6 +82,7 @@ namespace GitLabTimeManager.ViewModel
             Description = Issue.Issue.Title;
             Time = LastSaveTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TotalTimeSpent);
             EstimateTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TimeEstimate);
+            CalculateOverallTime(Time, EstimateTime);
 
             StartTimeCommand = new Command(StartTime);
             PauseTimeCommand = new Command(PauseTime);
@@ -150,11 +159,13 @@ namespace GitLabTimeManager.ViewModel
         private void IncrementTimer(object sender, EventArgs args)
         {
             Time = Time.Add(TimeSpan.FromSeconds(1));
+            CalculateOverallTime(Time, EstimateTime);
             if (TimeHelper.IsNightBreak)
                 PauseTime();
         }
 
-       
+        private void CalculateOverallTime(TimeSpan time, TimeSpan estimateTime) => OverallTime =
+            time - estimateTime > TimeSpan.Zero ? time - estimateTime : TimeSpan.Zero;
 
         protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {
@@ -179,19 +190,30 @@ namespace GitLabTimeManager.ViewModel
             SourceControl.AddSpendAsync(Issue.Issue, timeSpan);
         }
 
-        private void StartIssue(WrappedIssue issue)
+        private async void StartIssue(WrappedIssue issue)
         {
-            SourceControl.StartIssueAsync(issue.Issue);
-        }
-        
-        private void PauseIssue(WrappedIssue issue)
-        {
-            SourceControl.PauseIssueAsync(issue.Issue);
+            var result = await SourceControl.StartIssueAsync(issue.Issue).ConfigureAwait(true);
+            if (result)
+                UpdateLabels();
         }
 
-        private void FinishIssue(WrappedIssue issue)
+        private void UpdateLabels()
         {
-            SourceControl.FinishIssueAsync(issue.Issue);
+            LabelProcessor.UpdateLabelsEx(Issue.LabelExes, Issue.Issue.Labels);
+        }
+
+        private async void PauseIssue(WrappedIssue issue)
+        {
+            var result = await SourceControl.PauseIssueAsync(issue.Issue).ConfigureAwait(true);
+            if (result)
+                UpdateLabels();
+        }
+
+        private async void FinishIssue(WrappedIssue issue)
+        {
+            var result = await SourceControl.FinishIssueAsync(issue.Issue).ConfigureAwait(true);
+            if (result)
+                UpdateLabels();
         }
     }
 }

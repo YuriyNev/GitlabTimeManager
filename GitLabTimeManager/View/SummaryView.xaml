@@ -31,6 +31,17 @@
                 </Grid>
             </Border>
         </DataTemplate>
+
+        <Style TargetType="wpf:PieSeries">
+            <Setter Property="StrokeThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource BlackColorBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="PushOut" Value="2"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="LabelPosition" Value="OutsideSlice"/>
+            <Setter Property="FontFamily" Value="{StaticResource ContentFontFamily}"/>
+            <Setter Property="Margin" Value="16 0 0 0"/>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -77,27 +88,36 @@
             </ItemsControl.ItemsPanel>
         </ItemsControl>
 
-        <wpf:PieChart Grid.Row="4" Grid.Column="0" 
-                      Series="{Binding SpendSeries, Mode=OneWay}"
-                      InnerRadius="45"
-                      LegendLocation="None"
-                      HoverPushOut="2"
-                      Margin="8 28"
-                      AnimationsSpeed="0:0:0.2">
+        <Grid Grid.Row="4" Grid.Column="0">
+            <wpf:PieChart Series="{Binding SpendSeries, Mode=OneWay}"
+                          InnerRadius="45"
+                          Margin="8 28"
+                          Hoverable="False"
+                          AnimationsSpeed="0:0:0.2">
+                <wpf:PieChart.AxisY>
+                    <wpf:Axis LabelFormatter="{Binding CeilFormatter}"></wpf:Axis>
+                </wpf:PieChart.AxisY>
+                <wpf:PieChart.DataTooltip>
+                    <wpf:DefaultTooltip IsWrapped="True"
+                                        ShowTitle="True"
+                                        ShowSeries="True" 
+                                        SelectionMode="OnlySender"
+                                        CornerRadius="5">
+                    </wpf:DefaultTooltip>
 
-            <wpf:PieChart.DataTooltip>
-                <wpf:DefaultTooltip IsWrapped="True"
-                                    ShowTitle="True"
-                                    ShowSeries="True" 
-                                    SelectionMode="OnlySender"
-                                    CornerRadius="5">
-                </wpf:DefaultTooltip>
-            </wpf:PieChart.DataTooltip>
-            <wpf:PieChart.ChartLegend>
-                <wpf:DefaultLegend BulletSize="12"
-                                   Foreground="DarkSlateGray" />
-            </wpf:PieChart.ChartLegend>
-        </wpf:PieChart>
+                </wpf:PieChart.DataTooltip>
+                <wpf:PieChart.ChartLegend>
+                    <wpf:DefaultLegend BulletSize="6"
+                                       FontSize="10"
+                                       Foreground="DarkSlateGray" 
+                                       Margin="0 0 0 0">
+                    </wpf:DefaultLegend>
+                </wpf:PieChart.ChartLegend>
+            </wpf:PieChart>
+
+        </Grid>
+        
+
         <wpf:Gauge Grid.Row="4" Grid.Column="1"
                    From="0" To="100"
                    Margin="8 28"

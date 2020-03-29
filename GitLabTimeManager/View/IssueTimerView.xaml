@@ -7,12 +7,12 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:liveCharts="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance viewModel:IssueTimerViewModel}">
-    <Grid>
-        
-        <Grid HorizontalAlignment="Center">
+    <Grid Margin="4">
+        <Grid HorizontalAlignment="Stretch">
             <Grid.Style>
                 <Style TargetType="{x:Type Grid}">
                     <Setter Property="VerticalAlignment" Value="Top"/>
@@ -29,6 +29,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
@@ -39,16 +40,45 @@
                 <TextBlock.Style>
                     <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Setter Property="FontSize" Value="36"/>
+                        <Setter Property="Foreground" Value="{StaticResource BlackColorBrush}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
                                 <Setter Property="FontSize" Value="50"/>
+                            </DataTrigger>
+                            
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock Grid.Row="1"
+                       Text="{Binding OverallTime, Mode=OneWay}"
+                       FontFamily="{StaticResource HeaderFontFamily}"
+                       TextAlignment="Center"
+                       FontWeight="ExtraBold">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <Setter Property="Foreground" Value="#FFFF5555"/>
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="Margin" Value="0 -4 0 0"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                                <Setter Property="Margin" Value="0 0 0 0"/>
+                                <Setter Property="FontSize" Value="24"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding OverallTime.TotalSeconds, Mode=OneWay, Converter={x:Static converters:Converter.TrueIfMoreDouble}, ConverterParameter=0}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding EstimateTime.TotalSeconds, Mode=OneWay, Converter={x:Static converters:Converter.TrueIfMoreDouble}, ConverterParameter=0}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
 
-            <Grid Grid.Row="1" HorizontalAlignment="Center" 
+            <Grid Grid.Row="2" HorizontalAlignment="Center" 
                   Margin="0 8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
@@ -68,7 +98,7 @@
                     </Button.Content>
                 </Button>
 
-                <Button Grid.Column="1" BorderThickness="0" Height="60" Width="60">
+                <Button Grid.Column="1" BorderThickness="0" Height="64" Width="64">
                     <Button.Style>
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource FlatCircleButton}">
                             <Setter Property="Padding" Value="4 0 0 0"/>
@@ -101,21 +131,17 @@
                                   Foreground="Transparent" 
                                   Uses360Mode="True"
                                   LabelsVisibility="Collapsed"
-                                  InnerRadius="26"
-                                  AnimationsSpeed="0:0:0.2" 
-                                  Margin="0 0 -1 0"
+                                  InnerRadius="28"
+                                  AnimationsSpeed="0:0:0.2"
                                   LabelFormatter="{x:Null}"
                                   IsHitTestVisible="False"
-                                  RenderTransformOrigin="0.50 0.50">
-                    <liveCharts:Gauge.RenderTransform>
-                        <RotateTransform Angle="90" />
-                    </liveCharts:Gauge.RenderTransform>
+                                  GaugeActiveFill="{StaticResource AccentBaseColorBrush}">
                 </liveCharts:Gauge>
 
                 
             </Grid>
 
-            <Button Grid.Row="2"
+            <Button Grid.Row="3"
                     Command="{Binding GoToBrowserCommand, Mode=OneWay}"
                     CommandParameter="{Binding Issue.Issue.WebUrl, Mode=OneWay}"
                     Style="{StaticResource ChromelessButtonStyle}"
@@ -127,13 +153,65 @@
                            Text="{Binding Description, Mode=OneWay}"/>
             </Button>
 
-            <TextBlock Grid.Row="3"
+            <TextBlock Grid.Row="4"
                        Text="{Binding EstimateTime, Mode=OneWay}"
                        FontSize="24"
                        FontFamily="{StaticResource HeaderFontFamily}"
                        Margin="8 0"
                        TextAlignment="Center"
                        FontWeight="Black"/>
+
+            <Grid Grid.Row="5"
+                  HorizontalAlignment="Center"
+                  Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Margin="4 16 4 0"
+                        BorderThickness="0 0 0 0"
+                        BorderBrush="{DynamicResource GrayBrush8}" >
+                    <Grid Margin="4 4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <iconPacks:PackIconMaterial Grid.Column="0" Kind="ClockOutline" Margin="0 0 4 0"
+                                                    Visibility="{Binding Issue.StartTime, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotEmpty}}"
+                                   Foreground="{DynamicResource AccentBaseColorBrush}"
+                                   Opacity="0.8"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Issue.StartTime, Mode=OneWay, StringFormat='dd.MM.yyyy'}"
+                                   FontSize="{DynamicResource NormalFontSize}"
+                                   Margin="0 -2 0 0"
+                                   Foreground="{DynamicResource GrayBrush1}"
+                                   TextAlignment="Left"/>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="2" Margin="4 16 4 0"
+                        BorderThickness="0 0 0 0"
+                        BorderBrush="{DynamicResource GrayBrush8}" >
+                    <Grid Margin="4 4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <iconPacks:PackIconMaterial Grid.Column="0" Kind="ClockOutline" Margin="0 0 4 0"
+                                                    Visibility="{Binding Issue.EndTime, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotEmpty}}"
+                                                    Foreground="{DynamicResource AccentBaseColorBrush}"
+                                                    Opacity="0.8"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Issue.EndTime, Mode=OneWay, StringFormat='dd.MM.yyyy'}"
+                                   FontSize="{DynamicResource NormalFontSize}"
+                                   Margin="0 -2 0 0"
+                                   Foreground="{DynamicResource GrayBrush1}"
+                                   TextAlignment="Left"/>
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            
         </Grid>
     </Grid>
 </UserControl>

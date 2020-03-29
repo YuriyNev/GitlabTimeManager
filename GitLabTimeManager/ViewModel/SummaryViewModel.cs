@@ -177,11 +177,13 @@ namespace GitLabTimeManager.ViewModel
         public ObservableCollection<StatsBlock> EarlyStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
 
         public static Func<double, string> Formatter => (x => x.ToString("F1"));
+        public static Func<double, string> CeilFormatter => (x => x.ToString("F0"));
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
         public Command ShowEarningsCommand { get; }
+
 
         public SummaryViewModel([NotNull] SuperParameter superParameter)
         {
@@ -272,29 +274,36 @@ namespace GitLabTimeManager.ViewModel
                 {
                     Values = new ChartValues<double> {Math.Round(ClosedSpendInPeriod, 1)},
                     Title = "Закрытые",
+                    DataLabels = IsShowLabel(ClosedSpendInPeriod),
                 },
                 new PieSeries
                 {
                     Values = new ChartValues<double> { Math.Round(OpenSpendInPeriod, 1)},
+                    DataLabels = IsShowLabel(OpenSpendInPeriod),
                     Title = "Открытые",
                 },
                 new PieSeries
                 {
                     Values = new ChartValues<double> { Math.Round(ClosedSpendBefore, 1)},
+                    DataLabels = IsShowLabel(ClosedSpendBefore),
                     Title = "Закрытые (старые)",
                 },
                 new PieSeries
                 {
                     Values = new ChartValues<double> { Math.Round(OpenSpendBefore, 1)},
+                    DataLabels = IsShowLabel(OpenSpendBefore),
                     Title = "Открытые (старые)",
                 },
                 new PieSeries
                 {
                     Values = new ChartValues<double> { Math.Round(remained, 1)},
+                    DataLabels = IsShowLabel(remained),
                     Fill = new SolidColorBrush(Colors.DarkGray),
                     Title = "Пропущенные часы",
                 },
             };
         }
+
+        private static bool IsShowLabel(double value) => value > 4;
     }
 }

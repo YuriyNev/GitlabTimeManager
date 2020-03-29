@@ -12,10 +12,85 @@
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
+             xmlns:helpers="clr-namespace:GitLabTimeManager.Helpers"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              d:DataContext="{d:DesignInstance viewModel:IssueListViewModel}">
     <UserControl.Resources>
+        <ItemsPanelTemplate x:Key="VerticalOrientationTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition>
+                        <RowDefinition.Style>
+                            <Style TargetType="{x:Type RowDefinition}">
+                                <Setter Property="Height" Value="*"/>
+                                <Setter Property="MinHeight" Value="100"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
+                                        <Setter Property="Height" Value="*"/>
+                                        <Setter Property="MinHeight" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </RowDefinition.Style>
+                    </RowDefinition>
+
+                    <RowDefinition>
+                        <RowDefinition.Style>
+                            <Style TargetType="{x:Type RowDefinition}">
+                                <Setter Property="Height" Value="*"/>
+                                <Setter Property="MinHeight" Value="100"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
+                                        <Setter Property="Height" Value="0*"/>
+                                        <Setter Property="MinHeight" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </RowDefinition.Style>
+                    </RowDefinition>
+
+                </Grid.RowDefinitions>
+            </Grid>
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="HorizontalOrientationTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition>
+                        <ColumnDefinition.Style>
+                            <Style TargetType="{x:Type ColumnDefinition}">
+                                <Setter Property="Width" Value="*"/>
+                                <Setter Property="MaxWidth" Value="900"/>
+                                <Setter Property="MinWidth" Value="100"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
+                                        <Setter Property="Width" Value="0*"/>
+                                        <Setter Property="MinWidth" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ColumnDefinition.Style>
+                    </ColumnDefinition>
+                    <ColumnDefinition>
+                        <ColumnDefinition.Style>
+                            <Style TargetType="{x:Type ColumnDefinition}">
+                                <Setter Property="Width" Value="*"/>
+                                <Setter Property="MinWidth" Value="100"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
+                                        <Setter Property="Width" Value="*"/>
+                                        <Setter Property="MaxWidth" Value="1000"/>
+                                        <Setter Property="MinWidth" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ColumnDefinition.Style>
+                    </ColumnDefinition>
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </ItemsPanelTemplate>
+
+
         <DataTemplate DataType="{x:Type viewModel:IssueTimerViewModel}">
             <view:IssueTimerView/>
         </DataTemplate>
@@ -63,16 +138,25 @@
             </Style.Triggers>
         </Style>
 
+        <DataTemplate x:Key="LabelItemTemplate" DataType="{x:Type helpers:LabelEx}">
+            <Grid Margin="4 2">
+                <Border CornerRadius="9" Background="{Binding Color, Converter={x:Static converters:Converter.ColorToBrush}, Mode=OneWay}">
+                    <TextBlock Text="{Binding Name, Mode=OneWay}" Margin="8 2"
+                               FontSize="{StaticResource FloatingWatermarkFontSize}"
+                               Foreground="{DynamicResource MetroDataGrid.HighlightTextBrush}"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
         <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services:WrappedIssue}">
            <Border BorderThickness="0 0 0 1"
                    BorderBrush="#99CCCCCC"
                    Cursor="Hand">
                <Border.Style>
                    <Style TargetType="{x:Type Border}">
-                       <Setter Property="Background" Value="#44CCCCCC"/>
+                       <Setter Property="Opacity" Value="1"/>
                        <Style.Triggers>
-                           <DataTrigger Binding="{Binding Finished, Mode=OneWay}" Value="{x:Null}">
-                               <Setter Property="Background" Value="Transparent"/>
+                           <DataTrigger Binding="{Binding Issue.State, Mode=OneWay}" Value="Closed">
+                               <Setter Property="Opacity" Value="0.5"/>
                            </DataTrigger>
                        </Style.Triggers>
                    </Style>
@@ -85,112 +169,123 @@
                        <ColumnDefinition Width="Auto" SharedSizeGroup="Issue"/>
                        <ColumnDefinition Width="Auto" SharedSizeGroup="Progress" MaxWidth="50"/>
                        <ColumnDefinition Width="*" />
+                       <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
                    </Grid.ColumnDefinitions>
-                   
 
                    <TextBlock Grid.Column="0" Margin="4 0 8 0"
-                               VerticalAlignment="Center">
-                        <Hyperlink NavigateUri="{Binding Issue.WebUrl, Mode=OneWay}">
-                            <i:Interaction.Behaviors>
-                                <behavior:HyperLinkBehavior />
-                            </i:Interaction.Behaviors>
+                              VerticalAlignment="Center">
+                       <Hyperlink NavigateUri="{Binding Issue.WebUrl, Mode=OneWay}">
+                           <i:Interaction.Behaviors>
+                               <behavior:HyperLinkBehavior />
+                           </i:Interaction.Behaviors>
 
-                            <TextBlock Text="{Binding Issue.Iid, Mode=OneWay}"/>
-                        </Hyperlink>
-                    </TextBlock>
+                           <TextBlock Text="{Binding Issue.Iid, Mode=OneWay}" />
+                       </Hyperlink>
+                   </TextBlock>
 
-                    <mah:MetroProgressBar Grid.Column="1"
-                                          Background="LightGray"
-                                          Foreground="{StaticResource AccentColorBrush}"
-                                          Opacity="0.8" 
-                                          Maximum="{Binding Issue.TimeStats.TimeEstimate, Mode=OneWay}"
-                                          Value="{Binding Issue.TimeStats.TotalTimeSpent, Mode=OneWay}"
-                                          Height="2" 
-                                          VerticalAlignment="Bottom">
-                        <mah:MetroProgressBar.Style>
-                            <Style TargetType="{x:Type mah:MetroProgressBar}" BasedOn="{StaticResource {x:Type mah:MetroProgressBar}}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Issue.TimeStats.TotalTimeSpent, Mode=OneWay}" Value="{x:Null}">
-                                        <Setter Property="Foreground" Value="#666"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Issue.TimeStats.TimeEstimate, Mode=OneWay}" Value="{x:Null}">
-                                        <Setter Property="Foreground" Value="#666"/>
-                                    </DataTrigger>
+                   <mah:MetroProgressBar Grid.Column="1"
+                                         Background="LightGray"
+                                         Opacity="0.8"
+                                         Maximum="{Binding Issue.TimeStats.TimeEstimate, Mode=OneWay}"
+                                         Value="{Binding Issue.TimeStats.TotalTimeSpent, Mode=OneWay}"
+                                         Height="2"
+                                         Width="30"
+                                         VerticalAlignment="Bottom">
+                       <mah:MetroProgressBar.Style>
+                           <Style TargetType="{x:Type mah:MetroProgressBar}">
+                               <Setter Property="Foreground" Value="{StaticResource AccentColorBrush}" />
+                               <Style.Triggers>
+                                   <DataTrigger Value="True">
+                                       <DataTrigger.Binding>
+                                           <MultiBinding Converter="{x:Static converters:MultiConverter.TrueIfMoreDouble}">
+                                               <Binding Path="Issue.TimeStats.TotalTimeSpent" Mode="OneWay"/>
+                                               <Binding Path="Issue.TimeStats.TimeEstimate" Mode="OneWay"/>
+                                            </MultiBinding>
+                                       </DataTrigger.Binding>
+                                       <Setter Property="Foreground" Value="#CC6666" />
+                                   </DataTrigger>
+
+                                   <DataTrigger Binding="{Binding Issue.TimeStats.TotalTimeSpent, Mode=OneWay}" Value="0">
+                                       <Setter Property="Foreground" Value="#22999999" />
+                                   </DataTrigger>
+                                   <DataTrigger Binding="{Binding Issue.TimeStats.TimeEstimate, Mode=OneWay}" Value="0">
+                                       <Setter Property="Foreground" Value="#22999999" />
+                                   </DataTrigger>
                                 </Style.Triggers>
-                            </Style>
-                        </mah:MetroProgressBar.Style>
-                    </mah:MetroProgressBar>
+                           </Style>
+                       </mah:MetroProgressBar.Style>
+                   </mah:MetroProgressBar>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" 
-                                HorizontalAlignment="Center" Margin="4 0 0 0">
-                        <TextBlock Text="{Binding Spend, Mode=OneWay, StringFormat={}{0:F0}}"
-                                   FontWeight="Black" Margin="0 0 4 0"
-                                   Style="{StaticResource TextBlockStyle}"/>
-                        <TextBlock Text="/" Margin="0 0 4 0"/>
-                        <TextBlock Text="{Binding Estimate, Mode=OneWay, StringFormat={}{0:F0}}" Margin="0 0 4 0"
-                                   Style="{StaticResource TextBlockStyle}"/>
-                    </StackPanel>
-                    
-                    <TextBlock Grid.Column="2"
-                               Text="{Binding Issue.Title, Mode=OneWay}"
-                               Style="{StaticResource TextBlockStyle}"
-                               IsHyphenationEnabled="True"
-                               VerticalAlignment="Center"
-                               TextAlignment="Left"
-                               TextWrapping="Wrap"
-                               Margin="4 0"/>
-                
-            </Grid>
+                   <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                               HorizontalAlignment="Center" Margin="4 0 0 0">
+                       <TextBlock Text="{Binding Spend, Mode=OneWay, StringFormat={}{0:F0}}"
+                                  FontWeight="Black" Margin="0 0 4 0"
+                                  Style="{StaticResource TextBlockStyle}" />
+                       <TextBlock Text="/" Margin="0 0 4 0" />
+                       <TextBlock Text="{Binding Estimate, Mode=OneWay, StringFormat={}{0:F0}}" Margin="0 0 4 0"
+                                  Style="{StaticResource TextBlockStyle}" />
+                   </StackPanel>
+
+                   <Grid Grid.Column="2">
+                       <Grid.RowDefinitions>
+                           <RowDefinition Height="35"/>
+                           <RowDefinition Height="Auto"/>
+                       </Grid.RowDefinitions>
+                       <TextBlock Grid.Row="0"
+                                  Text="{Binding Issue.Title, Mode=OneWay}"
+                                  Style="{StaticResource TextBlockStyle}"
+                                  IsHyphenationEnabled="True"
+                                  VerticalAlignment="Top"
+                                  TextAlignment="Left"
+                                  TextWrapping="Wrap"
+                                  Margin="4 0" />
+
+                       <ItemsControl Grid.Row="1"
+                                     ItemsSource="{Binding LabelExes, Mode=OneWay}"
+                                     ItemTemplate="{StaticResource LabelItemTemplate}"
+                                     VerticalAlignment="Bottom"
+                                     HorizontalAlignment="Right">
+                           <ItemsControl.ItemsPanel>
+                               <ItemsPanelTemplate>
+                                   <WrapPanel/>
+                               </ItemsPanelTemplate>
+                           </ItemsControl.ItemsPanel>
+                       </ItemsControl>
+                    </Grid>
+               </Grid>
             </Border>
         </DataTemplate>
     </UserControl.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="Auto"/>
-                        <Setter Property="MinHeight" Value="100"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
-                                <Setter Property="Height" Value="*"/>
-                                <Setter Property="MinHeight" Value="0"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
+        
+        <ItemsControl>
+            <ItemsControl.Style>
+                <Style TargetType="{x:Type ItemsControl}">
+                    <Setter Property="ItemsPanel" Value="{StaticResource VerticalOrientationTemplate}"/>
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=ActualWidth, RelativeSource={RelativeSource Self}, Converter={x:Static converters:Converter.TrueIfMoreDouble}, ConverterParameter=500, Mode=OneWay}" Value="True">
+                            <Setter Property="ItemsPanel" Value="{StaticResource HorizontalOrientationTemplate}" />
+                            <Setter Property="VerticalAlignment" Value="Stretch"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ItemsControl.Style>
 
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="*"/>
-                        <Setter Property="MinHeight" Value="100"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
-                                <Setter Property="Height" Value="0*"/>
-                                <Setter Property="MinHeight" Value="0"/>
+            <ContentControl Grid.Row="0" Grid.Column="1" 
+                            Content="{Binding IssueTimerVm, Mode=OneWay}"
+                            Margin="4"/>
 
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
-
-        </Grid.RowDefinitions>
-
-        <ContentControl Grid.Row="0" Content="{Binding IssueTimerVm, Mode=OneWay}"
-                        Margin="4"/>
-
-        <ListBox Grid.Row="1"
-                 ItemsSource="{Binding WrappedIssues, Mode=OneWay}"
-                 ItemTemplate="{StaticResource IssueTemplate}"
-                 ItemContainerStyle="{StaticResource IssueItemStyle}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 SelectionMode="Single"
-                 SelectedItem="{Binding SelectedIssue, Mode=TwoWay}"
-                 IsEnabled="{Binding IssueTimerVm.IsStarted, Mode=OneWay, Converter={catel:BooleanToOppositeBooleanConverter}}"
-                 Grid.IsSharedSizeScope="True"/>
-
+            <ListBox Grid.Row="1" Grid.Column="0"
+                     ItemsSource="{Binding WrappedIssues, Mode=OneWay}"
+                     ItemTemplate="{StaticResource IssueTemplate}"
+                     ItemContainerStyle="{StaticResource IssueItemStyle}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     SelectionMode="Single"
+                     SelectedItem="{Binding SelectedIssue, Mode=TwoWay}"
+                     IsEnabled="{Binding IssueTimerVm.IsStarted, Mode=OneWay, Converter={catel:BooleanToOppositeBooleanConverter}}"
+                     Grid.IsSharedSizeScope="True"/>
+        </ItemsControl>
     </Grid>
 </UserControl>

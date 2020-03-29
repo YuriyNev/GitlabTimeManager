@@ -32,7 +32,7 @@
         <behavior:CancelClosingWindowBehavior CanCloseWindow="False" 
                                               ShowOnTaskbar="{Binding ShowOnTaskbar, Mode=TwoWay}"/>
     </i:Interaction.Behaviors>
-    
+
     <Grid>
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">
@@ -46,6 +46,22 @@
         </Grid.Style>
         <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
                                      Background="{x:Null}">
+            <mah:MetroAnimatedTabControl.Style>
+                <Style TargetType="{x:Type mah:MetroAnimatedTabControl}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsFirstLoading, Mode=OneWay}" Value="False">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="0.0" To="1.0" Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </mah:MetroAnimatedTabControl.Style>
             <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                      Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                 <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 

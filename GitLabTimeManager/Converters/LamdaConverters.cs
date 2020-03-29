@@ -10,9 +10,13 @@ using System.Windows.Data;
 using Catel.MVVM.Converters;
 using LambdaConverters;
 using IValueConverter = System.Windows.Data.IValueConverter;
+using System.Windows.Media;
+using GitLabTimeManager.Helpers;
+
 
 namespace GitLabTimeManager.Converters
 {
+
     public static class Converter
     {
         public static readonly IValueConverter TextIfNotZero =
@@ -37,12 +41,12 @@ namespace GitLabTimeManager.Converters
             ValueConverter.Create<string, bool>(e => string.IsNullOrEmpty(e.Value));
 
         public static readonly IValueConverter VisibleIfNotEmpty =
-            ValueConverter.Create<string, Visibility>(e =>
-                string.IsNullOrEmpty(e.Value) ? Visibility.Collapsed : Visibility.Visible);
+            ValueConverter.Create<string, Visibility>(e => string.IsNullOrEmpty(e.Value) ? Visibility.Collapsed : Visibility.Visible);
 
         public static readonly IValueConverter VisibleIfEmpty =
-            ValueConverter.Create<string, Visibility>(e =>
-                !string.IsNullOrEmpty(e.Value) ? Visibility.Collapsed : Visibility.Visible);
+            ValueConverter.Create<string, Visibility>(e => !string.IsNullOrEmpty(e.Value) ? Visibility.Collapsed : Visibility.Visible);
+
+        public static readonly IValueConverter TrueIfEmptyOrWhiteSpace = ValueConverter.Create<string, bool>(e => string.IsNullOrWhiteSpace(e.Value));
 
         public static readonly IValueConverter VisibleIfFalse =
             ValueConverter.Create<bool, Visibility>(e => e.Value ? Visibility.Collapsed : Visibility.Visible);
@@ -67,6 +71,27 @@ namespace GitLabTimeManager.Converters
                 e => new GridLength(e.Value),
                 e => e.Value.Value);
 
+        public static readonly IValueConverter IdealForegroundBrush =
+            ValueConverter.Create<Brush, Brush>(x =>
+            {
+                if (x.Value is SolidColorBrush solid)
+                {
+                    double brightness = ColorHelper.GetBrightness(solid.Color);
+                    return ColorHelper.GetIdealBrush(brightness);
+                }
+
+                return Brushes.Magenta;
+            }, errorStrategy: ConverterErrorStrategy.UseFallbackOrDefaultValue);
+
+        public static readonly IValueConverter UColorToBrush =
+            ValueConverter.Create<uint, SolidColorBrush>(e => ColorHelper.SolidColorBrush(e.Value));
+        
+        public static readonly IValueConverter ColorToBrush =
+            ValueConverter.Create<Color, SolidColorBrush>(e => ColorHelper.ColorToBrush(e.Value));
+
+        public static readonly IValueConverter UintToColor =
+            ValueConverter.Create<uint, Color>(e => ColorHelper.UIntToColor(e.Value));
+
         public static readonly IValueConverter IsNotNull =
             ValueConverter.Create<object, bool>(e => e.Value != null);
 
@@ -80,14 +105,13 @@ namespace GitLabTimeManager.Converters
             ValueConverter.Create<int?, string>(i => i.Value?.ToString(i.Culture) ?? string.Empty, ConvertBackFunction);
 
         public static readonly IValueConverter StringsToLine =
-            ValueConverter.Create<IReadOnlyCollection<string>, string>(i =>
-                i.Value.Aggregate(new StringBuilder(), (builder, s) => builder.Append(s).Append(", ")).ToString()
-                    .TrimEnd(' ', ','));
+            ValueConverter.Create<IReadOnlyCollection<string>, string>(i => i.Value.Aggregate(new StringBuilder(), (builder, s) => builder.Append(s).Append(", ")).ToString().TrimEnd(' ', ','));
+
 
         private static int? ConvertBackFunction(ValueConverterArgs<string> s)
         {
             return string.IsNullOrEmpty(s.Value) || !int.TryParse(s.Value, NumberStyles.Any, s.Culture, out int i)
-                ? (int?) null
+                ? (int?)null
                 : i;
         }
     }
@@ -95,7 +119,10 @@ namespace GitLabTimeManager.Converters
     public static class MultiConverter
     {
         public static readonly IMultiValueConverter Calculate =
-            MultiValueConverter.Create<int, int, char>(CalculateValues);
+            MultiValueConverter.Create<int, int, char>(CalculateValues); 
+        
+        public static readonly IMultiValueConverter TrueIfMoreDouble =
+            MultiValueConverter.Create<double, bool>(CompareDouble);
 
         public static readonly IMultiValueConverter VisibleIfAllTrue =
             MultiValueConverter.Create<bool, Visibility>(e => e.Values.All(x => x) ? Visibility.Visible : Visibility.Collapsed);
@@ -153,7 +180,39 @@ namespace GitLabTimeManager.Converters
                 default: return x;
             }
         }
+
+        private static bool CompareDouble(MultiValueConverterArgs<double> args)
+        {
+            if (args.Values.Count < 2)
+                return false;
+            var x = args.Values[0];
+            var y = args.Values[1];
+            return x > y;
+        }
+
+
     }
+
+    //public class TrueIfMoreMulti: IMultiValueConverter
+    //{
+    //    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        if (values.Length < 2)
+    //            return false;
+
+    //        if (values[0] is double x && values[1] is double y)
+    //        {
+    //            return x > y;
+    //        }
+
+    //        return false;
+    //    }
+
+    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 
     internal static class Selector
     {

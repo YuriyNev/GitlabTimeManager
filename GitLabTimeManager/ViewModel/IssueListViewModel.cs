@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using Catel.Collections;
 using Catel.MVVM;
 using JetBrains.Annotations;
@@ -54,23 +54,30 @@ namespace GitLabTimeManager.ViewModel
         }
 
         private ISourceControl SourceControl { get; }
+        public CollectionView IssueView { get; set; }
 
         public IssueListViewModel([NotNull] SuperParameter superParameter)
         {
             if (superParameter == null) throw new ArgumentNullException(nameof(superParameter));
             SourceControl = superParameter.SourceControl ?? throw new ArgumentNullException(nameof(superParameter.SourceControl));
+
+            WrappedIssues = new ObservableCollection<WrappedIssue> ();
+            
         }
 
         public void UpdateData(GitResponse data)
         {
             if (SelectedIssue != null)
             {
-                WrappedIssues = new ObservableCollection<WrappedIssue> {SelectedIssue};
+                WrappedIssues = new ObservableCollection<WrappedIssue> { SelectedIssue };
                 WrappedIssues.AddRange(data.WrappedIssues.Where(x => x.Issue.Iid != SelectedIssue.Issue.Iid));
             }
             else
             {
                 WrappedIssues = data.WrappedIssues;
+                //IssueView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
+                //IssueView.SortDescriptions.Add(
+                //    new SortDescription(nameof(WrappedIssue.StartTime), ListSortDirection.Descending));
             }
 
             if (SelectedIssue == null)
