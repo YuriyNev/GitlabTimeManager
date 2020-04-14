@@ -111,7 +111,7 @@ namespace GitLabTimeManager.ViewModel
 
                 SummaryVm.UpdateData(data);
                 IssueListVm.UpdateData(data);
-                GanttVm.UpdateData(data);
+                //GanttVm.UpdateData(data);
 
                 LoadingFinished();
 #if DEBUG
