@@ -43,6 +43,20 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData ShowingEarningProperty = RegisterProperty<SummaryViewModel, bool>(x => x.ShowingEarning);
         public static readonly PropertyData EarningProperty = RegisterProperty<SummaryViewModel, double>(x => x.Earning);
         public static readonly PropertyData AllClosedEstimatesProperty = RegisterProperty<SummaryViewModel, double>(x => x.AllClosedEstimates);
+        public static readonly PropertyData ActualDesiredEstimateProperty = RegisterProperty<SummaryViewModel, double>(x => x.ActualDesiredEstimate);
+        public static readonly PropertyData DesiredEstimateProperty = RegisterProperty<SummaryViewModel, double>(x => x.DesiredEstimate);
+
+        public double DesiredEstimate
+        {
+            get => GetValue<double>(DesiredEstimateProperty);
+            set => SetValue(DesiredEstimateProperty, value);
+        }
+        
+        public double ActualDesiredEstimate
+        {
+            get => GetValue<double>(ActualDesiredEstimateProperty);
+            set => SetValue(ActualDesiredEstimateProperty, value);
+        }
 
         public double AllClosedEstimates
         {
@@ -154,30 +168,28 @@ namespace GitLabTimeManager.ViewModel
 
         public SeriesCollection SpendSeries
         {
-            get { return (SeriesCollection) GetValue(SpendInPeriodSeriesProperty); }
-            set { SetValue(SpendInPeriodSeriesProperty, value); }
+            get => (SeriesCollection) GetValue(SpendInPeriodSeriesProperty);
+            set => SetValue(SpendInPeriodSeriesProperty, value);
         }
 
         public double ClosedSpendInPeriod
         {
-            get { return (double) GetValue(ClosedSpendInPeriodProperty); }
-            set { SetValue(ClosedSpendInPeriodProperty, value); }
+            get => (double) GetValue(ClosedSpendInPeriodProperty);
+            set => SetValue(ClosedSpendInPeriodProperty, value);
         }
 
         public double OpenSpendInPeriod
         {
-            get { return (double) GetValue(OpenSpendInPeriodProperty); }
-            set { SetValue(OpenSpendInPeriodProperty, value); }
+            get => (double) GetValue(OpenSpendInPeriodProperty);
+            set => SetValue(OpenSpendInPeriodProperty, value);
         }
-
-
         #endregion
 
         public ObservableCollection<StatsBlock> OnlyMonthStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
         public ObservableCollection<StatsBlock> EarlyStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
 
-        public static Func<double, string> Formatter => (x => x.ToString("F1"));
-        public static Func<double, string> CeilFormatter => (x => x.ToString("F0"));
+        public static Func<double, string> Formatter => x => x.ToString("F1");
+        public static Func<double, string> CeilFormatter => x => x.ToString("F0");
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -196,7 +208,7 @@ namespace GitLabTimeManager.ViewModel
             ShowEarningsCommand = new Command(() => ShowingEarning = !ShowingEarning, () => true);
         }
 
-        public void UpdateData(GitResponse data)
+        public async void UpdateData(GitResponse data)
         {
             StartDate = data.StartDate;
             EndDate = data.EndDate;
@@ -224,8 +236,16 @@ namespace GitLabTimeManager.ViewModel
             TotalSpendsStartedBefore = OpenSpendsStartedBefore + ClosedSpendsStartedBefore;
             TotalEstimatesStartedBefore = OpenEstimatesStartedBefore + ClosedEstimatesStartedBefore;
 
-            AllClosedEstimates = ClosedEstimatesStartedInPeriod + ClosedEstimatesStartedBefore;
+            AllClosedEstimates = Math.Round(ClosedEstimatesStartedInPeriod, 1);
+
             var moneyCalculator = new MoneyCalculator();
+
+            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(StartDate, DateTime.Today).ConfigureAwait(true)).TotalHours;
+            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(StartDate, EndDate).ConfigureAwait(true)).TotalHours;
+            ActualDesiredEstimate = workingCurrentHours / workingTotalHours * moneyCalculator.DesiredEstimate;
+            DesiredEstimate = moneyCalculator.DesiredEstimate;
+            
+
             Earning = moneyCalculator.Calculate(TimeSpan.FromHours(AllClosedEstimates));
 
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые задачи", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Xml;
+using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
 {
@@ -17,7 +19,7 @@ namespace GitLabTimeManager.Services
 
         public async Task<Dictionary<DateTime, TimeSpan>> GetHolidaysAsync(DateTime from, DateTime to)
         {
-            // If file don''t exist
+            // If file don't exist
             if (!CalendarIsExist(LocalPath))
             {
                 var downloaded = await DownloadFileAsync(RemotePath, LocalPath).ConfigureAwait(true);
@@ -40,6 +42,22 @@ namespace GitLabTimeManager.Services
                 return null;
 
             return TryParse(doc);
+        }
+
+        public async Task<TimeSpan> GetWorkingTimeAsync(DateTime from, DateTime to)
+        {
+            if (from > to)
+                throw new ArgumentOutOfRangeException();
+
+            var workTime = TimeHelper.GetWeekdaysTime(from, to).TotalHours;
+
+            var holidays = await GetHolidaysAsync(from, to).ConfigureAwait(true);
+            var holidayTime = holidays?.Where(x => x.Key > from && x.Key <= to).Sum(x => x.Value.TotalHours) ?? 0;
+
+            workTime -= holidayTime;
+            if (workTime < 0) workTime = 0;
+
+            return TimeSpan.FromHours(workTime);
         }
 
         private static async Task<bool> DownloadFileAsync(string remotePath, string localPath)
@@ -184,6 +202,7 @@ namespace GitLabTimeManager.Services
     public interface ICalendar
     {
         Task<Dictionary<DateTime, TimeSpan>> GetHolidaysAsync(DateTime from, DateTime to);
+        Task<TimeSpan> GetWorkingTimeAsync(DateTime from, DateTime to);
     }
 
 }

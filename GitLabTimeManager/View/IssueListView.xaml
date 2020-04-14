@@ -23,8 +23,8 @@
                     <RowDefinition>
                         <RowDefinition.Style>
                             <Style TargetType="{x:Type RowDefinition}">
-                                <Setter Property="Height" Value="*"/>
-                                <Setter Property="MinHeight" Value="100"/>
+                                <Setter Property="Height" Value="Auto"/>
+                                <Setter Property="MinHeight" Value="270"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
                                         <Setter Property="Height" Value="*"/>
@@ -278,10 +278,12 @@
                             Margin="4"/>
 
             <ListBox Grid.Row="1" Grid.Column="0"
-                     ItemsSource="{Binding WrappedIssues, Mode=OneWay}"
+                     ItemsSource="{Binding IssueCollectionView, Mode=OneWay}"
                      ItemTemplate="{StaticResource IssueTemplate}"
                      ItemContainerStyle="{StaticResource IssueItemStyle}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.CanContentScroll="False"
+                     ScrollViewer.PanningMode="VerticalOnly"
                      SelectionMode="Single"
                      SelectedItem="{Binding SelectedIssue, Mode=TwoWay}"
                      IsEnabled="{Binding IssueTimerVm.IsStarted, Mode=OneWay, Converter={catel:BooleanToOppositeBooleanConverter}}"

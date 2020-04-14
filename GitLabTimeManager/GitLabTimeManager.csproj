@@ -247,7 +247,6 @@
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Converters\LamdaConverters.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
-    <Compile Include="Helpers\HolidaysHelper.cs" />
     <Compile Include="Helpers\LabelProcessor.cs" />
     <Compile Include="Helpers\TaskHelper.cs" />
     <Compile Include="Helpers\UriNavigateHelper.cs" />
@@ -259,11 +258,15 @@
     <Compile Include="Utilities\NotifyObject.cs" />
     <Compile Include="Helpers\TimeHelper.cs" />
     <Compile Include="Utilities\DetailedIssueTime.cs" />
+    <Compile Include="ViewModel\GanttViewModel.cs" />
     <Compile Include="ViewModel\IssueTimerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\IssueListViewModel.cs" />
     <Compile Include="ViewModel\SummaryViewModel.cs" />
     <Compile Include="ViewModel\TrayViewModel.cs" />
+    <Compile Include="View\GanttView.xaml.cs">
+      <DependentUpon>GanttView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\IssueListView.xaml.cs">
       <DependentUpon>IssueListView.xaml</DependentUpon>
     </Compile>
@@ -293,7 +296,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\TinyScrollBarStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resources\TrayIconResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\GanttView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

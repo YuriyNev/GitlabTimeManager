@@ -29,6 +29,7 @@
                 <ResourceDictionary Source="Resources/BaseStyles.xaml"/>
 
                 <ResourceDictionary Source="Resources/TrayIconResources.xaml"/>
+                <ResourceDictionary Source="Resources/TinyScrollBarStyle.xaml"/>
 
 
             </ResourceDictionary.MergedDictionaries>

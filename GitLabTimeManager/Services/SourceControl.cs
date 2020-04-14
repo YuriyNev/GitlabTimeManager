@@ -28,9 +28,20 @@ namespace GitLabTimeManager.Services
     internal class SourceControl : ISourceControl
     {
 #if DEBUG
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
-        private const string Token = "KajKr2cVJ4amosry9p4v";
-        private const string Uri = "https://gitlab.com";
+        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
+        //private const string Token = "KajKr2cVJ4amosry9p4v";
+        //private const string Uri = "https://gitlab.com";
+
+        private static int ClientDominationId = 14;
+        private static int AnalyticsServerId = 16;
+        
+
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int>
+        {
+            ClientDominationId, AnalyticsServerId
+        };
+        private const string Token = "gTUPn2KdhEFUMR3oQL81";
+        private const string Uri = "http://gitlab.domination";
 #else
         private static int ClientDominationId = 14;
         private static int AnalyticsServerId = 16;
@@ -39,9 +50,14 @@ namespace GitLabTimeManager.Services
         {
             ClientDominationId, AnalyticsServerId
         };
-        private const string Token = "xgNy_ZRyTkBTY8o1UyP6";
+        private const string Token = "gTUPn2KdhEFUMR3oQL81";
         private const string Uri = "http://gitlab.domination";
 #endif
+        // dont calc
+        private static readonly IReadOnlyList<LabelEx> ExcludeLabels = new List<LabelEx>
+        {
+            LabelsCollection.ProjectControlLabel
+        };
 
         private static DateTime Today => DateTime.Today;
         private static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
@@ -171,9 +187,6 @@ namespace GitLabTimeManager.Services
 
         public async Task<bool> FinishIssueAsync(Issue issue)
         {
-            if (LabelProcessor.IsFinished(issue.Labels))
-                return true;
-
             LabelProcessor.FinishIssue(issue.Labels);
 
             var request = new UpdateIssueRequest
@@ -195,7 +208,7 @@ namespace GitLabTimeManager.Services
             WrappedIssues = ExtentIssues(AllIssues, AllNotes, MonthStart, MonthEnd);
 
             // Most need issues
-            // in month
+            // started in month
             OpenEstimatesStartedInPeriod = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
@@ -204,7 +217,7 @@ namespace GitLabTimeManager.Services
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd) &&
                                 FinishedInPeriod(issue, MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-            
+
             OpenSpendsStartedInPeriod = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
@@ -214,7 +227,7 @@ namespace GitLabTimeManager.Services
                                 FinishedInPeriod(issue, MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
             
-            // before
+            // started before this month
             OpenEstimatesStartedBefore = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
@@ -222,6 +235,8 @@ namespace GitLabTimeManager.Services
             ClosedEstimatesStartedBefore = closedIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+            foreach (var wrappedIssue in closedIssues) Debug.WriteLine($"{wrappedIssue.Iid} {wrappedIssue.TimeStats.HumanTimeEstimate}");
+
 
             OpenSpendsStartedBefore = openIssues
                 .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
@@ -240,9 +255,9 @@ namespace GitLabTimeManager.Services
 
             foreach (var wrappedIssue in WrappedIssues) Debug.WriteLine(wrappedIssue);
         }
-        
+
         /// <summary> Задача открыта и не находится на проверке </summary>
-        private static bool IsOpen(Issue issue) => issue.State == IssueState.Opened && !LabelProcessor.IsFinished(issue.Labels);
+        private static bool IsOpen(Issue issue) => issue.State == IssueState.Opened;
 
         /// <summary> Задача условно закрыта</summary>
         private static bool IsClosed(Issue issue) => !IsOpen(issue);
@@ -251,9 +266,6 @@ namespace GitLabTimeManager.Services
         {
             if (issue.ClosedAt != null)
                 return issue.ClosedAt;
-
-            if (LabelProcessor.IsFinished(issue.Labels))
-                return issue.UpdatedAt;
 
             return null;
         }
@@ -367,14 +379,13 @@ namespace GitLabTimeManager.Services
 
         private static bool StartedInPeriod(IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
         {
-            return notes.Any(x => x.CreatedAt > startTime && x.CreatedAt < endTime);
+            return !notes.Any(x => x.CreatedAt < startTime);
         }
 
         private static bool FinishedInPeriod(Issue issue, DateTime startTime, DateTime endTime)
         {
             return issue.ClosedAt != null && issue.ClosedAt > startTime 
-                                          && issue.ClosedAt <  endTime 
-                   || LabelProcessor.IsFinished(issue.Labels);
+                                          && issue.ClosedAt <  endTime;
         }
     }
 

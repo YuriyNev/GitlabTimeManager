@@ -11,8 +11,9 @@ namespace GitLabTimeManager.Helpers
         internal const string ToDoLabel = "* Можно выполнять";
         internal const string DoingLabel = "* В работе";
         internal const string DistributiveLabel = "* В дистрибутиве";
-
         internal const string RevisionLabel = "* Ревизия";
+
+        internal const string ProjectControlLabel = "Проектное управление";
             //66 139 20
             //00 51 204
             //209 0 105
@@ -35,12 +36,6 @@ namespace GitLabTimeManager.Helpers
         public static bool IsPaused(List<string> labels)
         {
             return !labels.Contains(DoingLabel);
-        }
-        
-        public static bool IsFinished(List<string> labels)
-        {
-            return labels.Contains(DistributiveLabel) ||
-                   labels.Contains(RevisionLabel);
         }
 
         public static void PauseIssue(List<string> labels)
@@ -83,10 +78,13 @@ namespace GitLabTimeManager.Helpers
 
         public static LabelEx RevisionLabel = new LabelEx
             { Name = LabelProcessor.RevisionLabel, Color = Color.FromRgb(68, 173, 142) };
+        
+        public static LabelEx ProjectControlLabel = new LabelEx
+            { Name = LabelProcessor.ProjectControlLabel, Color = Color.FromRgb(0, 0, 0) };
 
         public static IList<LabelEx> Labels { get; } = new List<LabelEx>
         {
-            ToDoLabel, DoingLabel, DistrLabel, RevisionLabel
+            ToDoLabel, DoingLabel, DistrLabel, RevisionLabel, ProjectControlLabel
         };
     }
 

@@ -21,6 +21,9 @@
         <DataTemplate DataType="{x:Type viewModel:SummaryViewModel}">
             <view:SummaryView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:GanttViewModel}">
+            <view:GanttView />
+        </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
                 <TextBlock Text="{Binding}" FontSize="14" />
@@ -72,6 +75,11 @@
                 <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
                                 Margin="0 4 0 0"/>
             </TabItem>
+            <!--<TabItem Header="Диаграмма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <ContentControl Content="{Binding GanttVm, Mode=OneWay}"
+                                Margin="0 4 0 0"/>
+            </TabItem>-->
         </mah:MetroAnimatedTabControl>
         <mah:ProgressRing Visibility="{Binding IsFirstLoading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </Grid>

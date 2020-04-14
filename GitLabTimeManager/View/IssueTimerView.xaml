@@ -68,10 +68,10 @@
                                 <Setter Property="FontSize" Value="24"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding OverallTime.TotalSeconds, Mode=OneWay, Converter={x:Static converters:Converter.TrueIfMoreDouble}, ConverterParameter=0}" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Visibility" Value="Hidden"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding EstimateTime.TotalSeconds, Mode=OneWay, Converter={x:Static converters:Converter.TrueIfMoreDouble}, ConverterParameter=0}" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Visibility" Value="Hidden"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -146,7 +146,7 @@
                     CommandParameter="{Binding Issue.Issue.WebUrl, Mode=OneWay}"
                     Style="{StaticResource ChromelessButtonStyle}"
                     VerticalAlignment="Center"
-                    Height="30"
+                    Height="50"
                     Cursor="Hand">
                 <TextBlock TextAlignment="Center" 
                            TextWrapping="WrapWithOverflow"
@@ -177,7 +177,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <iconPacks:PackIconMaterial Grid.Column="0" Kind="ClockOutline" Margin="0 0 4 0"
+                        <iconPacks:PackIconMaterial Grid.Column="0" Kind="CalendarBlank" Margin="0 0 4 0"
                                                     Visibility="{Binding Issue.StartTime, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotEmpty}}"
                                    Foreground="{DynamicResource AccentBaseColorBrush}"
                                    Opacity="0.8"/>
@@ -197,7 +197,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <iconPacks:PackIconMaterial Grid.Column="0" Kind="ClockOutline" Margin="0 0 4 0"
+                        <iconPacks:PackIconMaterial Grid.Column="0" Kind="CalendarCheck" Margin="0 0 4 0"
                                                     Visibility="{Binding Issue.EndTime, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotEmpty}}"
                                                     Foreground="{DynamicResource AccentBaseColorBrush}"
                                                     Opacity="0.8"/>

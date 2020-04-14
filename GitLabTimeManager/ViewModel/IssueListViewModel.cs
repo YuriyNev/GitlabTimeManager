@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using Catel.Collections;
 using Catel.MVVM;
 using JetBrains.Annotations;
 using Catel.Data;
@@ -54,7 +55,7 @@ namespace GitLabTimeManager.ViewModel
         }
 
         private ISourceControl SourceControl { get; }
-        public CollectionView IssueView { get; set; }
+        public CollectionView IssueCollectionView { get; }
 
         public IssueListViewModel([NotNull] SuperParameter superParameter)
         {
@@ -62,26 +63,33 @@ namespace GitLabTimeManager.ViewModel
             SourceControl = superParameter.SourceControl ?? throw new ArgumentNullException(nameof(superParameter.SourceControl));
 
             WrappedIssues = new ObservableCollection<WrappedIssue> ();
-            
+            IssueCollectionView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
+            IssueCollectionView.SortDescriptions.Add(new SortDescription(nameof(WrappedIssue.Issue.CreatedAt), ListSortDirection.Descending));
         }
 
         public void UpdateData(GitResponse data)
         {
-            if (SelectedIssue != null)
-            {
-                WrappedIssues = new ObservableCollection<WrappedIssue> { SelectedIssue };
-                WrappedIssues.AddRange(data.WrappedIssues.Where(x => x.Issue.Iid != SelectedIssue.Issue.Iid));
-            }
-            else
-            {
-                WrappedIssues = data.WrappedIssues;
-                //IssueView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
-                //IssueView.SortDescriptions.Add(
-                //    new SortDescription(nameof(WrappedIssue.StartTime), ListSortDirection.Descending));
-            }
+            CopyIssueValues(WrappedIssues, data.WrappedIssues);
 
             if (SelectedIssue == null)
                 SelectedIssue = WrappedIssues.FirstOrDefault();
+        }
+
+        private static void CopyIssueValues(ICollection<WrappedIssue> dst, IEnumerable<WrappedIssue> src)
+        {
+            foreach (var issue in src)
+            {
+                var destIssue = dst.FirstOrDefault(x => x.Issue.Iid == issue.Issue.Iid);
+                if (destIssue != null)
+                {
+                    destIssue.Issue = issue.Issue;
+                    destIssue.LabelExes = issue.LabelExes;
+                }
+                else
+                {
+                    dst.Add(issue);
+                }
+            }
         }
 
         protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)

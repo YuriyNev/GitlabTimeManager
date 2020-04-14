@@ -7,7 +7,7 @@ using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
 {
-    [DebuggerDisplay("{Issue.Title} {StartTime} - {EndTime} {StartedIn} {SpendIn} {SpendBefore}")]
+    [DebuggerDisplay("{Issue.Title} {StartTime} - {EndTime} {Estimate} {StartedIn} {SpendIn} {SpendBefore}")]
     public class WrappedIssue : NotifyObject
     {
         public Issue Issue { get; set; }
@@ -28,7 +28,7 @@ namespace GitLabTimeManager.Services
 
         public ObservableCollection<LabelEx> LabelExes { get; set; }
 
-        public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}";
+        public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}\t{Estimate:F1}\t";
     }
     
 }

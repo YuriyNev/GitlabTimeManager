@@ -35,11 +35,11 @@
         <Style TargetType="wpf:PieSeries">
             <Setter Property="StrokeThickness" Value="0"/>
             <Setter Property="Foreground" Value="{StaticResource BlackColorBrush}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{DynamicResource HeaderFontFamily}"/>
             <Setter Property="PushOut" Value="2"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="LabelPosition" Value="OutsideSlice"/>
-            <Setter Property="FontFamily" Value="{StaticResource ContentFontFamily}"/>
+            <Setter Property="FontWeight" Value="DemiBold"/>
+            <Setter Property="LabelPosition" Value="InsideSlice"/>
             <Setter Property="Margin" Value="16 0 0 0"/>
         </Style>
     </UserControl.Resources>
@@ -116,10 +116,17 @@
             </wpf:PieChart>
 
         </Grid>
-        
 
         <wpf:Gauge Grid.Row="4" Grid.Column="1"
-                   From="0" To="100"
+                   Margin="8 28"
+                   From="0" To="{Binding DesiredEstimate, Mode=OneWay}"
+                   Value="{Binding ActualDesiredEstimate, Mode=OneWay}"
+                   Foreground="{x:Null}" 
+                   Uses360Mode="True"
+                   GaugeActiveFill="{StaticResource AccentColorBrush2}"/>
+
+        <wpf:Gauge Grid.Row="4" Grid.Column="1"
+                   From="0" To="{Binding DesiredEstimate, Mode=OneWay}"
                    Margin="8 28"
                    Value="{Binding AllClosedEstimates, Mode=OneWay}"
                    LabelFormatter="{Binding Formatter, Mode=OneWay}"

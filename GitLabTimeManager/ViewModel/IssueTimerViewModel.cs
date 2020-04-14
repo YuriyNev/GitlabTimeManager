@@ -61,11 +61,10 @@ namespace GitLabTimeManager.ViewModel
         private TimeSpan LastSaveTime { get; set; }
 
 #if DEBUG
-        private TimeSpan SavePeriod { get; } = TimeSpan.FromMinutes(2);
+        private TimeSpan SavePeriod { get; } = TimeSpan.FromDays(1);
 #else
         private TimeSpan SavePeriod { get; } = TimeSpan.FromHours(2);
 #endif
-
         private DispatcherTimer _timer;
 
         public Command StartTimeCommand { get; }
@@ -202,11 +201,9 @@ namespace GitLabTimeManager.ViewModel
             LabelProcessor.UpdateLabelsEx(Issue.LabelExes, Issue.Issue.Labels);
         }
 
-        private async void PauseIssue(WrappedIssue issue)
+        private void PauseIssue(WrappedIssue issue)
         {
-            var result = await SourceControl.PauseIssueAsync(issue.Issue).ConfigureAwait(true);
-            if (result)
-                UpdateLabels();
+            SourceControl.PauseIssueAsync(issue.Issue);
         }
 
         private async void FinishIssue(WrappedIssue issue)

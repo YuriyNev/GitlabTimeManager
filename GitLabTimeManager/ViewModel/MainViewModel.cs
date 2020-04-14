@@ -23,6 +23,7 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFirstLoading, true);
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
         public static readonly PropertyData ShowOnTaskbarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskbar, true);
+        public static readonly PropertyData GanttVmProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttVm);
 
         public bool ShowOnTaskbar
         {
@@ -41,6 +42,12 @@ namespace GitLabTimeManager.ViewModel
         {
             get => (SummaryViewModel)GetValue(SummaryVmProperty);
             private set => SetValue(SummaryVmProperty, value);
+        }
+
+        public GanttViewModel GanttVm
+        {
+            get => GetValue<GanttViewModel>(GanttVmProperty);
+            set => SetValue(GanttVmProperty, value);
         }
 
         [Model(SupportIEditableObject = false), NotNull]
@@ -76,6 +83,7 @@ namespace GitLabTimeManager.ViewModel
             };
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(superParameter);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(superParameter);
+            //GanttVm = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             RequestDataAsync(LifeTime.Token).Watch("Bad =(");
 
@@ -103,6 +111,7 @@ namespace GitLabTimeManager.ViewModel
 
                 SummaryVm.UpdateData(data);
                 IssueListVm.UpdateData(data);
+                GanttVm.UpdateData(data);
 
                 LoadingFinished();
 #if DEBUG
