@@ -263,7 +263,11 @@
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\IssueListViewModel.cs" />
     <Compile Include="ViewModel\SummaryViewModel.cs" />
+    <Compile Include="ViewModel\TodayViewModel.cs" />
     <Compile Include="ViewModel\TrayViewModel.cs" />
+    <Compile Include="View\TodayView.xaml.cs">
+      <DependentUpon>TodayView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\GanttView.xaml.cs">
       <DependentUpon>GanttView.xaml</DependentUpon>
     </Compile>
@@ -303,6 +307,10 @@
     <Page Include="Resources\TrayIconResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\TodayView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\GanttView.xaml">
       <SubType>Designer</SubType>

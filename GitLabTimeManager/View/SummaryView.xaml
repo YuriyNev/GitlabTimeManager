@@ -6,6 +6,7 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:models="clr-namespace:GitLabTimeManager.Models"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
     <UserControl.Resources>
@@ -52,15 +53,22 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" MaxHeight="350"/>
         </Grid.RowDefinitions>
 
+        
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="Начатые в этом месяце"
                    FontFamily="{StaticResource HeaderFontFamily}"
-                   FontSize="14" />
-        <ItemsControl Grid.Row="1"  Grid.Column="0" Grid.ColumnSpan="2"
+                   FontSize="14" 
+                   Visibility="Collapsed"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="Начатые в этом месяце"
+                   FontFamily="{StaticResource HeaderFontFamily}"
+                   FontSize="14" 
+                   Visibility="Collapsed"/>
+        <ItemsControl Grid.Row="2"  Grid.Column="0" Grid.ColumnSpan="2"
                       ItemsSource="{Binding OnlyMonthStatsBlocks, Mode=OneWay}"
                       ItemTemplate="{StaticResource StatsItemTemplate}"
                       HorizontalAlignment="Center"
@@ -75,22 +83,24 @@
         <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="Задачи начатые ранее"
                    FontFamily="{StaticResource HeaderFontFamily}"
-                   FontSize="14" Margin="4"/>
+                   FontSize="14" Margin="4"
+                   Visibility="Collapsed"/>
         <ItemsControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
                       ItemsSource="{Binding EarlyStatsBlocks, Mode=OneWay}"
                       ItemTemplate="{StaticResource StatsItemTemplate}"
                       HorizontalAlignment="Center"
-                      Margin="-12 4 0 4">
+                      Margin="-12 4 0 4"
+                      Visibility="Collapsed">
             <ItemsControl.ItemsPanel >
                 <ItemsPanelTemplate>
                     <WrapPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
-
-        <Grid Grid.Row="4" Grid.Column="0">
+        
+       <Grid Grid.Row="3" Grid.Column="0">
             <wpf:PieChart Series="{Binding SpendSeries, Mode=OneWay}"
-                          InnerRadius="45"
+                          InnerRadius="60"
                           Margin="8 28"
                           Hoverable="False"
                           AnimationsSpeed="0:0:0.2">
@@ -117,7 +127,7 @@
 
         </Grid>
 
-        <wpf:Gauge Grid.Row="4" Grid.Column="1"
+        <wpf:Gauge Grid.Row="3" Grid.Column="1"
                    Margin="8 28"
                    From="0" To="{Binding DesiredEstimate, Mode=OneWay}"
                    Value="{Binding ActualDesiredEstimate, Mode=OneWay}"
@@ -125,11 +135,12 @@
                    Uses360Mode="True"
                    GaugeActiveFill="{StaticResource AccentColorBrush2}"/>
 
-        <wpf:Gauge Grid.Row="4" Grid.Column="1"
+        <wpf:Gauge Grid.Row="3" Grid.Column="1"
                    From="0" To="{Binding DesiredEstimate, Mode=OneWay}"
                    Margin="8 28"
                    Value="{Binding AllClosedEstimates, Mode=OneWay}"
                    LabelFormatter="{Binding Formatter, Mode=OneWay}"
+                   AnimationsSpeed="0:0:0.1"
                    Uses360Mode="True"/>
         
         <Border Grid.ColumnSpan="2" Grid.RowSpan="5"

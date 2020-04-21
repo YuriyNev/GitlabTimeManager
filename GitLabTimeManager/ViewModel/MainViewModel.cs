@@ -24,7 +24,9 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
         public static readonly PropertyData ShowOnTaskbarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskbar, true);
         public static readonly PropertyData GanttVmProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttVm);
+        public static readonly PropertyData TodayVmProperty = RegisterProperty<MainViewModel, TodayViewModel>(x => x.TodayVm);
 
+       
         public bool ShowOnTaskbar
         {
             get => (bool) GetValue(ShowOnTaskbarProperty);
@@ -42,6 +44,12 @@ namespace GitLabTimeManager.ViewModel
         {
             get => (SummaryViewModel)GetValue(SummaryVmProperty);
             private set => SetValue(SummaryVmProperty, value);
+        }
+
+        public TodayViewModel TodayVm
+        {
+            get => GetValue<TodayViewModel>(TodayVmProperty);
+            set => SetValue(TodayVmProperty, value);
         }
 
         public GanttViewModel GanttVm
@@ -83,6 +91,7 @@ namespace GitLabTimeManager.ViewModel
             };
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(superParameter);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(superParameter);
+            TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(superParameter);
             //GanttVm = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             RequestDataAsync(LifeTime.Token).Watch("Bad =(");
@@ -111,13 +120,14 @@ namespace GitLabTimeManager.ViewModel
 
                 SummaryVm.UpdateData(data);
                 IssueListVm.UpdateData(data);
+                TodayVm.UpdateData(data);
                 //GanttVm.UpdateData(data);
 
                 LoadingFinished();
 #if DEBUG
                 await Task.Delay(20_000, cancellationToken).ConfigureAwait(true);
 #else
-                await Task.Delay(60_60_000, cancellationToken).ConfigureAwait(true);
+                await Task.Delay(10_60_000, cancellationToken).ConfigureAwait(true);
 #endif
             }
         }

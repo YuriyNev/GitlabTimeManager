@@ -8,6 +8,7 @@ using System.Windows.Data;
 using Catel.MVVM;
 using JetBrains.Annotations;
 using Catel.Data;
+using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Services;
 
 namespace GitLabTimeManager.ViewModel
@@ -64,15 +65,17 @@ namespace GitLabTimeManager.ViewModel
 
             WrappedIssues = new ObservableCollection<WrappedIssue> ();
             IssueCollectionView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
-            IssueCollectionView.SortDescriptions.Add(new SortDescription(nameof(WrappedIssue.Issue.CreatedAt), ListSortDirection.Descending));
+            IssueCollectionView.SortDescriptions.Add(new SortDescription(nameof(WrappedIssue.Issue.Iid), ListSortDirection.Descending));
+            IssueCollectionView.Filter = Filter;
         }
+
+        private static bool Filter(object obj) => obj is WrappedIssue wi && wi.Issue.State == IssueState.Opened;
 
         public void UpdateData(GitResponse data)
         {
             CopyIssueValues(WrappedIssues, data.WrappedIssues);
 
-            if (SelectedIssue == null)
-                SelectedIssue = WrappedIssues.FirstOrDefault();
+            SelectedIssue ??= WrappedIssues.FirstOrDefault();
         }
 
         private static void CopyIssueValues(ICollection<WrappedIssue> dst, IEnumerable<WrappedIssue> src)

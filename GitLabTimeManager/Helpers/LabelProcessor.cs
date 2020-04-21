@@ -14,10 +14,7 @@ namespace GitLabTimeManager.Helpers
         internal const string RevisionLabel = "* Ревизия";
 
         internal const string ProjectControlLabel = "Проектное управление";
-            //66 139 20
-            //00 51 204
-            //209 0 105
-
+        internal const string SpecTaskLabel = "Спец. задача";
 
         public static void StartIssue(List<string> labels)
         {
@@ -28,15 +25,9 @@ namespace GitLabTimeManager.Helpers
             labels.Add(DoingLabel);
         }
 
-        public static bool IsStarted(List<string> labels)
-        {
-            return labels.Contains(DoingLabel);
-        }
+        public static bool IsStarted(List<string> labels) => labels.Contains(DoingLabel);
 
-        public static bool IsPaused(List<string> labels)
-        {
-            return !labels.Contains(DoingLabel);
-        }
+        public static bool IsPaused(List<string> labels) => !labels.Contains(DoingLabel);
 
         public static void PauseIssue(List<string> labels)
         {
@@ -63,28 +54,39 @@ namespace GitLabTimeManager.Helpers
                 if (item != null) labelExes.Add(item);
             }
         }
+
+        public static bool IsExcludeLabels(this IEnumerable<LabelEx> argLabelExes)
+        {
+            var excludeLabel = new List<LabelEx> { LabelsCollection.ProjectControlLabel };
+            var r = argLabelExes.Any(argLabelEx => excludeLabel.Contains(argLabelEx));
+            return r;
+        }
+
     }
 
     public static class LabelsCollection
     {
-        public static LabelEx ToDoLabel = new LabelEx
+        public static readonly LabelEx ToDoLabel = new LabelEx
             { Name = LabelProcessor.ToDoLabel, Color = Color.FromRgb(66, 139, 202) };
 
-        public static LabelEx DoingLabel = new LabelEx
+        public static readonly LabelEx DoingLabel = new LabelEx
             { Name = LabelProcessor.DoingLabel, Color = Color.FromRgb(0, 51, 204) };
 
-        public static LabelEx DistrLabel = new LabelEx
+        public static readonly LabelEx DistrLabel = new LabelEx
             { Name = LabelProcessor.DistributiveLabel, Color = Color.FromRgb(209, 0, 105) };
 
-        public static LabelEx RevisionLabel = new LabelEx
+        public static readonly LabelEx RevisionLabel = new LabelEx
             { Name = LabelProcessor.RevisionLabel, Color = Color.FromRgb(68, 173, 142) };
         
-        public static LabelEx ProjectControlLabel = new LabelEx
-            { Name = LabelProcessor.ProjectControlLabel, Color = Color.FromRgb(0, 0, 0) };
+        public static readonly LabelEx ProjectControlLabel = new LabelEx
+            { Name = LabelProcessor.ProjectControlLabel, Color = Color.FromRgb(209, 209, 0) };
+        
+        public static readonly LabelEx SpecTaskLabel= new LabelEx
+            { Name = LabelProcessor.SpecTaskLabel, Color = Color.FromRgb(0, 0, 0) };
 
         public static IList<LabelEx> Labels { get; } = new List<LabelEx>
         {
-            ToDoLabel, DoingLabel, DistrLabel, RevisionLabel, ProjectControlLabel
+            ToDoLabel, DoingLabel, DistrLabel, RevisionLabel, ProjectControlLabel, SpecTaskLabel
         };
     }
 

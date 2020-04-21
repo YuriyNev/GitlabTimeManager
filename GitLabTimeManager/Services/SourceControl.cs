@@ -28,20 +28,20 @@ namespace GitLabTimeManager.Services
     internal class SourceControl : ISourceControl
     {
 #if DEBUG
-        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
-        //private const string Token = "KajKr2cVJ4amosry9p4v";
-        //private const string Uri = "https://gitlab.com";
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
+        private const string Token = "KajKr2cVJ4amosry9p4v";
+        private const string Uri = "https://gitlab.com";
 
-        private static int ClientDominationId = 14;
-        private static int AnalyticsServerId = 16;
-        
+        //private static int ClientDominationId = 14;
+        //private static int AnalyticsServerId = 16;
 
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int>
-        {
-            ClientDominationId, AnalyticsServerId
-        };
-        private const string Token = "gTUPn2KdhEFUMR3oQL81";
-        private const string Uri = "http://gitlab.domination";
+
+        //private static readonly IReadOnlyList<int> ProjectIds = new List<int>
+        //{
+        //    ClientDominationId, AnalyticsServerId
+        //};
+        //private const string Token = "gTUPn2KdhEFUMR3oQL81";
+        //private const string Uri = "http://gitlab.domination";
 #else
         private static int ClientDominationId = 14;
         private static int AnalyticsServerId = 16;
@@ -107,6 +107,9 @@ namespace GitLabTimeManager.Services
         // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее
         private double OpenSpendBefore { get; set; }
 
+        // Оценочное время за сегодня 
+        private double AllTodayEstimates { get; set; }
+
 #endregion
 
         private GitLabClient GitLabClient { get; }
@@ -136,6 +139,8 @@ namespace GitLabTimeManager.Services
                 OpenSpendInPeriod = OpenSpendInPeriod,
                 ClosedSpendBefore = ClosedSpendBefore,
                 OpenSpendBefore = OpenSpendBefore,
+
+                AllTodayEstimates = AllTodayEstimates,
 
                 WrappedIssues = WrappedIssues,
 
@@ -210,51 +215,63 @@ namespace GitLabTimeManager.Services
             // Most need issues
             // started in month
             OpenEstimatesStartedInPeriod = openIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd))
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
 
             ClosedEstimatesStartedInPeriod = closedIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd) &&
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd) &&
                                 FinishedInPeriod(issue, MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
 
             OpenSpendsStartedInPeriod = openIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd))
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
             ClosedSpendsStartedInPeriod = closedIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], MonthStart, MonthEnd) &&
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd) &&
                                 FinishedInPeriod(issue, MonthStart, MonthEnd))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
             
             // started before this month
             OpenEstimatesStartedBefore = openIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
 
             ClosedEstimatesStartedBefore = closedIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+            
+            AllTodayEstimates = AllIssues
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.Today, DateTime.Today.AddDays(1)))
+                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
+
             foreach (var wrappedIssue in closedIssues) Debug.WriteLine($"{wrappedIssue.Iid} {wrappedIssue.TimeStats.HumanTimeEstimate}");
 
 
             OpenSpendsStartedBefore = openIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
             ClosedSpendsStartedBefore = closedIssues
-                .Where(issue => StartedInPeriod(AllNotes[issue], DateTime.MinValue, MonthStart))
+                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
 
             // Потраченное время только в этом месяце
             // На задачи начатые в этом месяце
-            OpenSpendBefore = WrappedIssues.Where(x => IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
-            ClosedSpendBefore = WrappedIssues.Where(x => IsClosed(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
-            OpenSpendInPeriod = WrappedIssues.Where(x => IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
-            ClosedSpendInPeriod = WrappedIssues.Where(x => IsClosed(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+            var withoutExcludes = WrappedIssues.Where(x => !x.LabelExes.IsExcludeLabels()).ToList();
+
+            OpenSpendBefore = withoutExcludes.
+                Where(x => IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
+            ClosedSpendBefore = withoutExcludes.
+                Where(x => IsClosed(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
+            OpenSpendInPeriod = withoutExcludes.
+                Where(x => IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+            ClosedSpendInPeriod = withoutExcludes.
+                Where(x => IsClosed(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
 
             foreach (var wrappedIssue in WrappedIssues) Debug.WriteLine(wrappedIssue);
         }
+
 
         /// <summary> Задача открыта и не находится на проверке </summary>
         private static bool IsOpen(Issue issue) => issue.State == IssueState.Opened;
@@ -262,13 +279,7 @@ namespace GitLabTimeManager.Services
         /// <summary> Задача условно закрыта</summary>
         private static bool IsClosed(Issue issue) => !IsOpen(issue);
 
-        private static DateTime? FinishTime(Issue issue)
-        {
-            if (issue.ClosedAt != null)
-                return issue.ClosedAt;
-
-            return null;
-        }
+        private static DateTime? FinishTime(Issue issue) => issue.ClosedAt;
 
         private static ObservableCollection<WrappedIssue> ExtentIssues(IEnumerable<Issue> sourceIssues, IReadOnlyDictionary<Issue, IList<Note>> notes,
             DateTime monthStart, DateTime monthEnd)
@@ -279,15 +290,17 @@ namespace GitLabTimeManager.Services
                 notes.TryGetValue(issue, out var note);
 
                 DateTime? startDate = null;
-                bool startedIn = false;
+                var startedIn = false;
                 double spendIn = 0;
                 double spendBefore = 0;
 
                 double totalSpend = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent);
                 if (note != null && note.Count > 0)
-                { 
+                {
                     // if more 0 notes then getting data from notes
-                    startDate = note.Min(x => x.CreatedAt);
+                    var lst = note.Where(x => x.Body.ParseEstimate() > 0).ToList();
+                    if (lst.Count > 0)
+                        startDate = lst.Min(x => x.CreatedAt);
                     startedIn = !note.Any(x => x.CreatedAt < monthStart);
 
                     spendIn = CollectSpendTime(note, monthStart, monthEnd).TotalHours;
@@ -377,15 +390,18 @@ namespace GitLabTimeManager.Services
             return notes;
         }
 
-        private static bool StartedInPeriod(IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
+        private static bool StartedInPeriod(Issue issue, IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
         {
-            return !notes.Any(x => x.CreatedAt < startTime);
+            var enumerable = notes.ToList();
+            if (enumerable.Any())
+                return !enumerable.Any(x => x.CreatedAt < startTime);
+            return issue.CreatedAt > startTime && issue.TimeStats.TimeEstimate > 0;
         }
 
         private static bool FinishedInPeriod(Issue issue, DateTime startTime, DateTime endTime)
         {
             return issue.ClosedAt != null && issue.ClosedAt > startTime 
-                                          && issue.ClosedAt <  endTime;
+                                          && issue.ClosedAt < endTime;
         }
     }
 
@@ -408,6 +424,8 @@ namespace GitLabTimeManager.Services
         public double OpenSpendBefore { get; set; }
         public double ClosedSpendBefore { get; set; }
 
+        public double AllTodayEstimates { get; set; }
+        
         public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
     }
 }

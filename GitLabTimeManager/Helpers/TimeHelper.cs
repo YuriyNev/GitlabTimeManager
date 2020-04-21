@@ -22,15 +22,20 @@ namespace GitLabTimeManager.Helpers
         private const double WeeksPerMonth = 4;
 
         // Parse spent time in hours
-        public static double ParseSpent(this string textDate) => ParseTime(textDate, TimeSpentKeyPhrase);
-
-        // Parse estimate time in hours
-        public static double ParseEstimate(this string textDate) => ParseTime(textDate, EstimateKeyPhrase);
-
-        private static double ParseTime(string textDate, string keyPhase)
+        public static double ParseSpent(this string textDate)
         {
             var sign = SpendSign(textDate);
+            return sign * ParseTimeInternal(textDate, TimeSpentKeyPhrase);
+        }
 
+        // Parse estimate time in hours
+        public static double ParseEstimate(this string textDate)
+        {
+            return ParseTimeInternal(textDate, EstimateKeyPhrase);
+        }
+
+        private static double ParseTimeInternal(string textDate, string keyPhase)
+        {
             if (!textDate.Contains(keyPhase)) return 0;
             var months = ParseNumberBefore(textDate, MonthUnit);
             var weeks = ParseNumberBefore(textDate, WeekUnit);
@@ -39,19 +44,19 @@ namespace GitLabTimeManager.Helpers
             var minutes = ParseNumberBefore(textDate, MinuteUnit);
             var seconds = ParseNumberBefore(textDate, SecondUnit);
 
-            return sign * 
-                   (MonthsToHours(months) +
+            return MonthsToHours(months) +
                    WeeksToHours(weeks) +
                    DaysToHours(days) +
                    hours +
                    MinutesToHours(minutes) +
-                   SecondsToHours(seconds));
+                   SecondsToHours(seconds);
         }
 
         private static int SpendSign(string textDate)
         {
             var isAdded = textDate.Contains(AddedKeyPhrase);
             var isSubtracted = textDate.Contains(SubtractedKeyPhrase);
+
             if (isAdded)
                 return +1;
             if (isSubtracted)
@@ -78,13 +83,13 @@ namespace GitLabTimeManager.Helpers
 
         private static double MinutesToHours(double m) => TimeSpan.FromMinutes(m).TotalHours;
 
-        private static double DaysToHours(double d) => d * HoursPerDay;
+        public static double DaysToHours(double d) => d * HoursPerDay;
                        
         private static double WeeksToHours(double w) => DaysToHours(w * DaysPerWeek);
                        
         private static double MonthsToHours(double mo) => WeeksToHours(mo * WeeksPerMonth);
 
-        public static double HoursToDays(double day) => day / HoursPerDay;
+        public static double HoursToDays(double hours) => hours / HoursPerDay;
 
         public static string ConvertSpent(this TimeSpan ts)
         {
