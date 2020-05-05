@@ -22,16 +22,16 @@ namespace GitLabTimeManager.ViewModel
         public static readonly PropertyData SelectedIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.SelectedIssue);
         public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueListViewModel, bool>(x => x.IsFullscreen);
 
-        [ViewModelToModel]
+        [ViewModelToModel, UsedImplicitly]
         public bool IsFullscreen
         {
-            get => (bool) GetValue(IsFullscreenProperty);
+            get => GetValue<bool>(IsFullscreenProperty);
             set => SetValue(IsFullscreenProperty, value);
         }
 
         public WrappedIssue SelectedIssue
         {
-            get => (WrappedIssue) GetValue(SelectedIssueProperty);
+            get => GetValue<WrappedIssue>(SelectedIssueProperty);
             set => SetValue(SelectedIssueProperty, value);
         }
 
@@ -39,29 +39,31 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly]
         public IssueTimerViewModel IssueTimerVm
         {
-            get => (IssueTimerViewModel) GetValue(IssueTimerVmProperty);
+            get => GetValue<IssueTimerViewModel>(IssueTimerVmProperty);
             set => SetValue(IssueTimerVmProperty, value);
         }
 
-        public WrappedIssue CurrentIssue
-        {
-            get => (WrappedIssue) GetValue(CurrentIssueProperty);
-            set => SetValue(CurrentIssueProperty, value);
-        }
+        public WrappedIssue CurrentIssue => GetValue<WrappedIssue>(CurrentIssueProperty);
 
         public ObservableCollection<WrappedIssue> WrappedIssues
         {
-            get => (ObservableCollection<WrappedIssue>) GetValue(PropertyDataProperty);
+            get => GetValue<ObservableCollection<WrappedIssue>>(PropertyDataProperty);
             set => SetValue(PropertyDataProperty, value);
         }
 
         private ISourceControl SourceControl { get; }
+        private IDataRequestService DataRequestService { get; }
         public CollectionView IssueCollectionView { get; }
+        private IDataSubscription DataSubscription { get; }
 
-        public IssueListViewModel([NotNull] SuperParameter superParameter)
+        public IssueListViewModel([NotNull] ISourceControl sourceControl, [NotNull] IDataRequestService dataRequestService)
         {
-            if (superParameter == null) throw new ArgumentNullException(nameof(superParameter));
-            SourceControl = superParameter.SourceControl ?? throw new ArgumentNullException(nameof(superParameter.SourceControl));
+            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+            DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
+
+            DataSubscription = DataRequestService.CreateSubscription();
+            DataSubscription.NewData += DataSubscriptionOnNewData;
+
 
             WrappedIssues = new ObservableCollection<WrappedIssue> ();
             IssueCollectionView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
@@ -69,9 +71,14 @@ namespace GitLabTimeManager.ViewModel
             IssueCollectionView.Filter = Filter;
         }
 
+        private void DataSubscriptionOnNewData(object sender, GitResponse e)
+        {
+            UpdateData(e);
+        }
+
         private static bool Filter(object obj) => obj is WrappedIssue wi && wi.Issue.State == IssueState.Opened;
 
-        public void UpdateData(GitResponse data)
+        private void UpdateData(GitResponse data)
         {
             CopyIssueValues(WrappedIssues, data.WrappedIssues);
 

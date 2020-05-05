@@ -11,7 +11,7 @@
                  xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
-                 ShowInTaskbar="{Binding ShowOnTaskbar, Mode=OneWay}"
+                 ShowInTaskbar="{Binding ShowOnTaskBar, Mode=OneWay}"
                  Style="{StaticResource BrandedMainWindowStyle}"
                  d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
     <mah:MetroWindow.Resources>
@@ -36,7 +36,7 @@
 
     <i:Interaction.Behaviors>
         <behavior:CancelClosingWindowBehavior CanCloseWindow="False" 
-                                              ShowOnTaskbar="{Binding ShowOnTaskbar, Mode=TwoWay}"/>
+                                              ShowOnTaskbar="{Binding ShowOnTaskBar, Mode=TwoWay}"/>
     </i:Interaction.Behaviors>
 
     <Grid>

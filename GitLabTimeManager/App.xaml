@@ -123,6 +123,7 @@
                 <Setter Property="DarkMaxButtonStyle" Value="{StaticResource CustomDarkMetroWindowButtonStyle}" />
                 <Setter Property="DarkCloseButtonStyle" Value="{StaticResource CustomDarkMetroWindowButtonStyle}" />
             </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 

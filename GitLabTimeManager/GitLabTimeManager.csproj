@@ -244,13 +244,16 @@
     </ApplicationDefinition>
     <Compile Include="Behavior\CancelClosingWindowBehavior.cs" />
     <Compile Include="Behavior\HyperLinkBehavior.cs" />
+    <Compile Include="Behavior\MonthCalendarBehavior.cs" />
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Converters\LamdaConverters.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\LabelProcessor.cs" />
     <Compile Include="Helpers\TaskHelper.cs" />
     <Compile Include="Helpers\UriNavigateHelper.cs" />
+    <Compile Include="Services\DataRequestService.cs" />
     <Compile Include="Services\MoneyCalculator.cs" />
+    <Compile Include="Services\TestService.cs" />
     <Compile Include="Services\WorkingCalendar.cs" />
     <Compile Include="Types\StatsBlock.cs" />
     <Compile Include="Types\WrappedIssue.cs" />

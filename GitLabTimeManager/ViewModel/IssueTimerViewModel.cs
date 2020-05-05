@@ -12,46 +12,46 @@ namespace GitLabTimeManager.ViewModel
 {
     public class IssueTimerViewModel : ViewModelBase
     {
-        public static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
-        public static readonly PropertyData TotalTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.EstimateTime);
-        public static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
-        public static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
-        public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
-        public static readonly PropertyData OverallTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.OverallTime);
+        private static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
+        private static readonly PropertyData TotalTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.EstimateTime);
+        private static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
+        private static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
+        private static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
+        private static readonly PropertyData OverallTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.OverallTime);
 
         public TimeSpan OverallTime
         {
             get => GetValue<TimeSpan>(OverallTimeProperty);
-            set => SetValue(OverallTimeProperty, value);
+            private set => SetValue(OverallTimeProperty, value);
         }
 
         public bool IsFullscreen
         {
-            get => (bool) GetValue(IsFullscreenProperty);
+            get => GetValue<bool>(IsFullscreenProperty);
             private set => SetValue(IsFullscreenProperty, value);
         }
 
         public bool IsStarted
         {
-            get => (bool) GetValue(IsStartedProperty);
+            get => GetValue<bool>(IsStartedProperty);
             private set => SetValue(IsStartedProperty, value);
         }
 
         public string Description
         {
-            get => (string) GetValue(TitleProperty);
+            get => GetValue<string>(TitleProperty);
             private set => SetValue(TitleProperty, value);
         }
 
         public TimeSpan EstimateTime
         {
-            get => (TimeSpan) GetValue(TotalTimeProperty);
+            get => GetValue<TimeSpan>(TotalTimeProperty);
             private set => SetValue(TotalTimeProperty, value);
         }
 
         public TimeSpan Time
         {
-            get => (TimeSpan) GetValue(TimeProperty);
+            get => GetValue<TimeSpan>(TimeProperty);
             private set => SetValue(TimeProperty, value);
         }
 

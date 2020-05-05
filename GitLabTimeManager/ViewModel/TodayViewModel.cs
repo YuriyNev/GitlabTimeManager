@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Helpers;
@@ -17,6 +13,8 @@ namespace GitLabTimeManager.ViewModel
     public class TodayViewModel : ViewModelBase
     {
         public ISourceControl SourceControl { get; }
+        public IDataRequestService DataRequestService { get; }
+        public IDataSubscription DataSubscription { get; }
         public ICalendar Calendar { get; }
 
         #region Properties
@@ -87,13 +85,13 @@ namespace GitLabTimeManager.ViewModel
 
         public double AllClosedEstimates
         {
-            get => (double)GetValue(AllClosedEstimatesProperty);
+            get => GetValue<double>(AllClosedEstimatesProperty);
             set => SetValue(AllClosedEstimatesProperty, value);
         }
 
         public double Earning
         {
-            get => (double)GetValue(EarningProperty);
+            get => GetValue<double>(EarningProperty);
             set => SetValue(EarningProperty, value);
         }
 
@@ -111,85 +109,85 @@ namespace GitLabTimeManager.ViewModel
 
         public double TotalEstimatesStartedBefore
         {
-            get => (double)GetValue(TotalEstimatesStaredBeforeProperty);
+            get => GetValue<double>(TotalEstimatesStaredBeforeProperty);
             set => SetValue(TotalEstimatesStaredBeforeProperty, value);
         }
 
         public double TotalSpendsStartedBefore
         {
-            get => (double)GetValue(TotalSpendsStartedBeforeProperty);
+            get => GetValue<double>(TotalSpendsStartedBeforeProperty);
             set => SetValue(TotalSpendsStartedBeforeProperty, value);
         }
 
         public double ClosedSpendsStartedBefore
         {
-            get => (double)GetValue(ClosedSpendsStartedBeforeProperty);
+            get => GetValue<double>(ClosedSpendsStartedBeforeProperty);
             set => SetValue(ClosedSpendsStartedBeforeProperty, value);
         }
 
         public double OpenSpendsStartedBefore
         {
-            get => (double)GetValue(OpenSpendsStartedBeforeProperty);
+            get => GetValue<double>(OpenSpendsStartedBeforeProperty);
             set => SetValue(OpenSpendsStartedBeforeProperty, value);
         }
 
         public double ClosedEstimatesStartedBefore
         {
-            get => (double)GetValue(ClosedEstimatesStartedBeforeProperty);
+            get => GetValue<double>(ClosedEstimatesStartedBeforeProperty);
             set => SetValue(ClosedEstimatesStartedBeforeProperty, value);
         }
 
         public double OpenEstimatesStartedBefore
         {
-            get => (double)GetValue(OpenEstimatesStartedBeforeProperty);
+            get => GetValue<double>(OpenEstimatesStartedBeforeProperty);
             set => SetValue(OpenEstimatesStartedBeforeProperty, value);
         }
 
         public double OpenSpendBefore
         {
-            get => (double)GetValue(OpenSpendBeforeProperty);
+            get => GetValue<double>(OpenSpendBeforeProperty);
             set => SetValue(OpenSpendBeforeProperty, value);
         }
 
         public double ClosedSpendBefore
         {
-            get => (double)GetValue(ClosedSpendBeforeProperty);
+            get => GetValue<double>(ClosedSpendBeforeProperty);
             set => SetValue(ClosedSpendBeforeProperty, value);
         }
 
         public double TotalEstimatesStartedInPeriod
         {
-            get => (double)GetValue(TotalEstimatesStartedInPeriodProperty);
+            get => GetValue<double>(TotalEstimatesStartedInPeriodProperty);
             set => SetValue(TotalEstimatesStartedInPeriodProperty, value);
         }
 
         public double TotalSpendsStartedInPeriod
         {
-            get => (double)GetValue(TotalSpendsStartedInPeriodProperty);
+            get => GetValue<double>(TotalSpendsStartedInPeriodProperty);
             set => SetValue(TotalSpendsStartedInPeriodProperty, value);
         }
 
         public double ClosedSpendsStartedInPeriod
         {
-            get => (double)GetValue(ClosedSpendsStartedInPeriodProperty);
+            get => GetValue<double>(ClosedSpendsStartedInPeriodProperty);
             set => SetValue(ClosedSpendsStartedInPeriodProperty, value);
         }
 
         public double OpenSpendsStartedInPeriod
         {
-            get => (double)GetValue(OpenSpendsStartedInPeriodProperty);
+            get => GetValue<double>(OpenSpendsStartedInPeriodProperty);
             set => SetValue(OpenSpendsStartedInPeriodProperty, value);
         }
 
         public double ClosedEstimatesStartedInPeriod
         {
-            get => (double)GetValue(ClosedEstimatesStartedInPeriodProperty);
+            get => GetValue<double>(ClosedEstimatesStartedInPeriodProperty);
             set => SetValue(ClosedEstimatesStartedInPeriodProperty, value);
         }
 
         public double OpenEstimatesStartedInPeriod
         {
-            get => (double)GetValue(OpenEstimatesStartedInPeriodProperty);
+            get => GetValue<double>(OpenEstimatesStartedInPeriodProperty);
             set => SetValue(OpenEstimatesStartedInPeriodProperty, value);
         }
 
@@ -201,13 +199,13 @@ namespace GitLabTimeManager.ViewModel
 
         public double ClosedSpendInPeriod
         {
-            get => (double)GetValue(ClosedSpendInPeriodProperty);
+            get => GetValue<double>(ClosedSpendInPeriodProperty);
             set => SetValue(ClosedSpendInPeriodProperty, value);
         }
 
         public double OpenSpendInPeriod
         {
-            get => (double)GetValue(OpenSpendInPeriodProperty);
+            get => GetValue<double>(OpenSpendInPeriodProperty);
             set => SetValue(OpenSpendInPeriodProperty, value);
         }
 
@@ -215,17 +213,25 @@ namespace GitLabTimeManager.ViewModel
 
         #endregion
 
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        private DateTime StartDate { get; set; }
+        private DateTime EndDate { get; set; }
 
-        public TodayViewModel([NotNull] SuperParameter superParameter)
+        public TodayViewModel([NotNull] ISourceControl sourceControl, [NotNull] IDataRequestService dataRequestService,
+            [NotNull] ICalendar calendar)
         {
-            if (superParameter == null) throw new ArgumentNullException(nameof(superParameter));
-            SourceControl = superParameter.SourceControl ?? throw new ArgumentNullException(nameof(superParameter.SourceControl));
-            Calendar = superParameter.Calendar ?? throw new ArgumentNullException(nameof(superParameter.Calendar));
+            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+            DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
+            Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
+            DataSubscription = DataRequestService.CreateSubscription();
+            DataSubscription.NewData += DataSubscriptionOnNewData;
         }
 
-        public async void UpdateData(GitResponse data)
+        private void DataSubscriptionOnNewData(object sender, GitResponse e)
+        {
+            UpdateData(e);
+        }
+
+        private async void UpdateData(GitResponse data)
         {
             StartDate = data.StartDate;
             EndDate = data.EndDate;
@@ -267,8 +273,9 @@ namespace GitLabTimeManager.ViewModel
             AllClosedEstimates = Math.Round(ClosedEstimatesStartedInPeriod, 1);
 
             Earning = moneyCalculator.Calculate(TimeSpan.FromHours(AllClosedEstimates));
-            
-            AverageKPI = AllClosedEstimates / ActualDesiredEstimate * 100;
+
+            if (Math.Abs(ActualDesiredEstimate) > double.Epsilon)
+                AverageKPI = AllClosedEstimates / ActualDesiredEstimate * 100;
 
             NecessaryDailyEstimate = TimeHelper.DaysToHours(1) * (DesiredEstimate - AllClosedEstimates) / (workingTotalHours - workingCurrentHours);
         }

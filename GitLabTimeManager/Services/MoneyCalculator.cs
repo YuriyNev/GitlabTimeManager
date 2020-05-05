@@ -10,7 +10,7 @@ namespace GitLabTimeManager.Services
 
         public double Calculate(TimeSpan estimates)
         {
-            //=(70 +(A6-100))*1000
+            //=(70 +(baseEarning-100))*1000
             var baseEarning = DevelopLevel switch
             {
                 DevelopLevel.Junior => 40_000,

@@ -122,5 +122,8 @@ namespace GitLabTimeManager.Helpers
                 return DateTime.Now > nightTime;
             }
         }
+
+        public static DateTime MonthStart => DateTime.Today.AddDays(-DateTime.Today.Day).AddDays(1);
+        public static DateTime MonthEnd => MonthStart.AddMonths(1);
     }
 }

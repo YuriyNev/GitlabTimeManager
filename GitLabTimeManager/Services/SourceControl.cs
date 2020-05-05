@@ -15,8 +15,12 @@ using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
 {
-    public interface ISourceControl
+    
+    
+
+    public interface ISourceControl 
     {
+     
         Task<GitResponse> RequestDataAsync();
         Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
 
@@ -32,9 +36,9 @@ namespace GitLabTimeManager.Services
         private const string Token = "KajKr2cVJ4amosry9p4v";
         private const string Uri = "https://gitlab.com";
 
+        // DEBUG WITH WORKING REPOSITORY
         //private static int ClientDominationId = 14;
         //private static int AnalyticsServerId = 16;
-
 
         //private static readonly IReadOnlyList<int> ProjectIds = new List<int>
         //{
@@ -70,51 +74,51 @@ namespace GitLabTimeManager.Services
         private ObservableCollection<Issue> AllIssues { get; set; } = new ObservableCollection<Issue>();
 
 #region Stats Properties
-        // Necessary
-        // Оценочное время открытых задач, начатых в этом месяце
+
+        /// <summary> Оценочное время открытых задач, начатых в этом месяце </summary>
         private double OpenEstimatesStartedInPeriod { get; set; }
 
-        // Оценочное время закрытых задач, начатых в этом месяце
+        /// <summary> Оценочное время закрытых задач, начатых в этом месяце </summary>
         private double ClosedEstimatesStartedInPeriod { get; set; }
 
-        // Потраченное время открытых задач, начатых в этом месяце
+        /// <summary> Потраченное время открытых задач, начатых в этом месяце </summary>
         private double OpenSpendsStartedInPeriod { get; set; }
 
-        // Потраченное время закрытых задач, начатых ранее
+        /// <summary> Потраченное время закрытых задач, начатых ранее </summary>
         private double ClosedSpendsStartedInPeriod { get; set; }
 
-        // Оценочное время открытых задач, начатых ранее
+        /// <summary> Оценочное время открытых задач, начатых ранее </summary>
         private double OpenEstimatesStartedBefore { get; set; }
 
-        // Оценочное время закрытых задач, начатых ранее
+        /// <summary> Оценочное время закрытых задач, начатых ранее </summary>
         private double ClosedEstimatesStartedBefore { get; set; }
 
-        // Потраченное время открытых задач, начатых ранее
+        /// <summary> отраченное время открытых задач, начатых ранее </summary>
         private double OpenSpendsStartedBefore { get; set; }
 
-        // Потраченное время закрытых задач, начатых ранее
+        /// <summary> Потраченное время закрытых задач, начатых ранее </summary>
         private double ClosedSpendsStartedBefore { get; set; }
 
-        // Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в текущем месяце
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в текущем месяце </summary>
         private double ClosedSpendInPeriod { get; set; }
 
-        // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в текущем месяце
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на открытые задачи в текущем месяце </summary>
         private double OpenSpendInPeriod { get; set; }
         
-        // Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в этом месяце открытые ранее
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в этом месяце открытые ранее </summary>
         private double ClosedSpendBefore { get; set; }
 
-        // Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее </summary>
         private double OpenSpendBefore { get; set; }
 
-        // Оценочное время за сегодня 
+        /// <summary> Оценочное время за сегодня </summary>
         private double AllTodayEstimates { get; set; }
 
 #endregion
 
         private GitLabClient GitLabClient { get; }
 
-        protected internal SourceControl()
+        public SourceControl()
         {
             GitLabClient = new GitLabClient(Uri, Token);
         }
@@ -240,11 +244,11 @@ namespace GitLabTimeManager.Services
             ClosedEstimatesStartedBefore = closedIssues
                 .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-            
+
             AllTodayEstimates = AllIssues
                 .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.Today, DateTime.Today.AddDays(1)))
                 .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-
+            
             foreach (var wrappedIssue in closedIssues) Debug.WriteLine($"{wrappedIssue.Iid} {wrappedIssue.TimeStats.HumanTimeEstimate}");
 
 
@@ -393,9 +397,13 @@ namespace GitLabTimeManager.Services
         private static bool StartedInPeriod(Issue issue, IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
         {
             var enumerable = notes.ToList();
-            if (enumerable.Any())
-                return !enumerable.Any(x => x.CreatedAt < startTime);
-            return issue.CreatedAt > startTime && issue.TimeStats.TimeEstimate > 0;
+            if (!enumerable.Any()) return issue.CreatedAt > startTime && issue.TimeStats.TimeEstimate > 0;
+            
+            foreach (var note in enumerable.Where(note => note.Body.ParseEstimate() > 0))
+                return note.CreatedAt > startTime;
+
+            return !enumerable.Any(x => x.CreatedAt < startTime);
+
         }
 
         private static bool FinishedInPeriod(Issue issue, DateTime startTime, DateTime endTime)
@@ -403,6 +411,12 @@ namespace GitLabTimeManager.Services
             return issue.ClosedAt != null && issue.ClosedAt > startTime 
                                           && issue.ClosedAt < endTime;
         }
+
+        public void Dispose()
+        {
+        }
+
+        public event EventHandler<GitResponse> NewData;
     }
 
     public class GitResponse

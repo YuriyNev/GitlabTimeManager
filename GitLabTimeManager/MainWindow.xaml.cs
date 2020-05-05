@@ -1,4 +1,6 @@
-﻿using GitLabTimeManager.ViewModel;
+﻿using Catel.IoC;
+using Catel.MVVM;
+using GitLabTimeManager.ViewModel;
 
 namespace GitLabTimeManager
 {
@@ -11,7 +13,7 @@ namespace GitLabTimeManager
         {
             InitializeComponent();
 
-            DataContext = new MainViewModel();
+            DataContext = MainViewModel.CreateInstance();
         }
     }
 }
