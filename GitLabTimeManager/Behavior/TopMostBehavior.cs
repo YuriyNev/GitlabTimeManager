@@ -1,6 +1,6 @@
 ﻿using System.Windows;
-using System.Windows.Interactivity;
 using MahApps.Metro.Controls;
+using Microsoft.Xaml.Behaviors;
 
 namespace GitLabTimeManager.Behavior
 {

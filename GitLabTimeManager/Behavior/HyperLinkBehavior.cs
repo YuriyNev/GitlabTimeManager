@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
-using System.Windows.Documents;
-using System.Windows.Interactivity;
+﻿using System.Windows.Documents;
 using System.Windows.Navigation;
 using GitLabTimeManager.Helpers;
+using Microsoft.Xaml.Behaviors;
 
 namespace GitLabTimeManager.Behavior
 {

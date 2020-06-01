@@ -6,9 +6,9 @@
                  xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
                  xmlns:view="clr-namespace:GitLabTimeManager.View"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-                 xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                  xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
                  xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
+                 xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
                  ShowInTaskbar="{Binding ShowOnTaskBar, Mode=OneWay}"
@@ -34,10 +34,11 @@
         </DataTemplate>
     </mah:MetroWindow.Resources>
 
-    <i:Interaction.Behaviors>
+    <b:Interaction.Behaviors>
         <behavior:CancelClosingWindowBehavior CanCloseWindow="False" 
                                               ShowOnTaskbar="{Binding ShowOnTaskBar, Mode=TwoWay}"/>
-    </i:Interaction.Behaviors>
+        <behavior:TopmostBindingBehavior IsTopmost="True"/>
+    </b:Interaction.Behaviors>
 
     <Grid>
         <Grid.Style>

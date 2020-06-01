@@ -4,12 +4,10 @@
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                     mc:Ignorable="d">
     <ContextMenu x:Shared="False" x:Key="TrayMenu"
                  d:DataContext="{d:DesignInstance viewModel:TrayViewModel}"
-                 Background="{StaticResource GrayBrush2}"
+                 Background="{StaticResource MahApps.Brushes.Gray2}"
                  BorderThickness="0"
                  Margin="0">
         <!--<i:Interaction.Triggers>
@@ -49,11 +47,8 @@
 
         <!--<MenuItem Header="О программе" Command="{Binding AboutApplicationOpenCommand, Mode=OneWay}" />-->
 
-        <!--<Separator />
-
-        <MenuItem Header="Выйти" Command="{Binding ExitApplicationCommand, Mode=OneTime}" />-->
+        <!--<Separator />-->
         <MenuItem Header="Выйти" Command="{Binding ExitApplicationCommand, Mode=OneTime}" />
-
 
     </ContextMenu>
 

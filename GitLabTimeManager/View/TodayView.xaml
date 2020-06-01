@@ -17,7 +17,7 @@
                 <TextBlock Text="{Binding AverageKPI, Mode=OneWay, StringFormat={} {0:F0}%}"
                            FontSize="36"
                            FontWeight="Bold"
-                           FontFamily="{StaticResource ContentFontFamily}"/>
+                           FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
             </mah:Tile>
             <mah:Tile KeepDragging="True" Title="Рекомендованное оценочное время за сутки"
                       TitleFontSize="11" Background="Black"
@@ -25,7 +25,7 @@
                 <TextBlock Text="{Binding NecessaryDailyEstimate, Mode=OneWay, StringFormat={} {0:F1} ч}"
                            FontSize="36"
                            FontWeight="Bold"
-                           FontFamily="{StaticResource ContentFontFamily}"/>
+                           FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
             </mah:Tile>
             <mah:Tile KeepDragging="True" Title="Оценочное время за сегодня"
                       TitleFontSize="11" Background="Crimson"
@@ -33,7 +33,7 @@
                 <TextBlock Text="{Binding AllTodayEstimates, Mode=OneWay, StringFormat={} {0:F1} ч}"
                            FontSize="36"
                            FontWeight="Bold"
-                           FontFamily="{StaticResource ContentFontFamily}"/>
+                           FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
             </mah:Tile>
         </WrapPanel>
 

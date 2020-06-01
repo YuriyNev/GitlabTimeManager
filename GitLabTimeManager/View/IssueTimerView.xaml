@@ -34,13 +34,13 @@
 
             <TextBlock Grid.Row="0"
                        Text="{Binding Time, Mode=OneWay}"
-                       FontFamily="{StaticResource HeaderFontFamily}"
+                       FontFamily="{StaticResource MahApps.Fonts.Family.Header}"
                        TextAlignment="Center"
                        FontWeight="ExtraBold">
                 <TextBlock.Style>
                     <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Setter Property="FontSize" Value="36"/>
-                        <Setter Property="Foreground" Value="{StaticResource BlackColorBrush}"/>
+                        <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.SystemControlBackgroundChromeBlackMedium}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
                                 <Setter Property="FontSize" Value="50"/>
@@ -53,7 +53,7 @@
 
             <TextBlock Grid.Row="1"
                        Text="{Binding OverallTime, Mode=OneWay}"
-                       FontFamily="{StaticResource HeaderFontFamily}"
+                       FontFamily="{StaticResource MahApps.Fonts.Family.Header}"
                        TextAlignment="Center"
                        FontWeight="ExtraBold">
                 <TextBlock.Style>
@@ -144,7 +144,7 @@
             <Button Grid.Row="3"
                     Command="{Binding GoToBrowserCommand, Mode=OneWay}"
                     CommandParameter="{Binding Issue.Issue.WebUrl, Mode=OneWay}"
-                    Style="{StaticResource ChromelessButtonStyle}"
+                    Style="{StaticResource MahApps.Styles.Button.Chromeless}"
                     VerticalAlignment="Center"
                     Height="50"
                     Cursor="Hand">
@@ -156,7 +156,7 @@
             <TextBlock Grid.Row="4"
                        Text="{Binding EstimateTime, Mode=OneWay}"
                        FontSize="24"
-                       FontFamily="{StaticResource HeaderFontFamily}"
+                       FontFamily="{StaticResource MahApps.Fonts.Family.Header}"
                        Margin="8 0"
                        TextAlignment="Center"
                        FontWeight="Black"/>
@@ -171,7 +171,7 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Margin="4 16 4 0"
                         BorderThickness="0 0 0 0"
-                        BorderBrush="{DynamicResource GrayBrush8}" >
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray2}" >
                     <Grid Margin="4 4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -182,16 +182,16 @@
                                    Foreground="{DynamicResource AccentBaseColorBrush}"
                                    Opacity="0.8"/>
                         <TextBlock Grid.Column="1" Text="{Binding Issue.StartTime, Mode=OneWay, StringFormat='dd.MM.yyyy'}"
-                                   FontSize="{DynamicResource NormalFontSize}"
+                                   FontSize="{DynamicResource MahApps.Font.Size.Default}"
                                    Margin="0 -2 0 0"
-                                   Foreground="{DynamicResource GrayBrush1}"
+                                   Foreground="{DynamicResource MahApps.Brushes.Gray2}"
                                    TextAlignment="Left"/>
                     </Grid>
                 </Border>
 
                 <Border Grid.Column="2" Margin="4 16 4 0"
                         BorderThickness="0 0 0 0"
-                        BorderBrush="{DynamicResource GrayBrush8}" >
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}" >
                     <Grid Margin="4 4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -202,9 +202,9 @@
                                                     Foreground="{DynamicResource AccentBaseColorBrush}"
                                                     Opacity="0.8"/>
                         <TextBlock Grid.Column="1" Text="{Binding Issue.EndTime, Mode=OneWay, StringFormat='dd.MM.yyyy'}"
-                                   FontSize="{DynamicResource NormalFontSize}"
+                                   FontSize="{DynamicResource MahApps.Font.Size.Default}"
                                    Margin="0 -2 0 0"
-                                   Foreground="{DynamicResource GrayBrush1}"
+                                   Foreground="{DynamicResource MahApps.Brushes.Gray1}"
                                    TextAlignment="Left"/>
                     </Grid>
                 </Border>

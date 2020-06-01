@@ -11,6 +11,7 @@ using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
+using GitLabApiClient.Models.Projects.Responses;
 using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
@@ -32,20 +33,20 @@ namespace GitLabTimeManager.Services
     internal class SourceControl : ISourceControl
     {
 #if DEBUG
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
-        private const string Token = "KajKr2cVJ4amosry9p4v";
-        private const string Uri = "https://gitlab.com";
+        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
+        //private const string Token = "KajKr2cVJ4amosry9p4v";
+        //private const string Uri = "https://gitlab.com";
 
-        // DEBUG WITH WORKING REPOSITORY
-        //private static int ClientDominationId = 14;
-        //private static int AnalyticsServerId = 16;
+        private static int ClientDominationId = 14;
+        private static int AnalyticsServerId = 16;
 
-        //private static readonly IReadOnlyList<int> ProjectIds = new List<int>
-        //{
-        //    ClientDominationId, AnalyticsServerId
-        //};
-        //private const string Token = "gTUPn2KdhEFUMR3oQL81";
-        //private const string Uri = "http://gitlab.domination";
+
+        private static readonly IReadOnlyList<int> ProjectIds = new List<int>
+        {
+            ClientDominationId, AnalyticsServerId
+        };
+        private const string Token = "gTUPn2KdhEFUMR3oQL81";
+        private const string Uri = "http://gitlab.domination";
 #else
         private static int ClientDominationId = 14;
         private static int AnalyticsServerId = 16;
@@ -175,6 +176,7 @@ namespace GitLabTimeManager.Services
             {
                 Labels = issue.Labels
             };
+
             await GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             return true;
         }
@@ -289,6 +291,7 @@ namespace GitLabTimeManager.Services
             DateTime monthStart, DateTime monthEnd)
         {
             var issues = new ObservableCollection<WrappedIssue>();
+            var labelsEx = new ObservableCollection<LabelEx>();
             foreach (var issue in sourceIssues)
             {
                 notes.TryGetValue(issue, out var note);
@@ -320,7 +323,7 @@ namespace GitLabTimeManager.Services
                     else
                         spendBefore += startSpend;
                 }
-                var labelsEx = new ObservableCollection<LabelEx>();
+
                 LabelProcessor.UpdateLabelsEx(labelsEx, issue.Labels);
 
                 var extIssue = new WrappedIssue

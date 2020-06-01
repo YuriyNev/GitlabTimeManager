@@ -50,34 +50,34 @@
     <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.OnSwitchMouseOverBrush.Win10" Color="{StaticResource AccentColor2}" options:Freeze="True" />
     <SolidColorBrush x:Key="MahApps.Metro.Brushes.ToggleSwitchButton.ThumbIndicatorCheckedBrush.Win10" Color="{StaticResource IdealForegroundColor}" options:Freeze="True" />
 
-    <Style x:Key="FlatButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MetroFlatButton}">
+    <Style x:Key="FlatButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="2"/>
         <Setter Property="Focusable" Value="False"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource GrayBrush7}"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray7}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource GrayBrush5}"/>
-                <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray5}"/>
+                <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.SystemControlForegroundChromeBlackMediumLow}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
-    
-    <Style x:Key="FlatCircleButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MetroCircleButtonStyle}">
+
+    <Style x:Key="FlatCircleButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Circle}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="2"/>
         <Setter Property="Focusable" Value="False"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource GrayBrush7}"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray7}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource GrayBrush5}"/>
-                <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray5}"/>
+                <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.SystemControlBackgroundChromeBlackMedium}"/>
             </Trigger>
         </Style.Triggers>
     </Style>

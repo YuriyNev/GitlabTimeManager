@@ -10,20 +10,7 @@
                 <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/ValidationErrorTemplate.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.ContextMenu.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/FlatSlider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Calendar.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.PasswordBox.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.TextBox.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.ToggleSwitch.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Tooltip.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/blue.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.AnimatedSingleRowTabControl.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Controls/TinyScrollBarStyle.xaml" />
 
                 <ResourceDictionary Source="Resources/BaseStyles.xaml"/>
@@ -95,12 +82,12 @@
                 <Setter Property="ShowMinButton" Value="True"/>
                 <Setter Property="WindowState" Value="Normal"/>
                 <Setter Property="Topmost" Value="True"/>
-                <Setter Property="TitlebarHeight" Value="30"/>
+                <Setter Property="TitleBarHeight" Value="30"/>
                 <Setter Property="SaveWindowPosition" Value="True"/>
                 <Setter Property="ShowMaxRestoreButton" Value="False"/>
             </Style>
 
-            <Style x:Key="CustomLightMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource LightMetroWindowButtonStyle}">
+            <Style x:Key="CustomLightMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.MetroWindow.Light}">
                 <Setter Property="Foreground" Value="Gray" />
                 <Setter Property="Width" Value="30" />
                 <Setter Property="Height" Value="30" />
@@ -108,7 +95,7 @@
 
             </Style>
 
-            <Style x:Key="CustomDarkMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource DarkMetroWindowButtonStyle}">
+            <Style x:Key="CustomDarkMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.MetroWindow.Light}">
                 <Setter Property="Foreground" Value="Gray" />
                 <Setter Property="Width" Value="30" />
                 <Setter Property="Height" Value="30" />

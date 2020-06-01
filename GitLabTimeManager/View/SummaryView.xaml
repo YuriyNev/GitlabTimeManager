@@ -6,9 +6,8 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:models="clr-namespace:GitLabTimeManager.Models"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
     <UserControl.Resources>
@@ -22,7 +21,7 @@
                     <TextBlock Grid.Row="0"
                                Text="{Binding Title, Mode=OneWay}"
                                HorizontalAlignment="Center"
-                               FontFamily="{StaticResource ContentFontFamily}"/>
+                               FontFamily="{DynamicResource MahApps.Fonts.Family.Control}"/>
                     <StackPanel Grid.Row="1" 
                                 Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F0}}" FontSize="16"
@@ -37,7 +36,7 @@
 
         <Style TargetType="wpf:PieSeries">
             <Setter Property="StrokeThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{StaticResource BlackColorBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource BlackColorBrush}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontFamily" Value="{DynamicResource HeaderFontFamily}"/>
             <Setter Property="PushOut" Value="2"/>
@@ -61,13 +60,13 @@
         
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="Начатые в этом месяце"
-                   FontFamily="{StaticResource HeaderFontFamily}"
+                   FontFamily="{DynamicResource HeaderFontFamily}"
                    FontSize="14" 
                    Visibility="Collapsed"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="Начатые в этом месяце"
-                   FontFamily="{StaticResource HeaderFontFamily}"
+                   FontFamily="{DynamicResource HeaderFontFamily}"
                    FontSize="14" 
                    Visibility="Collapsed"/>
         <ItemsControl Grid.Row="2"  Grid.Column="0" Grid.ColumnSpan="2"
@@ -84,7 +83,7 @@
 
         <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="Задачи начатые ранее"
-                   FontFamily="{StaticResource HeaderFontFamily}"
+                   FontFamily="{DynamicResource HeaderFontFamily}"
                    FontSize="14" Margin="4"
                    Visibility="Collapsed"/>
         <ItemsControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
@@ -107,7 +106,7 @@
                           Hoverable="False"
                           AnimationsSpeed="0:0:0.2">
                 <wpf:PieChart.AxisY>
-                    <wpf:Axis LabelFormatter="{Binding CeilFormatter}"></wpf:Axis>
+                    <wpf:Axis LabelFormatter="{Binding CeilFormatter}"/>
                 </wpf:PieChart.AxisY>
                 <wpf:PieChart.DataTooltip>
                     <wpf:DefaultTooltip IsWrapped="True"
@@ -153,9 +152,9 @@
                       Width="300" Height="200"
                       Margin="0 30 0 0"
                       Visibility="{Binding ShowingCalendar, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <i:Interaction.Behaviors>
+                <b:Interaction.Behaviors>
                     <behavior:MonthCalendarBehavior />
-                </i:Interaction.Behaviors>
+                </b:Interaction.Behaviors>
             </Calendar>
         </Border>
         <Border Grid.ColumnSpan="2" Grid.RowSpan="4"
@@ -183,7 +182,7 @@
                 Command="{Binding ShowCalendarCommand, Mode=OneWay}"
                 BorderBrush="{x:Null}"
                 Visibility="Collapsed"
-                Style="{StaticResource MetroFlatButton}">
+                Style="{StaticResource MahApps.Styles.Button.Flat}">
             <Button.Content> 
                 <TextBlock Text="{Binding SelectedDate.Date, StringFormat={}MMM, Mode=OneWay}" 
                            FontSize="12" TextAlignment="Right"/>
@@ -196,7 +195,7 @@
                 Padding="0"
                 Content="₽" BorderThickness="0"
                 Command="{Binding ShowEarningsCommand, Mode=OneWay}"
-                Style="{StaticResource MetroCircleButtonStyle}"/>
+                Style="{StaticResource MahApps.Styles.Button.Circle}"/>
 
     </Grid>
 </UserControl>

@@ -12,12 +12,12 @@ namespace GitLabTimeManager.ViewModel
 {
     public class IssueTimerViewModel : ViewModelBase
     {
-        private static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
-        private static readonly PropertyData TotalTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.EstimateTime);
-        private static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
-        private static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
-        private static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
-        private static readonly PropertyData OverallTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.OverallTime);
+        [UsedImplicitly] public static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
+        [UsedImplicitly] public static readonly PropertyData TotalTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.EstimateTime);
+        [UsedImplicitly] public static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
+        [UsedImplicitly] public static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
+        [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
+        [UsedImplicitly] public static readonly PropertyData OverallTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.OverallTime);
 
         public TimeSpan OverallTime
         {
@@ -55,7 +55,6 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(TimeProperty, value);
         }
 
-
         private ISourceControl SourceControl { get; }
         public WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
@@ -63,7 +62,7 @@ namespace GitLabTimeManager.ViewModel
 #if DEBUG
         private TimeSpan SavePeriod { get; } = TimeSpan.FromDays(1);
 #else
-        private TimeSpan SavePeriod { get; } = TimeSpan.FromHours(2);
+        private TimeSpan SavePeriod { get; } = TimeSpan.FromDays(1);
 #endif
         private DispatcherTimer _timer;
 
