@@ -140,12 +140,14 @@
         </Style>
 
         <DataTemplate x:Key="LabelItemTemplate" DataType="{x:Type helpers:LabelEx}">
-            <Grid Margin="4 2">
-                <Border CornerRadius="9" Background="{Binding Color, Converter={x:Static converters:Converter.ColorToBrush}, Mode=OneWay}">
-                    <TextBlock Text="{Binding Name, Mode=OneWay}" Margin="8 2"
-                               FontSize="{StaticResource MahApps.Font.Size.Button.Flat}"
-                               Foreground="{DynamicResource MetroDataGrid.HighlightTextBrush}"/>
-                </Border>
+            <Grid Margin="2 1"
+                  ToolTip="{Binding Name, Mode=OneWay}"
+                  ToolTipService.InitialShowDelay="0">
+                <Ellipse Width="10" Height="10">
+                    <Ellipse.Fill>
+                        <SolidColorBrush Color="{Binding Color, Mode=OneWay}"/>
+                    </Ellipse.Fill>
+                </Ellipse>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services:WrappedIssue}">

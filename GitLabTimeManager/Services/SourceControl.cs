@@ -11,14 +11,10 @@ using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
-using GitLabApiClient.Models.Projects.Responses;
 using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
 {
-    
-    
-
     public interface ISourceControl 
     {
      
@@ -334,7 +330,7 @@ namespace GitLabTimeManager.Services
                     SpendIn = spendIn,
                     SpendBefore = spendBefore,
                     StartedIn = startedIn,
-                    LabelExes = labelsEx,
+                    LabelExes = new ObservableCollection<LabelEx>(labelsEx),
                 };
                 
                 issues.Add(extIssue);

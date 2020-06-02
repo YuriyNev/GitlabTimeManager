@@ -52,7 +52,7 @@ namespace GitLabTimeManager
             var serviceLocator = this.GetServiceLocator();
             serviceLocator.MissingType += ServiceLocator_MissingType;
 #if !DEBUG
-            serviceLocator.RegisterTypeAndInstantiate<ExceptionWatcher>();
+            //serviceLocator.RegisterTypeAndInstantiate<ExceptionWatcher>();
 #endif
            ServiceLocator.Default.RegisterType<ITestService, TestService>();
            ServiceLocator.Default.RegisterType<ISourceControl, SourceControl>();
