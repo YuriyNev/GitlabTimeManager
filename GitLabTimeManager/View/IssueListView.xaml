@@ -10,7 +10,6 @@
              xmlns:catel="http://schemas.catelproject.com"
              xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
              xmlns:helpers="clr-namespace:GitLabTimeManager.Helpers"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"

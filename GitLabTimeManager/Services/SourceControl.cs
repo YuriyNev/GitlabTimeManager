@@ -17,7 +17,6 @@ namespace GitLabTimeManager.Services
 {
     public interface ISourceControl 
     {
-     
         Task<GitResponse> RequestDataAsync();
         Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
 

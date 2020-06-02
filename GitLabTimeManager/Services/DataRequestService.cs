@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Catel.IoC;
 
@@ -38,10 +39,11 @@ namespace GitLabTimeManager.Services
         IDataSubscription CreateSubscription();
     }
 
-    public class DataRequestService : IDataRequestService
+    public class DataRequestService : IDataRequestService, IDisposable
     {
         private ISourceControl SourceControl { get; }
         private IReadOnlyList<DataSubscription> _dataSubscriptions = Array.Empty<DataSubscription>();
+        private CancellationTokenSource _cancellation = new CancellationTokenSource();
 
         public IDataSubscription CreateSubscription()
         {
@@ -63,18 +65,24 @@ namespace GitLabTimeManager.Services
         {
             while (true)
             {
+                if (_cancellation.IsCancellationRequested)
+                    return;
+                
                 var data = await SourceControl.RequestDataAsync().ConfigureAwait(true);
 
                 foreach (var subscription in _dataSubscriptions)
                 {
                     subscription.OnNewData(data);
                 }
-                await Task.Delay(2_60_000);
-
+                await Task.Delay(2_60_000, _cancellation.Token).ConfigureAwait(false);
             }
+        }
 
+        public void Dispose()
+        {
+            _cancellation.Cancel();
+            _cancellation.Dispose();
+            _cancellation = null;
         }
     }
-
-
 }

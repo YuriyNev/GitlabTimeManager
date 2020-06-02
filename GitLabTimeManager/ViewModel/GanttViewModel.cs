@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
+using JetBrains.Annotations;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
@@ -15,9 +14,9 @@ namespace GitLabTimeManager.ViewModel
 {
     public class GanttViewModel : ViewModelBase
     {
-        public static readonly PropertyData WrappedIssuesProperty = RegisterProperty<GanttViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
-        public static readonly PropertyData FromProperty = RegisterProperty<GanttViewModel, double>(x => x.From);
-        public static readonly PropertyData ToProperty = RegisterProperty<GanttViewModel, double>(x => x.To);
+        [UsedImplicitly] public static readonly PropertyData WrappedIssuesProperty = RegisterProperty<GanttViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
+        [UsedImplicitly] public static readonly PropertyData FromProperty = RegisterProperty<GanttViewModel, double>(x => x.From);
+        [UsedImplicitly] public static readonly PropertyData ToProperty = RegisterProperty<GanttViewModel, double>(x => x.To);
 
         public double To
         {
