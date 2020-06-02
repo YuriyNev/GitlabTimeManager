@@ -74,7 +74,11 @@ namespace GitLabTimeManager.Services
                 {
                     subscription.OnNewData(data);
                 }
-                await Task.Delay(2_60_000, _cancellation.Token).ConfigureAwait(false);
+#if DEBUG
+                await Task.Delay(30_000, _cancellation.Token).ConfigureAwait(true);
+#else
+                await Task.Delay(2_60_000, _cancellation.Token).ConfigureAwait(true);
+#endif
             }
         }
 

@@ -340,7 +340,7 @@ namespace GitLabTimeManager.ViewModel
                 CreatePieSeries(ClosedSpendInPeriod, "Закрытые"),
                 CreatePieSeries(ClosedSpendBefore, "Закрытые (старые)"),
                 CreatePieSeries(OpenSpendBefore, "Открытые (старые)"),
-                CreatePieSeries(remained, "Пропущенные часы"),
+                CreatePieSeries(remained, "Пропущенные часы", Brushes.LightGray),
             };
         }
 
