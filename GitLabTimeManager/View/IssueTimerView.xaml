@@ -91,10 +91,10 @@
 
                 <Button Grid.Column="0" VerticalAlignment="Center"
                         Style="{StaticResource FlatButton}"  
-                        Width="25" Height="25"
+                        Width="28" Height="28"
                         Command="{Binding StopTimeCommand, Mode=OneWay}">
                     <Button.Content>
-                        <iconPacks:MaterialLight Kind="Stop" Width="14" Height="14" />
+                        <iconPacks:PackIconMaterialLight Kind="Flag" />
                     </Button.Content>
                 </Button>
 
@@ -118,11 +118,11 @@
                 <Button Grid.Column="2" 
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"
-                        Width="25" Height="25"
+                        Width="28" Height="28"
                         Style="{StaticResource FlatButton}"  
                         Command="{Binding FullscreenCommand, Mode=OneWay}">
                     <Button.Content>
-                        <iconPacks:PackIconEntypo Kind="ResizeFullScreen" Width="14" Height="14" />
+                        <iconPacks:PackIconEntypo Kind="ResizeFullScreen" Width="13" Height="13" />
                     </Button.Content>
                 </Button>
 

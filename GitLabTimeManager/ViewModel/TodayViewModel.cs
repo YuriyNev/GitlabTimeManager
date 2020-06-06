@@ -12,7 +12,6 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class TodayViewModel : ViewModelBase
     {
-        private ISourceControl SourceControl { get; }
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
         private ICalendar Calendar { get; }
@@ -216,10 +215,9 @@ namespace GitLabTimeManager.ViewModel
         private DateTime StartDate { get; set; }
         private DateTime EndDate { get; set; }
 
-        public TodayViewModel([NotNull] ISourceControl sourceControl, [NotNull] IDataRequestService dataRequestService,
+        public TodayViewModel([NotNull] IDataRequestService dataRequestService,
             [NotNull] ICalendar calendar)
         {
-            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
             DataSubscription = DataRequestService.CreateSubscription();
@@ -279,7 +277,5 @@ namespace GitLabTimeManager.ViewModel
 
             NecessaryDailyEstimate = TimeHelper.DaysToHours(1) * (DesiredEstimate - AllClosedEstimates) / (workingTotalHours - workingCurrentHours);
         }
-
-        
     }
 }
