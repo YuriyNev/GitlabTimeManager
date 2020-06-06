@@ -65,7 +65,6 @@ namespace GitLabTimeManager.ViewModel
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
 
-
             WrappedIssues = new ObservableCollection<WrappedIssue> ();
             IssueCollectionView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
             IssueCollectionView.SortDescriptions.Add(new SortDescription(nameof(WrappedIssue.Issue.Iid), ListSortDirection.Descending));
@@ -79,7 +78,7 @@ namespace GitLabTimeManager.ViewModel
 
         private static bool Filter(object obj) => obj is WrappedIssue wi 
                                                   && wi.Issue.State == IssueState.Opened 
-                                                  && !wi.LabelExes.Contains(LabelsCollection.DistrLabel)
+                                                  && !wi.LabelExes.Contains(LabelsCollection.DistributiveLabel)
                                                   && !wi.LabelExes.Contains(LabelsCollection.RevisionLabel);
 
         private void UpdateData(GitResponse data)

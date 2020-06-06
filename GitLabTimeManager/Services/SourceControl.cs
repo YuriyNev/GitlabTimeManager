@@ -12,17 +12,17 @@ using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
 using GitLabTimeManager.Helpers;
+using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
     public interface ISourceControl 
     {
-        Task<GitResponse> RequestDataAsync();
-        Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
-
-        Task<bool> StartIssueAsync(Issue issue);
-        Task<bool> PauseIssueAsync(Issue issue);
-        Task<bool> FinishIssueAsync(Issue issue);
+        [PublicAPI] Task<GitResponse> RequestDataAsync();
+        [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
+        [PublicAPI] Task<bool> StartIssueAsync(Issue issue);
+        [PublicAPI] Task<bool> PauseIssueAsync(Issue issue);
+        [PublicAPI] Task<bool> FinishIssueAsync(Issue issue);
     }
 
     internal class SourceControl : ISourceControl

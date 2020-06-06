@@ -71,7 +71,7 @@ namespace GitLabTimeManager.Helpers
         public static readonly LabelEx DoingLabel = new LabelEx
             { Name = LabelProcessor.DoingLabel, Color = Color.FromRgb(0, 51, 204) };
 
-        public static readonly LabelEx DistrLabel = new LabelEx
+        public static readonly LabelEx DistributiveLabel = new LabelEx
             { Name = LabelProcessor.DistributiveLabel, Color = Color.FromRgb(209, 0, 105) };
 
         public static readonly LabelEx RevisionLabel = new LabelEx
@@ -85,7 +85,7 @@ namespace GitLabTimeManager.Helpers
 
         public static IEnumerable<LabelEx> Labels { get; } = new List<LabelEx>
         {
-            ToDoLabel, DoingLabel, DistrLabel, RevisionLabel, ProjectControlLabel, SpecTaskLabel
+            ToDoLabel, DoingLabel, DistributiveLabel, RevisionLabel, ProjectControlLabel, SpecTaskLabel
         };
     }
 
