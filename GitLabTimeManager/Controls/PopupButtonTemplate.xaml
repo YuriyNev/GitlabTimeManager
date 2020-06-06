@@ -1,0 +1,82 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:NetVideo.UICommon.Controls"
+                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+
+    <Style x:Key="DefaultToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="MinWidth" Value="26"/>
+        <Setter Property="MinHeight" Value="26"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="Background" Value="DarkGray" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:PopupButton}">
+        <Setter Property="Background" Value="DarkGray" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="ButtonStyle" Value="{StaticResource DefaultToggleButtonStyle}" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Visibility" Value="Visible"/>
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PopupButton}">
+                    <Grid>
+                        <ToggleButton x:Name="PART_ToggleButton"
+                                      IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Visibility="{TemplateBinding Visibility}"
+                                      Command="{TemplateBinding Command}"
+                                      CommandParameter="{TemplateBinding CommandParameter}"
+                                      CommandTarget="{TemplateBinding CommandTarget}"
+                                      Style="{TemplateBinding ButtonStyle}"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <mah:ContentControlEx x:Name="PART_ButtonContent"
+                                                          Margin="{TemplateBinding Margin}"
+                                                          Padding="{TemplateBinding Padding}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalContentAlignment="Center"
+                                                          VerticalContentAlignment="Center"
+                                                          Content="{TemplateBinding Content}"
+                                                          ContentCharacterCasing="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(mah:ControlsHelper.ContentCharacterCasing)}"
+                                                          ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                          RecognizesAccessKey="True"
+                                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                          UseLayoutRounding="False" >
+                            </mah:ContentControlEx>
+                        </ToggleButton>
+                        <Popup x:Name="PART_Popup"
+                                    MinWidth="{TemplateBinding ActualWidth}"
+                                    IsOpen="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    StaysOpen="{Binding StaysOpen, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    PlacementTarget="{Binding ElementName= PART_ToggleButton, Mode=OneWay}"
+                                    Placement="{Binding Placement, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    AllowsTransparency="{Binding AllowsTransparency, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    PopupAnimation="{Binding PopupAnimation, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Child="{Binding PopupContent, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    HorizontalOffset="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    VerticalOffset="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    UseLayoutRounding="False" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using GitLabApiClient.Models.Issues.Responses;
+using GitLabApiClient.Models.Notes.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Tools;
 
@@ -27,6 +29,8 @@ namespace GitLabTimeManager.Services
         public double Estimate => TimeHelper.SecondsToHours(Issue.TimeStats.TimeEstimate);
 
         public ObservableCollection<LabelEx> LabelExes { get; set; }
+
+        public IReadOnlyList<Note> Notes { get; set; }
 
         public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}\t{Estimate:F1}\t";
     }

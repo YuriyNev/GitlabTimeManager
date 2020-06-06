@@ -49,13 +49,13 @@ namespace GitLabTimeManager.ViewModel
         public double AllTodayEstimates
         {
             get => GetValue<double>(AllTodayEstimatesProperty);
-            set => SetValue(AllTodayEstimatesProperty, value);
+            private set => SetValue(AllTodayEstimatesProperty, value);
         }
 
         public double NecessaryDailyEstimate
         {
             get => GetValue<double>(NecessaryDailyEstimateProperty);
-            set => SetValue(NecessaryDailyEstimateProperty, value);
+            private set => SetValue(NecessaryDailyEstimateProperty, value);
         }
 
         public double TodayKPI
@@ -67,7 +67,7 @@ namespace GitLabTimeManager.ViewModel
         public double AverageKPI
         {
             get => GetValue<double>(AverageKPIProperty);
-            set => SetValue(AverageKPIProperty, value);
+            private set => SetValue(AverageKPIProperty, value);
         }
 
         public double DesiredEstimate
@@ -96,13 +96,13 @@ namespace GitLabTimeManager.ViewModel
 
         public bool ShowingEarning
         {
-            get => (bool)GetValue(ShowingEarningProperty);
+            get => GetValue<bool>(ShowingEarningProperty);
             set => SetValue(ShowingEarningProperty, value);
         }
 
         public SeriesCollection EstimatesSeries
         {
-            get => (SeriesCollection)GetValue(EstimatesInPeriodProperty);
+            get => GetValue<SeriesCollection>(EstimatesInPeriodProperty);
             set => SetValue(EstimatesInPeriodProperty, value);
         }
 
@@ -192,7 +192,7 @@ namespace GitLabTimeManager.ViewModel
 
         public SeriesCollection SpendSeries
         {
-            get => (SeriesCollection)GetValue(SpendInPeriodSeriesProperty);
+            get => GetValue<SeriesCollection>(SpendInPeriodSeriesProperty);
             set => SetValue(SpendInPeriodSeriesProperty, value);
         }
 
@@ -236,24 +236,26 @@ namespace GitLabTimeManager.ViewModel
 
             WrappedIssues = data.WrappedIssues;
 
-            // Время по задачам 
-            OpenEstimatesStartedInPeriod = data.OpenEstimatesStartedInPeriod;
-            ClosedEstimatesStartedInPeriod = data.ClosedEstimatesStartedInPeriod;
-            OpenSpendsStartedInPeriod = data.OpenSpendsStartedInPeriod;
-            ClosedSpendsStartedInPeriod = data.ClosedSpendsStartedInPeriod;
+            var stats = StatisticsExtractor.Process(data.WrappedIssues, data.StartDate, data.EndDate);
 
-            OpenEstimatesStartedBefore = data.OpenEstimatesStartedBefore;
-            ClosedEstimatesStartedBefore = data.ClosedEstimatesStartedBefore;
-            OpenSpendsStartedBefore = data.OpenSpendsStartedBefore;
-            ClosedSpendsStartedBefore = data.ClosedSpendsStartedBefore;
+            // Время по задачам 
+            OpenEstimatesStartedInPeriod = stats.OpenEstimatesStartedInPeriod;
+            ClosedEstimatesStartedInPeriod = stats.ClosedEstimatesStartedInPeriod;
+            OpenSpendsStartedInPeriod = stats.OpenSpendsStartedInPeriod;
+            ClosedSpendsStartedInPeriod = stats.ClosedSpendsStartedInPeriod;
+
+            OpenEstimatesStartedBefore = stats.OpenEstimatesStartedBefore;
+            ClosedEstimatesStartedBefore = stats.ClosedEstimatesStartedBefore;
+            OpenSpendsStartedBefore = stats.OpenSpendsStartedBefore;
+            ClosedSpendsStartedBefore = stats.ClosedSpendsStartedBefore;
 
             // Время по задачам фактически за период
-            OpenSpendInPeriod = data.OpenSpendInPeriod;
-            ClosedSpendInPeriod = data.ClosedSpendInPeriod;
-            OpenSpendBefore = data.OpenSpendBefore;
-            ClosedSpendBefore = data.ClosedSpendBefore;
+            OpenSpendInPeriod = stats.OpenSpendInPeriod;
+            ClosedSpendInPeriod = stats.ClosedSpendInPeriod;
+            OpenSpendBefore = stats.OpenSpendBefore;
+            ClosedSpendBefore = stats.ClosedSpendBefore;
 
-            AllTodayEstimates = data.AllTodayEstimates;
+            AllTodayEstimates = stats.AllTodayEstimates;
 
             TotalSpendsStartedInPeriod = OpenSpendsStartedInPeriod + ClosedSpendsStartedInPeriod;
             TotalEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod + ClosedEstimatesStartedInPeriod;

@@ -259,7 +259,6 @@
         </DataTemplate>
     </UserControl.Resources>
     <Grid>
-        
         <ItemsControl>
             <ItemsControl.Style>
                 <Style TargetType="{x:Type ItemsControl}">

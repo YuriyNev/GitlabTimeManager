@@ -61,6 +61,13 @@ namespace GitLabTimeManager.Helpers
             return argLabelExes.Any(argLabelEx => excludeLabel.Contains(argLabelEx));
         }
 
+        public static bool IsExcludeLabels(this IEnumerable<string> argLabelExes)
+        {
+            var excludeLabel = new List<string> { ProjectControlLabel };
+            var r = argLabelExes.Any(argLabelEx => excludeLabel.Contains(argLabelEx));
+            return r;
+        }
+
     }
 
     public static class LabelsCollection

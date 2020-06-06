@@ -17,6 +17,7 @@
 
                 <ResourceDictionary Source="Resources/TrayIconResources.xaml"/>
                 <ResourceDictionary Source="Resources/TinyScrollBarStyle.xaml"/>
+                <ResourceDictionary Source="Controls/PopupButtonTemplate.xaml" />
 
 
             </ResourceDictionary.MergedDictionaries>

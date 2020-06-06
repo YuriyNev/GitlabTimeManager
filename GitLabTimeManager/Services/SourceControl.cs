@@ -63,54 +63,8 @@ namespace GitLabTimeManager.Services
         private static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
         private static DateTime MonthEnd => MonthStart.AddMonths(1);
 
-        private Dictionary<Issue, IList<Note>> AllNotes { get; set; } = new Dictionary<Issue, IList<Note>>();
 
         private ObservableCollection<WrappedIssue> WrappedIssues { get; set; } = new ObservableCollection<WrappedIssue>();
-
-        private ObservableCollection<Issue> AllIssues { get; set; } = new ObservableCollection<Issue>();
-
-#region Stats Properties
-
-        /// <summary> Оценочное время открытых задач, начатых в этом месяце </summary>
-        private double OpenEstimatesStartedInPeriod { get; set; }
-
-        /// <summary> Оценочное время закрытых задач, начатых в этом месяце </summary>
-        private double ClosedEstimatesStartedInPeriod { get; set; }
-
-        /// <summary> Потраченное время открытых задач, начатых в этом месяце </summary>
-        private double OpenSpendsStartedInPeriod { get; set; }
-
-        /// <summary> Потраченное время закрытых задач, начатых ранее </summary>
-        private double ClosedSpendsStartedInPeriod { get; set; }
-
-        /// <summary> Оценочное время открытых задач, начатых ранее </summary>
-        private double OpenEstimatesStartedBefore { get; set; }
-
-        /// <summary> Оценочное время закрытых задач, начатых ранее </summary>
-        private double ClosedEstimatesStartedBefore { get; set; }
-
-        /// <summary> отраченное время открытых задач, начатых ранее </summary>
-        private double OpenSpendsStartedBefore { get; set; }
-
-        /// <summary> Потраченное время закрытых задач, начатых ранее </summary>
-        private double ClosedSpendsStartedBefore { get; set; }
-
-        /// <summary> Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в текущем месяце </summary>
-        private double ClosedSpendInPeriod { get; set; }
-
-        /// <summary> Фактическое время ПОТРАЧЕННОЕ на открытые задачи в текущем месяце </summary>
-        private double OpenSpendInPeriod { get; set; }
-        
-        /// <summary> Фактическое время ПОТРАЧЕННОЕ на закрытые задачи в этом месяце открытые ранее </summary>
-        private double ClosedSpendBefore { get; set; }
-
-        /// <summary> Фактическое время ПОТРАЧЕННОЕ на открытые задачи в этом месяце открытые ранее </summary>
-        private double OpenSpendBefore { get; set; }
-
-        /// <summary> Оценочное время за сегодня </summary>
-        private double AllTodayEstimates { get; set; }
-
-#endregion
 
         private GitLabClient GitLabClient { get; }
 
@@ -126,22 +80,7 @@ namespace GitLabTimeManager.Services
             {
                 StartDate = MonthStart,
                 EndDate = MonthEnd,
-                OpenEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod,
-                ClosedEstimatesStartedInPeriod = ClosedEstimatesStartedInPeriod,
-                OpenSpendsStartedInPeriod = OpenSpendsStartedInPeriod,
-                ClosedSpendsStartedInPeriod = ClosedSpendsStartedInPeriod,
-                OpenEstimatesStartedBefore = OpenEstimatesStartedBefore,
-                ClosedEstimatesStartedBefore = ClosedEstimatesStartedBefore,
-                OpenSpendsStartedBefore = OpenSpendsStartedBefore,
-                ClosedSpendsStartedBefore = ClosedSpendsStartedBefore,
-
-                ClosedSpendInPeriod = ClosedSpendInPeriod,
-                OpenSpendInPeriod = OpenSpendInPeriod,
-                ClosedSpendBefore = ClosedSpendBefore,
-                OpenSpendBefore = OpenSpendBefore,
-
-                AllTodayEstimates = AllTodayEstimates,
-
+                
                 WrappedIssues = WrappedIssues,
 
             };
@@ -205,80 +144,14 @@ namespace GitLabTimeManager.Services
 
         private async Task ComputeStatisticsAsync()
         {
-            AllIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
-            AllNotes = await GetNotesAsync(AllIssues).ConfigureAwait(false);
+            var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
+            var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
 
-            var openIssues = AllIssues.Where(IsOpen).ToList();
-            var closedIssues = AllIssues.Where(IsClosed).ToList();
-
-            WrappedIssues = ExtentIssues(AllIssues, AllNotes, MonthStart, MonthEnd);
-
-            // Most need issues
-            // started in month
-            OpenEstimatesStartedInPeriod = openIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-
-            ClosedEstimatesStartedInPeriod = closedIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd) &&
-                                FinishedInPeriod(issue, MonthStart, MonthEnd))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-
-            OpenSpendsStartedInPeriod = openIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
-
-            ClosedSpendsStartedInPeriod = closedIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], MonthStart, MonthEnd) &&
-                                FinishedInPeriod(issue, MonthStart, MonthEnd))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
-            
-            // started before this month
-            OpenEstimatesStartedBefore = openIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-
-            ClosedEstimatesStartedBefore = closedIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-
-            AllTodayEstimates = AllIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.Today, DateTime.Today.AddDays(1)))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TimeEstimate));
-            
-            foreach (var wrappedIssue in closedIssues) Debug.WriteLine($"{wrappedIssue.Iid} {wrappedIssue.TimeStats.HumanTimeEstimate}");
-
-
-            OpenSpendsStartedBefore = openIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
-
-            ClosedSpendsStartedBefore = closedIssues
-                .Where(issue => StartedInPeriod(issue, AllNotes[issue], DateTime.MinValue, MonthStart))
-                .Sum(x => TimeHelper.SecondsToHours(x.TimeStats.TotalTimeSpent));
-
-            // Потраченное время только в этом месяце
-            // На задачи начатые в этом месяце
-            var withoutExcludes = WrappedIssues.Where(x => !x.LabelExes.IsExcludeLabels()).ToList();
-
-            OpenSpendBefore = withoutExcludes.
-                Where(x => IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
-            ClosedSpendBefore = withoutExcludes.
-                Where(x => IsClosed(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
-            OpenSpendInPeriod = withoutExcludes.
-                Where(x => IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
-            ClosedSpendInPeriod = withoutExcludes.
-                Where(x => IsClosed(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+            WrappedIssues = ExtentIssues(allIssues, allNotes, MonthStart, MonthEnd);
 
             foreach (var wrappedIssue in WrappedIssues) Debug.WriteLine(wrappedIssue);
         }
 
-
-        /// <summary> Задача открыта и не находится на проверке </summary>
-        private static bool IsOpen(Issue issue) => issue.State == IssueState.Opened;
-
-        /// <summary> Задача условно закрыта</summary>
-        private static bool IsClosed(Issue issue) => !IsOpen(issue);
 
         private static DateTime? FinishTime(Issue issue) => issue.ClosedAt;
 
@@ -325,6 +198,9 @@ namespace GitLabTimeManager.Services
 
                 LabelProcessor.UpdateLabelsEx(labelsEx, issue.Labels);
 
+                IReadOnlyList<Note> noteList = Array.Empty<Note>();
+                if (notes.TryGetValue(issue, out var list)) noteList = list.ToList();
+
                 var extIssue = new WrappedIssue
                 {
                     Issue = issue,
@@ -334,6 +210,7 @@ namespace GitLabTimeManager.Services
                     SpendBefore = spendBefore,
                     StartedIn = startedIn,
                     LabelExes = new ObservableCollection<LabelEx>(labelsEx),
+                    Notes = noteList
                 };
                 
                 issues.Add(extIssue);
@@ -396,52 +273,16 @@ namespace GitLabTimeManager.Services
             return notes;
         }
 
-        private static bool StartedInPeriod(Issue issue, IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
-        {
-            var enumerable = notes.ToList();
-            if (!enumerable.Any()) return issue.CreatedAt > startTime && issue.TimeStats.TimeEstimate > 0;
-            
-            foreach (var note in enumerable.Where(note => note.Body.ParseEstimate() > 0))
-                return note.CreatedAt > startTime;
-
-            return !enumerable.Any(x => x.CreatedAt < startTime);
-
-        }
-
-        private static bool FinishedInPeriod(Issue issue, DateTime startTime, DateTime endTime)
-        {
-            return issue.ClosedAt != null && issue.ClosedAt > startTime 
-                                          && issue.ClosedAt < endTime;
-        }
-
         public void Dispose()
         {
         }
-
-        public event EventHandler<GitResponse> NewData;
     }
 
     public class GitResponse
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        /// <summary> Most need properties  </summary>
-        public double OpenEstimatesStartedInPeriod { get; set; }
-        public double ClosedEstimatesStartedInPeriod { get; set; }
-        public double ClosedSpendsStartedInPeriod { get; set; }
-        public double OpenSpendsStartedInPeriod { get; set; }
-        public double OpenEstimatesStartedBefore { get; set; }
-        public double ClosedEstimatesStartedBefore { get; set; }
-        public double OpenSpendsStartedBefore { get; set; }
-        public double ClosedSpendsStartedBefore { get; set; }
-
-        public double ClosedSpendInPeriod { get; set; }
-        public double OpenSpendInPeriod { get; set; }
-        public double OpenSpendBefore { get; set; }
-        public double ClosedSpendBefore { get; set; }
-
-        public double AllTodayEstimates { get; set; }
-        
+       
         public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
     }
 }

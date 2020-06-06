@@ -8,6 +8,8 @@
              xmlns:models="clr-namespace:GitLabTimeManager.Models"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:gl="clr-namespace:System.Globalization;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
     <UserControl.Resources>
@@ -44,6 +46,10 @@
             <Setter Property="LabelPosition" Value="InsideSlice"/>
             <Setter Property="Margin" Value="16 0 0 0"/>
         </Style>
+
+        <DataTemplate x:Key="MonthItemTemplate" DataType="{x:Type system:DateTime}">
+            <TextBlock Text="{Binding ., Mode=OneWay, StringFormat={}{0:MMMM}, ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"/>
+        </DataTemplate>
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -146,7 +152,8 @@
 
         <Border Grid.ColumnSpan="2" Grid.RowSpan="4"
                 Grid.Column="0" Grid.Row="0"
-                VerticalAlignment="Top" HorizontalAlignment="Left">
+                VerticalAlignment="Top" HorizontalAlignment="Left"
+                Visibility="Collapsed">
             <Calendar DisplayMode="Decade" SelectionMode="SingleDate" 
                       SelectedDate="{Binding SelectedDate, Mode=TwoWay}"
                       Width="300" Height="200"
@@ -170,6 +177,14 @@
                        FontSize="32" TextAlignment="Right"/>
         </Border>
 
+        <ComboBox Grid.Column="0" Grid.Row="0" 
+                  BorderThickness="0 0 0 0"
+                  HorizontalAlignment="Left"
+                  Width="100"
+                  ItemsSource="{Binding LastMonths, Mode=OneWay}"
+                  SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
+                  ItemTemplate="{StaticResource MonthItemTemplate}"
+                  Background="{StaticResource MahApps.Brushes.Gray8}"/>
 
         <Button Grid.Column="0" Grid.Row="0"
                 HorizontalAlignment="Left" VerticalAlignment="Top"
