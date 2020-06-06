@@ -83,7 +83,7 @@ namespace GitLabTimeManager.Helpers
         public static readonly LabelEx SpecTaskLabel= new LabelEx
             { Name = LabelProcessor.SpecTaskLabel, Color = Color.FromRgb(0, 0, 0) };
 
-        public static IList<LabelEx> Labels { get; } = new List<LabelEx>
+        public static IEnumerable<LabelEx> Labels { get; } = new List<LabelEx>
         {
             ToDoLabel, DoingLabel, DistrLabel, RevisionLabel, ProjectControlLabel, SpecTaskLabel
         };

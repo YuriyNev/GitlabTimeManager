@@ -300,13 +300,17 @@ namespace GitLabTimeManager.Services
                 if (note != null && note.Count > 0)
                 {
                     // if more 0 notes then getting data from notes
-                    var lst = note.Where(x => x.Body.ParseEstimate() > 0).ToList();
-                    if (lst.Count > 0)
-                        startDate = lst.Min(x => x.CreatedAt);
-                    startedIn = !note.Any(x => x.CreatedAt < monthStart);
+                    var timeNotes = note.
+                        Where(x => x.Body.ParseSpent() > 0 || x.Body.ParseEstimate() > 0).
+                        ToList();
 
-                    spendIn = CollectSpendTime(note, monthStart, monthEnd).TotalHours;
-                    spendBefore = CollectSpendTime(note, DateTime.MinValue, monthStart).TotalHours;
+                    if (timeNotes.Count > 0)
+                        startDate = timeNotes.Min(x => x.CreatedAt);
+                    startedIn = !timeNotes.
+                        Any(x => x.CreatedAt < monthStart);
+
+                    spendIn = CollectSpendTime(timeNotes, monthStart, monthEnd).TotalHours;
+                    spendBefore = CollectSpendTime(timeNotes, DateTime.MinValue, monthStart).TotalHours;
                 }
                 
                 // spend is set when issue was created

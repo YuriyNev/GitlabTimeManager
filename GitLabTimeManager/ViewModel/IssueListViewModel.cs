@@ -9,6 +9,7 @@ using Catel.MVVM;
 using JetBrains.Annotations;
 using Catel.Data;
 using GitLabApiClient.Models.Issues.Responses;
+using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
 
 namespace GitLabTimeManager.ViewModel
@@ -76,7 +77,10 @@ namespace GitLabTimeManager.ViewModel
             UpdateData(e);
         }
 
-        private static bool Filter(object obj) => obj is WrappedIssue wi && wi.Issue.State == IssueState.Opened;
+        private static bool Filter(object obj) => obj is WrappedIssue wi 
+                                                  && wi.Issue.State == IssueState.Opened 
+                                                  && !wi.LabelExes.Contains(LabelsCollection.DistrLabel)
+                                                  && !wi.LabelExes.Contains(LabelsCollection.RevisionLabel);
 
         private void UpdateData(GitResponse data)
         {

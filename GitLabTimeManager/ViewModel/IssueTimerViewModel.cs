@@ -121,8 +121,6 @@ namespace GitLabTimeManager.ViewModel
         
         private void PauseTime()
         {
-            PauseIssue(Issue);
-
             SaveSpend();
             RedrawIssue();
             _timer.Stop();
