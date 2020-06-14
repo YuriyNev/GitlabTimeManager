@@ -57,17 +57,12 @@ namespace GitLabTimeManager.Helpers
 
         public static bool IsExcludeLabels(this IEnumerable<LabelEx> argLabelExes)
         {
-            var excludeLabel = new List<LabelEx> { LabelsCollection.ProjectControlLabel };
+            var excludeLabel = new List<LabelEx>
+            {
+                LabelsCollection.ProjectManagmentLabel
+            };
             return argLabelExes.Any(argLabelEx => excludeLabel.Contains(argLabelEx));
         }
-
-        public static bool IsExcludeLabels(this IEnumerable<string> argLabelExes)
-        {
-            var excludeLabel = new List<string> { ProjectControlLabel };
-            var r = argLabelExes.Any(argLabelEx => excludeLabel.Contains(argLabelEx));
-            return r;
-        }
-
     }
 
     public static class LabelsCollection
@@ -84,7 +79,7 @@ namespace GitLabTimeManager.Helpers
         public static readonly LabelEx RevisionLabel = new LabelEx
             { Name = LabelProcessor.RevisionLabel, Color = Color.FromRgb(68, 173, 142) };
         
-        public static readonly LabelEx ProjectControlLabel = new LabelEx
+        public static readonly LabelEx ProjectManagmentLabel = new LabelEx
             { Name = LabelProcessor.ProjectControlLabel, Color = Color.FromRgb(209, 209, 0) };
         
         public static readonly LabelEx SpecTaskLabel= new LabelEx
@@ -92,7 +87,7 @@ namespace GitLabTimeManager.Helpers
 
         public static IEnumerable<LabelEx> Labels { get; } = new List<LabelEx>
         {
-            ToDoLabel, DoingLabel, DistributiveLabel, RevisionLabel, ProjectControlLabel, SpecTaskLabel
+            ToDoLabel, DoingLabel, DistributiveLabel, RevisionLabel, ProjectManagmentLabel, SpecTaskLabel
         };
     }
 

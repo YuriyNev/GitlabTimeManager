@@ -17,7 +17,7 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class IssueListViewModel : ViewModelBase
     {
-        [UsedImplicitly] public static readonly PropertyData PropertyDataProperty = RegisterProperty<IssueListViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
+        [UsedImplicitly] public static readonly PropertyData WrappedIssuesProperty = RegisterProperty<IssueListViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
         [UsedImplicitly] public static readonly PropertyData CurrentIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.CurrentIssue);
         [UsedImplicitly] public static readonly PropertyData IssueTimerVmProperty = RegisterProperty<IssueListViewModel, IssueTimerViewModel>(x => x.IssueTimerVm);
         [UsedImplicitly] public static readonly PropertyData SelectedIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.SelectedIssue);
@@ -44,12 +44,12 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(IssueTimerVmProperty, value);
         }
 
-        public WrappedIssue CurrentIssue => GetValue<WrappedIssue>(CurrentIssueProperty);
+        private WrappedIssue CurrentIssue => GetValue<WrappedIssue>(CurrentIssueProperty);
 
         public ObservableCollection<WrappedIssue> WrappedIssues
         {
-            get => GetValue<ObservableCollection<WrappedIssue>>(PropertyDataProperty);
-            set => SetValue(PropertyDataProperty, value);
+            get => GetValue<ObservableCollection<WrappedIssue>>(WrappedIssuesProperty);
+            set => SetValue(WrappedIssuesProperty, value);
         }
 
         private ISourceControl SourceControl { get; }
@@ -121,5 +121,4 @@ namespace GitLabTimeManager.ViewModel
             return base.OnClosingAsync();
         }
     }
-
 }

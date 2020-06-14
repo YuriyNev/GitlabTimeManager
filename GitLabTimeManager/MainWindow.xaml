@@ -27,6 +27,9 @@
         <DataTemplate DataType="{x:Type viewModel:TodayViewModel}">
             <view:TodayView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:ReportViewModel}">
+            <view:ReportView />
+        </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
                 <TextBlock Text="{Binding}" FontSize="14" />
@@ -84,6 +87,11 @@
             <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                      Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                 <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
+                                Margin="0 4 0 0"/>
+            </TabItem>
+            <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
                                 Margin="0 4 0 0"/>
             </TabItem>
             <!--<TabItem Header="Диаграмма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}"

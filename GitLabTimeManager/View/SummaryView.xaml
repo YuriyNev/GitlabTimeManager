@@ -14,7 +14,7 @@
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
     <UserControl.Resources>
         <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models:StatsBlock}">
-            <Border BorderBrush="LightGray" BorderThickness="0 0 0 1" MaxWidth="100" Margin="12 0 0 0">
+            <Border BorderBrush="LightGray" BorderThickness="0 0 0 1" MaxWidth="120" Margin="12 0 0 0">
                 <Grid Margin="0 4 0 0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -26,10 +26,10 @@
                                FontFamily="{DynamicResource MahApps.Fonts.Family.Control}"/>
                     <StackPanel Grid.Row="1" 
                                 Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F0}}" FontSize="16"
+                        <TextBlock Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F1}}" FontSize="16"
                                    FontWeight="Bold" Margin="8"/>
                         <TextBlock Text="/" FontSize="16" Margin="8"/>
-                        <TextBlock Text="{Binding Total, Mode=OneWay, StringFormat={}{0:F0}}" FontSize="16"
+                        <TextBlock Text="{Binding Total, Mode=OneWay, StringFormat={}{0:F1}}" FontSize="16"
                                    FontWeight="Bold" Margin="8"/>
                     </StackPanel>
                 </Grid>
@@ -152,20 +152,6 @@
 
         <Border Grid.ColumnSpan="2" Grid.RowSpan="4"
                 Grid.Column="0" Grid.Row="0"
-                VerticalAlignment="Top" HorizontalAlignment="Left"
-                Visibility="Collapsed">
-            <Calendar DisplayMode="Decade" SelectionMode="SingleDate" 
-                      SelectedDate="{Binding SelectedDate, Mode=TwoWay}"
-                      Width="300" Height="200"
-                      Margin="0 30 0 0"
-                      Visibility="{Binding ShowingCalendar, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <b:Interaction.Behaviors>
-                    <behavior:MonthCalendarBehavior />
-                </b:Interaction.Behaviors>
-            </Calendar>
-        </Border>
-        <Border Grid.ColumnSpan="2" Grid.RowSpan="4"
-                Grid.Column="0" Grid.Row="0"
                 VerticalAlignment="Top" HorizontalAlignment="Right"
                 CornerRadius="5" Background="White"
                 Visibility="{Binding ShowingEarning, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -184,25 +170,9 @@
                   ItemsSource="{Binding LastMonths, Mode=OneWay}"
                   SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
                   ItemTemplate="{StaticResource MonthItemTemplate}"
-                  Background="{StaticResource MahApps.Brushes.Gray8}"/>
+                  Background="{StaticResource MahApps.Brushes.Gray8}"
+                  Visibility="Collapsed"/>
 
-        <Button Grid.Column="0" Grid.Row="0"
-                HorizontalAlignment="Left" VerticalAlignment="Top"
-                FontSize="14"
-                Height="25"
-                Width="100"
-                Cursor="Hand"
-                Padding="0"
-                BorderThickness="0"
-                Command="{Binding ShowCalendarCommand, Mode=OneWay}"
-                BorderBrush="{x:Null}"
-                Visibility="Collapsed"
-                Style="{StaticResource MahApps.Styles.Button.Flat}">
-            <Button.Content> 
-                <TextBlock Text="{Binding SelectedDate.Date, StringFormat={}MMM, Mode=OneWay}" 
-                           FontSize="12" TextAlignment="Right"/>
-            </Button.Content>
-        </Button>
         <Button Grid.Column="1" Grid.Row="0"
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 FontSize="14"

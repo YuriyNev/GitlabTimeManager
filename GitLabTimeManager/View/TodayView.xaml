@@ -15,7 +15,7 @@
                       TitleFontSize="11"
                       Width="150" Height="150">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding AverageKPI, Mode=OneWay}"
+                    <TextBlock Text="{Binding AverageKPI, Mode=OneWay, StringFormat={}{0:F1}}"
                                FontSize="36"
                                FontWeight="Bold"
                                VerticalAlignment="Bottom"

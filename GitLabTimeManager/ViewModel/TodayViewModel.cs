@@ -212,9 +212,6 @@ namespace GitLabTimeManager.ViewModel
 
         #endregion
 
-        private DateTime StartDate { get; set; }
-        private DateTime EndDate { get; set; }
-
         public TodayViewModel([NotNull] IDataRequestService dataRequestService,
             [NotNull] ICalendar calendar)
         {
@@ -231,12 +228,9 @@ namespace GitLabTimeManager.ViewModel
 
         private async void UpdateData(GitResponse data)
         {
-            StartDate = data.StartDate;
-            EndDate = data.EndDate;
-
             WrappedIssues = data.WrappedIssues;
 
-            var stats = StatisticsExtractor.Process(data.WrappedIssues, data.StartDate, data.EndDate);
+            var stats = StatisticsExtractor.Process(data.WrappedIssues, TimeHelper.StartDate, TimeHelper.EndDate);
 
             // Время по задачам 
             OpenEstimatesStartedInPeriod = stats.OpenEstimatesStartedInPeriod;
@@ -265,8 +259,8 @@ namespace GitLabTimeManager.ViewModel
 
             var moneyCalculator = new MoneyCalculator();
 
-            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(StartDate, DateTime.Now).ConfigureAwait(true)).TotalHours;
-            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(StartDate, EndDate).ConfigureAwait(true)).TotalHours;
+            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(TimeHelper.StartDate, DateTime.Now).ConfigureAwait(true)).TotalHours;
+            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(TimeHelper.StartDate, TimeHelper.EndDate).ConfigureAwait(true)).TotalHours;
             ActualDesiredEstimate = workingCurrentHours / workingTotalHours * moneyCalculator.DesiredEstimate;
             DesiredEstimate = moneyCalculator.DesiredEstimate;
 

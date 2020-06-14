@@ -54,7 +54,6 @@ namespace GitLabTimeManager
 #if !DEBUG
             //serviceLocator.RegisterTypeAndInstantiate<ExceptionWatcher>();
 #endif
-           ServiceLocator.Default.RegisterType<ITestService, TestService>();
            ServiceLocator.Default.RegisterType<ISourceControl, SourceControl>();
            ServiceLocator.Default.RegisterType<IMoneyCalculator, MoneyCalculator>();
            ServiceLocator.Default.RegisterType<ICalendar, WorkingCalendar>();
@@ -68,5 +67,4 @@ namespace GitLabTimeManager
             Debug.WriteLine(e.Tag);
         }
     }
-
 }

@@ -21,6 +21,11 @@ namespace GitLabTimeManager.Helpers
         private const double DaysPerWeek = 5;
         private const double WeeksPerMonth = 4;
 
+        public static DateTime Today => DateTime.Today;
+        public static DateTime StartDate => DateTime.Today.AddDays(-DateTime.Today.Day).AddDays(1);
+        public static DateTime EndDate => StartDate.AddMonths(1);
+        public static DateTime StartPastDate => StartDate.AddMonths(-3);
+
         // Parse spent time in hours
         public static double ParseSpent(this string textDate)
         {
@@ -122,8 +127,5 @@ namespace GitLabTimeManager.Helpers
                 return DateTime.Now > nightTime;
             }
         }
-
-        public static DateTime MonthStart => DateTime.Today.AddDays(-DateTime.Today.Day).AddDays(1);
-        public static DateTime MonthEnd => MonthStart.AddMonths(1);
     }
 }

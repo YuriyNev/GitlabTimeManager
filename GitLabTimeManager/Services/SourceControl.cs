@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Catel.Collections;
@@ -16,9 +15,9 @@ using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
-    public interface ISourceControl 
+    public interface ISourceControl
     {
-        [PublicAPI] Task<GitResponse> RequestDataAsync();
+        [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime startTime, DateTime endTime);
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task<bool> StartIssueAsync(Issue issue);
         [PublicAPI] Task<bool> PauseIssueAsync(Issue issue);
@@ -32,40 +31,27 @@ namespace GitLabTimeManager.Services
         //private const string Token = "KajKr2cVJ4amosry9p4v";
         //private const string Uri = "https://gitlab.com";
 
-        private static int ClientDominationId = 14;
-        private static int AnalyticsServerId = 16;
-
+        private const int ClientDominationId = 14;
+        private const int AnalyticsId = 16;
 
         private static readonly IReadOnlyList<int> ProjectIds = new List<int>
         {
-            ClientDominationId, AnalyticsServerId
+            ClientDominationId, AnalyticsId
         };
         private const string Token = "gTUPn2KdhEFUMR3oQL81";
         private const string Uri = "http://gitlab.domination";
 #else
         private static int ClientDominationId = 14;
-        private static int AnalyticsServerId = 16;
+        private static int AnalyticsId = 16;
 
         private static readonly IReadOnlyList<int> ProjectIds = new List<int>
         {
-            ClientDominationId, AnalyticsServerId
+            ClientDominationId, AnalyticsId
         };
         private const string Token = "gTUPn2KdhEFUMR3oQL81";
         private const string Uri = "http://gitlab.domination";
 #endif
-        // dont calc
-        private static readonly IReadOnlyList<LabelEx> ExcludeLabels = new List<LabelEx>
-        {
-            LabelsCollection.ProjectControlLabel
-        };
-
-        private static DateTime Today => DateTime.Today;
-        private static DateTime MonthStart => Today.AddDays(-Today.Day).AddDays(1);
-        private static DateTime MonthEnd => MonthStart.AddMonths(1);
-
-
-        private ObservableCollection<WrappedIssue> WrappedIssues { get; set; } = new ObservableCollection<WrappedIssue>();
-
+        
         private GitLabClient GitLabClient { get; }
 
         public SourceControl()
@@ -73,18 +59,15 @@ namespace GitLabTimeManager.Services
             GitLabClient = new GitLabClient(Uri, Token);
         }
 
-        public async Task<GitResponse> RequestDataAsync()
+        public async Task<GitResponse> RequestDataAsync(DateTime startTime, DateTime endTime)
         {
-            await ComputeStatisticsAsync().ConfigureAwait(true);
-            var response = new GitResponse
+            var wrappedIssues = await GetPreparedDataAsync().ConfigureAwait(true);
+            return new GitResponse
             {
-                StartDate = MonthStart,
-                EndDate = MonthEnd,
-                
-                WrappedIssues = WrappedIssues,
-
+                StartDate = startTime,
+                EndDate = endTime,
+                WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues),
             };
-            return response;
         }
 
         public async Task AddSpendAsync(Issue issue, TimeSpan timeSpan)
@@ -142,21 +125,32 @@ namespace GitLabTimeManager.Services
             return true;
         }
 
-        private async Task ComputeStatisticsAsync()
+        private bool _isAction;
+
+        private async Task<IEnumerable<WrappedIssue>> GetPreparedDataAsync()
         {
-            var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
-            var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+            if (_isAction)
+                return null;
 
-            WrappedIssues = ExtentIssues(allIssues, allNotes, MonthStart, MonthEnd);
+            try
+            {
+                _isAction = true;
 
-            foreach (var wrappedIssue in WrappedIssues) Debug.WriteLine(wrappedIssue);
+                var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
+                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+                return ExtentIssues(allIssues, allNotes);
+            }
+            finally
+            { 
+                _isAction = false;
+            }
         }
-
 
         private static DateTime? FinishTime(Issue issue) => issue.ClosedAt;
 
-        private static ObservableCollection<WrappedIssue> ExtentIssues(IEnumerable<Issue> sourceIssues, IReadOnlyDictionary<Issue, IList<Note>> notes,
-            DateTime monthStart, DateTime monthEnd)
+        private static IEnumerable<WrappedIssue> ExtentIssues(
+            IEnumerable<Issue> sourceIssues, 
+            IReadOnlyDictionary<Issue, IList<Note>> notes)
         {
             var issues = new ObservableCollection<WrappedIssue>();
             var labelsEx = new ObservableCollection<LabelEx>();
@@ -165,11 +159,11 @@ namespace GitLabTimeManager.Services
                 notes.TryGetValue(issue, out var note);
 
                 DateTime? startDate = null;
-                var startedIn = false;
-                double spendIn = 0;
-                double spendBefore = 0;
 
                 double totalSpend = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent);
+                double totalYieldSpend = 0.0;
+                var spendDictionary = new Dictionary<DateRange, double>();
+
                 if (note != null && note.Count > 0)
                 {
                     // if more 0 notes then getting data from notes
@@ -179,38 +173,41 @@ namespace GitLabTimeManager.Services
 
                     if (timeNotes.Count > 0)
                         startDate = timeNotes.Min(x => x.CreatedAt);
-                    startedIn = !timeNotes.
-                        Any(x => x.CreatedAt < monthStart);
 
-                    spendIn = CollectSpendTime(timeNotes, monthStart, monthEnd).TotalHours;
-                    spendBefore = CollectSpendTime(timeNotes, DateTime.MinValue, monthStart).TotalHours;
+                    var currentDate = TimeHelper.StartPastDate;
+                    var endDate = TimeHelper.EndDate;
+
+                    while (currentDate < endDate)
+                    {
+                        var endPeriodDate = currentDate.
+                            AddDays(1).
+                            AddTicks(-1);
+
+                        var spend = CollectSpendTime(timeNotes, currentDate, endPeriodDate).TotalHours;
+                        spendDictionary.Add(new DateRange(currentDate, endPeriodDate), spend);
+                        totalYieldSpend += spend;
+                        currentDate = currentDate.AddDays(1);
+                    }
                 }
                 
                 // spend is set when issue was created
-                var startSpend = totalSpend - (spendIn + spendBefore);
+                var startSpend = totalSpend - totalYieldSpend;
                 if (startSpend > 0)
                 {
-                    if (startedIn)
-                        spendIn += startSpend;
-                    else
-                        spendBefore += startSpend;
+                    var minDate = spendDictionary.Keys.Min(x => x.StartDate);
+                    var minKey = spendDictionary.Keys.First(x => x.StartDate == minDate);
+                    spendDictionary[minKey] += startSpend;
                 }
 
                 LabelProcessor.UpdateLabelsEx(labelsEx, issue.Labels);
-
-                IReadOnlyList<Note> noteList = Array.Empty<Note>();
-                if (notes.TryGetValue(issue, out var list)) noteList = list.ToList();
 
                 var extIssue = new WrappedIssue
                 {
                     Issue = issue,
                     StartTime = startDate,
                     EndTime = FinishTime(issue),
-                    SpendIn = spendIn,
-                    SpendBefore = spendBefore,
-                    StartedIn = startedIn,
+                    Spends = spendDictionary,
                     LabelExes = new ObservableCollection<LabelEx>(labelsEx),
-                    Notes = noteList
                 };
                 
                 issues.Add(extIssue);
@@ -235,23 +232,24 @@ namespace GitLabTimeManager.Services
             var allIssues = new ObservableCollection<Issue>();
             foreach (var projectId in ProjectIds)
             {
-                var issues = await GitLabClient.Issues.GetAsync(projectId, options =>
-                {
-                    options.Scope = Scope.AssignedToMe;
-                    options.CreatedAfter = Today.AddMonths(-6);
-                    options.State = IssueState.All;
-                }).ConfigureAwait(false);
+                var issues = await GitLabClient.Issues.GetAllAsync(projectId, null, Options).ConfigureAwait(false);
 
                 issues = issues.Where(x => x.State == IssueState.Closed && 
-                                           x.ClosedAt != null && 
-                                           x.ClosedAt > MonthStart && 
-                                           x.ClosedAt < MonthEnd || 
+                                           x.ClosedAt != null 
+                                           ||
                                            x.State == IssueState.Opened).ToList();
 
                 allIssues.AddRange(issues);
             }
 
             return allIssues;
+        }
+
+        private static void Options(IssuesQueryOptions options)
+        {
+            options.Scope = Scope.AssignedToMe;
+            options.CreatedAfter = TimeHelper.Today.AddMonths(-6);
+            options.State = IssueState.All;
         }
 
         private static TimeSpan CollectSpendTime(IEnumerable<Note> notes, DateTime? startTime = null, DateTime? endTime = null)
@@ -272,9 +270,35 @@ namespace GitLabTimeManager.Services
             var notes = await GitLabClient.Issues.GetNotesAsync(projectId, issueId).ConfigureAwait(false);
             return notes;
         }
+    }
 
-        public void Dispose()
+    public readonly struct DateRange : IEquatable<DateRange>
+    {
+        public DateTime StartDate { get; }
+        public DateTime EndDate { get; }
+
+        public bool Equals(DateRange other)
         {
+            return StartDate.Equals(other.StartDate) && EndDate.Equals(other.EndDate);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DateRange other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (StartDate.GetHashCode() * 397) ^ EndDate.GetHashCode();
+            }
+        }
+
+        public DateRange(DateTime startDate, DateTime endDate)
+        {
+            StartDate = startDate;
+            EndDate = endDate;
         }
     }
 

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using GitLabApiClient.Models.Issues.Responses;
-using GitLabApiClient.Models.Notes.Responses;
 using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
@@ -20,73 +18,95 @@ namespace GitLabTimeManager.Services
             var closedIssues = issues.Where(x => IsClosed(x.Issue)).ToList();
 
             statistics.OpenEstimatesStartedInPeriod = openIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, startDate, endTime))
+                .Where(issue => StartedIn(issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.ClosedEstimatesStartedInPeriod = closedIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, startDate, endTime) &&
+                .Where(issue => StartedIn(issue, startDate, endTime) &&
                                 FinishedInPeriod(issue.Issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.OpenSpendsStartedInPeriod = openIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, startDate, endTime))
+                .Where(issue => StartedIn(issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             statistics.ClosedSpendsStartedInPeriod = closedIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, startDate, endTime) &&
+                .Where(issue => StartedIn(issue, startDate, endTime) &&
                                 FinishedInPeriod(issue.Issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
             
             // started before this month
             statistics.OpenEstimatesStartedBefore = openIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.ClosedEstimatesStartedBefore = closedIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.AllTodayEstimates = issues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, DateTime.Today.AddDays(-6), DateTime.Today.AddDays(1)))
+                .Where(issue => StartedIn(issue, DateTime.Today.AddDays(-6), DateTime.Today.AddDays(1)))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
             
-            foreach (var wrappedIssue in closedIssues) Debug.WriteLine($"{wrappedIssue.Issue.Iid} {wrappedIssue.Issue.TimeStats.HumanTimeEstimate}");
-
-
             statistics.OpenSpendsStartedBefore = openIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             statistics.ClosedSpendsStartedBefore = closedIssues
-                .Where(issue => StartedInPeriod(issue.Issue, issue.Notes, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             // Потраченное время только в этом месяце
             // На задачи начатые в этом месяце
-            var withoutExcludes = issues.Where(x => !x.LabelExes.IsExcludeLabels()).ToList();
+            var withoutExcludes = issues.
+                Where(x => !x.LabelExes.IsExcludeLabels()).ToList();
 
             statistics.OpenSpendBefore = withoutExcludes.
-                Where(x => IsOpen(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
+                Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).
+                Where(x => !StartedIn(x, startDate, endTime)).
+                Sum(x => SpendsSum(x, startDate, endTime));
+
             statistics.ClosedSpendBefore = withoutExcludes.
-                Where(x => IsClosed(x.Issue) && !x.StartedIn).Sum(x => x.SpendIn);
+                Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
+                Where(x => !StartedIn(x, startDate, endTime)).
+                Sum(x => SpendsSum(x, startDate, endTime));
+
             statistics.OpenSpendInPeriod = withoutExcludes.
-                Where(x => IsOpen(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+                Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).
+                Where(x => StartedIn(x, startDate, endTime)).
+                Sum(x => SpendsSum(x, startDate, endTime));
+            
             statistics.ClosedSpendInPeriod = withoutExcludes.
-                Where(x => IsClosed(x.Issue) && x.StartedIn).Sum(x => x.SpendIn);
+                Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
+                Where(x => StartedIn(x, startDate, endTime)).
+                Sum(x => SpendsSum(x, startDate, endTime));
 
             return statistics;
         }
 
-        private static bool StartedInPeriod(Issue issue, IEnumerable<Note> notes, DateTime startTime, DateTime endTime)
+        public static double SpendsSum(WrappedIssue issue, DateTime startDate, DateTime endDate)
         {
-            var enumerable = notes.ToList();
-            if (!enumerable.Any()) return issue.CreatedAt > startTime && issue.TimeStats.TimeEstimate > 0;
+            return issue.Spends.Keys.
+                Where(x => x.StartDate >= startDate && x.EndDate <= endDate).
+                Sum(key => issue.Spends[key]);
+        }
+        
+        private static bool StartedIn(WrappedIssue issue, DateTime startTime, DateTime endTime)
+        {
+            var spends = issue.Spends;
+            // if no spends
+            if (!spends.Any())
+                return issue.Issue.CreatedAt > startTime && issue.Issue.CreatedAt < endTime &&
+                       issue.Issue.TimeStats.TimeEstimate > 0;
+
+            // search min date with not zero time
+            var noZeroSpends = spends.Where(x => x.Value > 0);
+
+            var pairs = noZeroSpends.ToList();
+            if (!pairs.Any()) return false;
             
-            foreach (var note in enumerable.Where(note => note.Body.ParseEstimate() > 0))
-                return note.CreatedAt > startTime;
-
-            return !enumerable.Any(x => x.CreatedAt < startTime);
-
+            var date = pairs.Select(x => x.Key).Min(x => x.StartDate);
+            return date >= startTime && date <= endTime;
         }
 
         private static bool FinishedInPeriod(Issue issue, DateTime startTime, DateTime endTime)
@@ -97,11 +117,24 @@ namespace GitLabTimeManager.Services
 
         /// <summary> Задача открыта и не находится на проверке </summary>
         private static bool IsOpen(Issue issue) => issue.State == IssueState.Opened;
+        private static bool IsOpenAtMoment(Issue issue, DateTime startDate, DateTime endDate)
+        {
+            return issue.State switch
+            {
+                IssueState.Opened => issue.CreatedAt < endDate,
+                IssueState.Closed => issue.ClosedAt != null && (issue.ClosedAt < startDate || issue.ClosedAt > endDate) && issue.CreatedAt < endDate,
+                IssueState.All => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        private static bool IsCloseAtMoment(Issue issue, DateTime startDate, DateTime endDate) =>
+            !IsOpenAtMoment(issue, startDate, endDate);
 
         /// <summary> Задача условно закрыта</summary>
         private static bool IsClosed(Issue issue) => !IsOpen(issue);
     }
-
+    
     public struct GitStatistics
     {
         public DateTime StartDate { get; set; }

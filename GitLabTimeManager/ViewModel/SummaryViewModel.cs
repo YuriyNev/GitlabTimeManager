@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using Catel.Data;
 using Catel.MVVM;
+using Catel.Threading;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Models;
 using GitLabTimeManager.Services;
@@ -18,42 +19,49 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class SummaryViewModel : ViewModelBase
     {
-        private ICalendar Calendar { get; }
-        private IDataRequestService DataRequestService { get; }
-        private IMoneyCalculator MoneyCalculator { get; }
-        private IDataSubscription DataSubscription { get; }
+        [NotNull] private ICalendar Calendar { get; }
+        [NotNull] private IDataRequestService DataRequestService { get; }
+        [NotNull] private IMoneyCalculator MoneyCalculator { get; }
+        [NotNull] private IDataSubscription DataSubscription { get; }
 
         #region Properties
-        public static readonly PropertyData TotalSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedInPeriod);
-        public static readonly PropertyData TotalEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalEstimatesStartedInPeriod);
-        public static readonly PropertyData TotalSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedBefore);
-        public static readonly PropertyData TotalEstimatesStaredBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalEstimatesStartedBefore);
+        [UsedImplicitly] public static readonly PropertyData TotalSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedInPeriod);
+        [UsedImplicitly] public static readonly PropertyData TotalEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalEstimatesStartedInPeriod);
+        [UsedImplicitly] public static readonly PropertyData TotalSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedBefore);
+        [UsedImplicitly] public static readonly PropertyData TotalEstimatesStaredBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalEstimatesStartedBefore);
+                         
+        [UsedImplicitly] public static readonly PropertyData OpenSpendInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendInPeriod);
+        [UsedImplicitly] public static readonly PropertyData ClosedSpendInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendInPeriod);
+        [UsedImplicitly] public static readonly PropertyData SpendInPeriodSeriesProperty = RegisterProperty<SummaryViewModel, SeriesCollection>(x => x.SpendSeries, new SeriesCollection());
+        [UsedImplicitly] public static readonly PropertyData ClosedSpendBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendBefore);
+        [UsedImplicitly] public static readonly PropertyData OpenSpendBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendBefore);
+        [UsedImplicitly] public static readonly PropertyData OpenEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenEstimatesStartedInPeriod);
+        [UsedImplicitly] public static readonly PropertyData ClosedEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedEstimatesStartedInPeriod);
+        [UsedImplicitly] public static readonly PropertyData ClosedSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendsStartedInPeriod);
+        [UsedImplicitly] public static readonly PropertyData OpenSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendsStartedInPeriod);
+        [UsedImplicitly] public static readonly PropertyData OpenEstimatesStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenEstimatesStartedBefore);
+        [UsedImplicitly] public static readonly PropertyData ClosedEstimatesStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedEstimatesStartedBefore);
+        [UsedImplicitly] public static readonly PropertyData OpenSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendsStartedBefore);
+        [UsedImplicitly] public static readonly PropertyData ClosedSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendsStartedBefore);
+        [UsedImplicitly] public static readonly PropertyData EstimatesInPeriodProperty = RegisterProperty<SummaryViewModel, SeriesCollection>(x => x.EstimatesSeries, new SeriesCollection());
+        [UsedImplicitly] public static readonly PropertyData ShowingEarningProperty = RegisterProperty<SummaryViewModel, bool>(x => x.ShowingEarning);
+        [UsedImplicitly] public static readonly PropertyData EarningProperty = RegisterProperty<SummaryViewModel, double>(x => x.Earning);
+        [UsedImplicitly] public static readonly PropertyData AllClosedEstimatesProperty = RegisterProperty<SummaryViewModel, double>(x => x.AllClosedEstimates);
+        [UsedImplicitly] public static readonly PropertyData ActualDesiredEstimateProperty = RegisterProperty<SummaryViewModel, double>(x => x.ActualDesiredEstimate);
+        [UsedImplicitly] public static readonly PropertyData DesiredEstimateProperty = RegisterProperty<SummaryViewModel, double>(x => x.DesiredEstimate);
+        [UsedImplicitly] public static readonly PropertyData AverageKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.AverageKPI);
+        [UsedImplicitly] public static readonly PropertyData TodayKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.TodayKPI);
+        [UsedImplicitly] public static readonly PropertyData SelectedDateProperty = RegisterProperty<SummaryViewModel, DateTime?>(x => x.SelectedDate, () => DateTime.Now);
+        [UsedImplicitly] public static readonly PropertyData LastMonthsProperty = RegisterProperty<SummaryViewModel, ObservableCollection<DateTime>>(x => x.LastMonths, new ObservableCollection<DateTime>());
+        [UsedImplicitly] public static readonly PropertyData SelectedMonthProperty = RegisterProperty<SummaryViewModel, DateTime>(x => x.SelectedMonth);
+        [UsedImplicitly] public static readonly PropertyData DataProperty = RegisterProperty<SummaryViewModel, GitResponse>(x => x.Data);
 
-        public static readonly PropertyData OpenSpendInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendInPeriod);
-        public static readonly PropertyData ClosedSpendInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendInPeriod);
-        public static readonly PropertyData SpendInPeriodSeriesProperty = RegisterProperty<SummaryViewModel, SeriesCollection>(x => x.SpendSeries, new SeriesCollection());
-        public static readonly PropertyData ClosedSpendBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendBefore);
-        public static readonly PropertyData OpenSpendBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendBefore);
-        public static readonly PropertyData OpenEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenEstimatesStartedInPeriod);
-        public static readonly PropertyData ClosedEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedEstimatesStartedInPeriod);
-        public static readonly PropertyData ClosedSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendsStartedInPeriod);
-        public static readonly PropertyData OpenSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendsStartedInPeriod);
-        public static readonly PropertyData OpenEstimatesStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenEstimatesStartedBefore);
-        public static readonly PropertyData ClosedEstimatesStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedEstimatesStartedBefore);
-        public static readonly PropertyData OpenSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.OpenSpendsStartedBefore);
-        public static readonly PropertyData ClosedSpendsStartedBeforeProperty = RegisterProperty<SummaryViewModel, double>(x => x.ClosedSpendsStartedBefore);
-        public static readonly PropertyData EstimatesInPeriodProperty = RegisterProperty<SummaryViewModel, SeriesCollection>(x => x.EstimatesSeries, new SeriesCollection());
-        public static readonly PropertyData ShowingEarningProperty = RegisterProperty<SummaryViewModel, bool>(x => x.ShowingEarning);
-        public static readonly PropertyData EarningProperty = RegisterProperty<SummaryViewModel, double>(x => x.Earning);
-        public static readonly PropertyData AllClosedEstimatesProperty = RegisterProperty<SummaryViewModel, double>(x => x.AllClosedEstimates);
-        public static readonly PropertyData ActualDesiredEstimateProperty = RegisterProperty<SummaryViewModel, double>(x => x.ActualDesiredEstimate);
-        public static readonly PropertyData DesiredEstimateProperty = RegisterProperty<SummaryViewModel, double>(x => x.DesiredEstimate);
-        public static readonly PropertyData AverageKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.AverageKPI);
-        public static readonly PropertyData TodayKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.TodayKPI);
-        public static readonly PropertyData SelectedDateProperty = RegisterProperty<SummaryViewModel, DateTime?>(x => x.SelectedDate, () => DateTime.Now);
-        public static readonly PropertyData LastMonthsProperty = RegisterProperty<SummaryViewModel, ObservableCollection<DateTime>>(x => x.LastMonths, new ObservableCollection<DateTime>());
-        public static readonly PropertyData SelectedMonthProperty = RegisterProperty<SummaryViewModel, DateTime>(x => x.SelectedMonth);
-
+        public GitResponse Data
+        {
+            get => GetValue<GitResponse>(DataProperty);
+            set => SetValue(DataProperty, value);
+        }
+        /// <summary> First Day </summary>
         public DateTime SelectedMonth
         {
             get => GetValue<DateTime>(SelectedMonthProperty);
@@ -63,7 +71,7 @@ namespace GitLabTimeManager.ViewModel
         public ObservableCollection<DateTime> LastMonths
         {
             get => GetValue<ObservableCollection<DateTime>>(LastMonthsProperty);
-            set => SetValue(LastMonthsProperty, value);
+            private set => SetValue(LastMonthsProperty, value);
         }
 
         public DateTime? SelectedDate
@@ -225,9 +233,6 @@ namespace GitLabTimeManager.ViewModel
         public static Func<double, string> Formatter => x => x.ToString("F1");
         public static Func<double, string> CeilFormatter => x => x.ToString("F0");
 
-        private DateTime StartDate { get; set; }
-        private DateTime EndDate { get; set; }
-
         public Command ShowEarningsCommand { get; }
 
         public SummaryViewModel([NotNull] ICalendar calendar,
@@ -245,8 +250,6 @@ namespace GitLabTimeManager.ViewModel
 
             LastMonths = AddLastMonths();
             SelectedMonth = LastMonths.Max();
-
-            BadRedraw();
         }
 
         private static ObservableCollection<DateTime> AddLastMonths()
@@ -260,17 +263,13 @@ namespace GitLabTimeManager.ViewModel
             return collection;
         }
 
-        private void DataSubscriptionOnNewData(object sender, GitResponse e)
-        {
-            UpdateData(e);
-        }
+        private void DataSubscriptionOnNewData(object sender, GitResponse e) => Data = e;
 
-        private async void UpdateData(GitResponse data)
+        private async Task UpdatePropertiesInternalAsync(GitResponse data, DateTime startDate, DateTime endDate)
         {
-            StartDate = data.StartDate;
-            EndDate = data.EndDate;
+            if (data == null) return;
+            var stats = StatisticsExtractor.Process(data.WrappedIssues, startDate, endDate);
 
-            var stats = StatisticsExtractor.Process(data.WrappedIssues, data.StartDate, data.EndDate);
             // Время по задачам 
             OpenEstimatesStartedInPeriod = stats.OpenEstimatesStartedInPeriod;
             ClosedEstimatesStartedInPeriod = stats.ClosedEstimatesStartedInPeriod;
@@ -290,12 +289,12 @@ namespace GitLabTimeManager.ViewModel
 
             TotalSpendsStartedInPeriod = OpenSpendsStartedInPeriod + ClosedSpendsStartedInPeriod;
             TotalEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod + ClosedEstimatesStartedInPeriod;
-            
+
             TotalSpendsStartedBefore = OpenSpendsStartedBefore + ClosedSpendsStartedBefore;
             TotalEstimatesStartedBefore = OpenEstimatesStartedBefore + ClosedEstimatesStartedBefore;
 
-            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(StartDate, DateTime.Now).ConfigureAwait(true)).TotalHours;
-            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(StartDate, EndDate).ConfigureAwait(true)).TotalHours;
+            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(startDate, DateTime.Now).ConfigureAwait(true)).TotalHours;
+            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(startDate, endDate).ConfigureAwait(true)).TotalHours;
             ActualDesiredEstimate = workingCurrentHours / workingTotalHours * MoneyCalculator.DesiredEstimate;
             DesiredEstimate = MoneyCalculator.DesiredEstimate;
 
@@ -312,21 +311,8 @@ namespace GitLabTimeManager.ViewModel
             UpdateOrAddStatsBlock(EarlyStatsBlocks, "Всего", TotalSpendsStartedBefore, TotalEstimatesStartedBefore);
 
             FillCharts();
-            
+
             AverageKPI = AllClosedEstimates / ActualDesiredEstimate * 100;
-
-            BadRedraw();
-        }
-
-        private async void BadRedraw()
-        {
-            AllClosedEstimates += 0.01;
-            await Task.Delay(500);
-            AllClosedEstimates -= 0.01;
-            await Task.Delay(500);
-            AllClosedEstimates += 0.01;
-            await Task.Delay(500);
-            AllClosedEstimates -= 0.01;
         }
 
         private static void UpdateOrAddStatsBlock(ICollection<StatsBlock> collection, string title, double value, double total)
@@ -346,7 +332,7 @@ namespace GitLabTimeManager.ViewModel
 
         private async void FillCharts()
         {
-            var workTime = await GetWorkingTime(StartDate, DateTime.Today).ConfigureAwait(true);
+            var workTime = await GetWorkingTimeAsync(TimeHelper.StartDate, DateTime.Today).ConfigureAwait(true);
 
             var remained =
                 Math.Max(workTime - (ClosedSpendInPeriod + OpenSpendInPeriod + ClosedSpendBefore + OpenSpendBefore), 0);
@@ -361,7 +347,7 @@ namespace GitLabTimeManager.ViewModel
             };
         }
 
-        private async Task<double> GetWorkingTime(DateTime startDate, DateTime endDate)
+        private async Task<double> GetWorkingTimeAsync(DateTime startDate, DateTime endDate)
         {
             var workTime = TimeHelper.GetWeekdaysTime(startDate, endDate).TotalHours;
 
@@ -393,5 +379,25 @@ namespace GitLabTimeManager.ViewModel
         }
 
         private static bool IsShowLabel(double value) => value > 4;
+
+        protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.PropertyName == nameof(SelectedMonth))
+            {
+                UpdatePropertiesAsync();
+            }
+            else if (e.PropertyName == nameof(Data))
+            {
+                UpdatePropertiesAsync();
+            }
+        }
+
+        private void UpdatePropertiesAsync()
+        {
+            var startDate = SelectedMonth;
+            var endDate = SelectedMonth.AddMonths(1).AddTicks(-1);
+            UpdatePropertiesInternalAsync(Data, startDate, endDate).WaitAndUnwrapException();
+        }
     }
 }

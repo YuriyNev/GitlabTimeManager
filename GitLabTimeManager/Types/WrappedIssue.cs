@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using GitLabApiClient.Models.Issues.Responses;
-using GitLabApiClient.Models.Notes.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
 {
-    [DebuggerDisplay("{Issue.Title} {StartTime} - {EndTime} {Estimate} {StartedIn} {SpendIn} {SpendBefore}")]
+    [DebuggerDisplay("{Issue.Title} {StartTime} - {EndTime} {Estimate}")]
     public class WrappedIssue : NotifyObject
     {
         public Issue Issue { get; set; }
@@ -18,21 +17,25 @@ namespace GitLabTimeManager.Services
 
         public DateTime? EndTime { get; set; }
 
-        public double SpendIn { get; set; }
-
-        public double SpendBefore { get; set; }
-
-        public bool StartedIn { get; set; }
-
         public double Spend => TimeHelper.SecondsToHours(Issue.TimeStats.TotalTimeSpent);
+
+        public Dictionary<DateRange, double> Spends { get; set; }
 
         public double Estimate => TimeHelper.SecondsToHours(Issue.TimeStats.TimeEstimate);
 
         public ObservableCollection<LabelEx> LabelExes { get; set; }
 
-        public IReadOnlyList<Note> Notes { get; set; }
-
-        public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{StartedIn}\t{SpendIn:F1}\t{SpendBefore:F1}\t{Estimate:F1}\t";
+        public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{Estimate:F1}\t";
     }
-    
+
+    public class ReportIssue : NotifyObject
+    {
+        public int Iid { get; set; }
+
+        public string Title { get; set; }
+
+        public double SpendForPeriod { get; set; }
+        
+        public double Estimate { get; set; }
+    }
 }

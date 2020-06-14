@@ -80,7 +80,7 @@
       <HintPath>..\packages\LoadingIndicators.WPF.0.0.1\lib\LoadingIndicators.WPF.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=51482d6f650b2b3f, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.2.0.0\lib\net47\MahApps.Metro.dll</HintPath>
+      <HintPath>..\packages\MahApps.Metro.2.0.1\lib\net47\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro.IconPacks, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0c0d510f9915137a, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.IconPacks.4.2.0\lib\net47\MahApps.Metro.IconPacks.dll</HintPath>
@@ -259,21 +259,23 @@
     <Compile Include="Services\DataRequestService.cs" />
     <Compile Include="Services\MoneyCalculator.cs" />
     <Compile Include="Services\StatisticsExtractor.cs" />
-    <Compile Include="Services\TestService.cs" />
     <Compile Include="Services\WorkingCalendar.cs" />
     <Compile Include="Types\StatsBlock.cs" />
     <Compile Include="Types\WrappedIssue.cs" />
     <Compile Include="Services\SourceControl.cs" />
     <Compile Include="Utilities\NotifyObject.cs" />
     <Compile Include="Helpers\TimeHelper.cs" />
-    <Compile Include="Utilities\DetailedIssueTime.cs" />
     <Compile Include="ViewModel\GanttViewModel.cs" />
     <Compile Include="ViewModel\IssueTimerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\IssueListViewModel.cs" />
+    <Compile Include="ViewModel\ReportViewModel.cs" />
     <Compile Include="ViewModel\SummaryViewModel.cs" />
     <Compile Include="ViewModel\TodayViewModel.cs" />
     <Compile Include="ViewModel\TrayViewModel.cs" />
+    <Compile Include="View\ReportView.xaml.cs">
+      <DependentUpon>ReportView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\TodayView.xaml.cs">
       <DependentUpon>TodayView.xaml</DependentUpon>
     </Compile>
@@ -318,6 +320,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resources\TrayIconResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ReportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

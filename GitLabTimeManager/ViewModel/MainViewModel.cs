@@ -28,8 +28,8 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData ShowOnTaskBarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskBar, true);
         [UsedImplicitly] public static readonly PropertyData GanttVmProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttVm);
         [UsedImplicitly] public static readonly PropertyData TodayVmProperty = RegisterProperty<MainViewModel, TodayViewModel>(x => x.TodayVm);
-
-       
+        [UsedImplicitly] public static readonly PropertyData ReportVmProperty = RegisterProperty<MainViewModel, ReportViewModel>(x => x.ReportVm);
+        
         public bool ShowOnTaskBar
         {
             get => GetValue<bool>(ShowOnTaskBarProperty);
@@ -61,6 +61,12 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(GanttVmProperty, value);
         }
 
+        public ReportViewModel ReportVm
+        {
+            get => GetValue<ReportViewModel>(ReportVmProperty);
+            set => SetValue(ReportVmProperty, value);
+        }
+
         [Model(SupportIEditableObject = false), NotNull]
         [UsedImplicitly]
         public IssueListViewModel IssueListVm
@@ -87,6 +93,7 @@ namespace GitLabTimeManager.ViewModel
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
+            ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
 
             Application.Current.Exit += Current_Exit;
         }

@@ -152,6 +152,7 @@
         <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services:WrappedIssue}">
            <Border BorderThickness="0 0 0 1"
                    BorderBrush="#99CCCCCC"
+                   Margin="0 0 4 0"
                    Cursor="Hand">
                <Border.Style>
                    <Style TargetType="{x:Type Border}">

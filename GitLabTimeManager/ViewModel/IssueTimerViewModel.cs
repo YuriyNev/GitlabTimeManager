@@ -168,10 +168,7 @@ namespace GitLabTimeManager.ViewModel
             base.OnPropertyChanged(e);
             if (e.PropertyName == nameof(Time))
             {
-                if (Time >= LastSaveTime + SavePeriod)
-                {
-                    SaveSpend();
-                }
+                if (Time >= LastSaveTime + SavePeriod) SaveSpend();
             }
         }
 
@@ -196,11 +193,6 @@ namespace GitLabTimeManager.ViewModel
         private void UpdateLabels()
         {
             LabelProcessor.UpdateLabelsEx(Issue.LabelExes, Issue.Issue.Labels);
-        }
-
-        private void PauseIssue(WrappedIssue issue)
-        {
-            SourceControl.PauseIssueAsync(issue.Issue);
         }
 
         private async void FinishIssue(WrappedIssue issue)

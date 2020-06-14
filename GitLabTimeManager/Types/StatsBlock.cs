@@ -1,15 +1,11 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Catel.Data;
-using GitLabTimeManager.Tools;
-using JetBrains.Annotations;
+﻿using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Models
 {
     public class StatsBlock : NotifyObject
     {
-        public string Title { get; private set; }
-        public string Description { get; private set; }
+        public string Title { get; }
+        public string Description { get; }
 
         private double _value;
         public double Value

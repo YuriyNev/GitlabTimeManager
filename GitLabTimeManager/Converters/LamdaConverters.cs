@@ -171,14 +171,14 @@ namespace GitLabTimeManager.Converters
             int sign = args.Parameter;
             int x = args.Values[0];
             int y = args.Values[1];
-            switch (sign)
+            return sign switch
             {
-                case '+': return x + y;
-                case '-': return x - y;
-                case '*': return x * y;
-                case '/': return x / y;
-                default: return x;
-            }
+                '+' => x + y,
+                '-' => x - y,
+                '*' => x * y,
+                '/' => x / y,
+                _ => x
+            };
         }
 
         private static bool CompareDouble(MultiValueConverterArgs<double> args)
