@@ -46,11 +46,11 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Catel.Core, Version=5.12.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Catel.Core.5.12.6\lib\net47\Catel.Core.dll</HintPath>
+    <Reference Include="Catel.Core, Version=5.12.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Catel.Core.5.12.7\lib\net47\Catel.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Catel.MVVM, Version=5.12.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Catel.MVVM.5.12.6\lib\net47\Catel.MVVM.dll</HintPath>
+    <Reference Include="Catel.MVVM, Version=5.12.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Catel.MVVM.5.12.7\lib\net47\Catel.MVVM.dll</HintPath>
     </Reference>
     <Reference Include="CircularGauge, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CircularGauge.1.0.0\lib\Net40-Client\CircularGauge.dll</HintPath>
@@ -80,7 +80,7 @@
       <HintPath>..\packages\LoadingIndicators.WPF.0.0.1\lib\LoadingIndicators.WPF.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=51482d6f650b2b3f, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.2.0.1\lib\net47\MahApps.Metro.dll</HintPath>
+      <HintPath>..\packages\MahApps.Metro.2.1.0\lib\net47\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro.IconPacks, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0c0d510f9915137a, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.IconPacks.4.2.0\lib\net47\MahApps.Metro.IconPacks.dll</HintPath>
