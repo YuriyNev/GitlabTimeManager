@@ -41,7 +41,23 @@ namespace GitLabTimeManager.ViewModel
         public string[] Labels { get; set; }
         public SeriesCollection Series { get; set; }
 
-        public void UpdateData(GitResponse data)
+        private IDataRequestService DataRequestService { get; }
+        private IDataSubscription DataSubscription { get; }
+
+        public GanttViewModel([NotNull] IDataRequestService dataRequestService)
+        {
+            DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
+
+            DataSubscription = DataRequestService.CreateSubscription();
+            DataSubscription.NewData += DataSubscriptionOnNewData;
+        }
+
+        private void DataSubscriptionOnNewData(object sender, GitResponse e)
+        {
+            UpdateData(e);
+        }
+
+        private void UpdateData(GitResponse data)
         {
             WrappedIssues = data.WrappedIssues;
 
@@ -53,13 +69,21 @@ namespace GitLabTimeManager.ViewModel
             {
                 if (issue.StartTime != null && issue.EndTime != null)
                 {
-                    _values.Add(new GanttPoint(issue.StartTime.Value.Ticks, issue.EndTime.Value.Ticks));
+                    TimeSpan timeSpanStart = issue.StartTime.Value.Subtract(new DateTime(2020, 1, 1));
+                    TimeSpan timeSpanEnd = issue.EndTime.Value.Subtract(new DateTime(2020, 1, 1));
+                    _values.Add(new GanttPoint(timeSpanStart.TotalMinutes, timeSpanEnd.TotalMinutes));
                     labels.Add(issue.Issue.Title);
                 }
             }
 
-            From = _values.First().StartPoint;
-            To = _values.Last().EndPoint;
+            if (_values.Count == 0)
+                return;
+
+            From = _values.Min(x => x.StartPoint);
+            To = _values.Max(x => x.EndPoint);
+
+            if (From > To)
+                return;
 
             Series = new SeriesCollection
             {

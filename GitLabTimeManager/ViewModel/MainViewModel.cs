@@ -94,6 +94,7 @@ namespace GitLabTimeManager.ViewModel
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
+            //GanttVm = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             Application.Current.Exit += Current_Exit;
         }

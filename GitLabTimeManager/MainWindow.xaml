@@ -21,9 +21,9 @@
         <DataTemplate DataType="{x:Type viewModel:SummaryViewModel}">
             <view:SummaryView />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type viewModel:GanttViewModel}">
+        <!--<DataTemplate DataType="{x:Type viewModel:GanttViewModel}">
             <view:GanttView />
-        </DataTemplate>
+        </DataTemplate>-->
         <DataTemplate DataType="{x:Type viewModel:TodayViewModel}">
             <view:TodayView />
         </DataTemplate>

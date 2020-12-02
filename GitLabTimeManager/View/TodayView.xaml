@@ -11,6 +11,7 @@
     <Grid>
         <WrapPanel HorizontalAlignment="Center"
                    VerticalAlignment="Center">
+
             <mah:Tile KeepDragging="True" Title="Средняя производительность"
                       TitleFontSize="11"
                       Width="150" Height="150">

@@ -25,7 +25,6 @@ namespace GitLabTimeManager.Helpers
         public static DateTime StartDate => DateTime.Today.AddDays(-DateTime.Today.Day).AddDays(1);
         public static DateTime EndDate => StartDate.AddMonths(1);
         public static DateTime StartPastDate => StartDate.AddMonths(-3);
-
         // Parse spent time in hours
         public static double ParseSpent(this string textDate)
         {

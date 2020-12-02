@@ -79,7 +79,7 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
                                         <Setter Property="Width" Value="*"/>
-                                        <Setter Property="MaxWidth" Value="1000"/>
+                                        <Setter Property="MaxWidth" Value="Infinity"/>
                                         <Setter Property="MinWidth" Value="0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -102,7 +102,6 @@
 
         <Style x:Key="IssueItemStyle" TargetType="{x:Type ListBoxItem}">
             <Setter Property="Focusable" Value="True"/>
-            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
@@ -150,10 +149,9 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services:WrappedIssue}">
-           <Border BorderThickness="0 0 0 1"
+           <Border BorderThickness="0 0 0 0"
                    BorderBrush="#99CCCCCC"
-                   Margin="0 0 4 0"
-                   Cursor="Hand">
+                   Margin="0 0 4 0">
                <Border.Style>
                    <Style TargetType="{x:Type Border}">
                        <Setter Property="Opacity" Value="1"/>
@@ -165,6 +163,7 @@
                    </Style>
                </Border.Style>
                <Grid Margin="0 4">
+
                    <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" SharedSizeGroup="IssueHeight" MinHeight="40" MaxHeight="60"/>
                    </Grid.RowDefinitions>
@@ -283,12 +282,19 @@
                      ItemsSource="{Binding IssueCollectionView, Mode=OneWay}"
                      ItemTemplate="{StaticResource IssueTemplate}"
                      ItemContainerStyle="{StaticResource IssueItemStyle}"
+                     IsSynchronizedWithCurrentItem="False"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      ScrollViewer.CanContentScroll="False"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling"
+                     VirtualizingPanel.CacheLengthUnit="Page"
+                     VirtualizingPanel.CacheLength="1 1"
+                     VirtualizingPanel.ScrollUnit="Pixel"
                      SelectionMode="Single"
                      SelectedItem="{Binding SelectedIssue, Mode=TwoWay}"
                      IsEnabled="{Binding IssueTimerVm.IsStarted, Mode=OneWay, Converter={catel:BooleanToOppositeBooleanConverter}}"
-                     Grid.IsSharedSizeScope="True"/>
+                     Grid.IsSharedSizeScope="True">
+            </ListBox>
         </ItemsControl>
     </Grid>
 </UserControl>

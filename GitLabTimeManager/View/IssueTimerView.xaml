@@ -12,25 +12,31 @@
              d:DesignHeight="300" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance viewModel:IssueTimerViewModel}">
     <Grid Margin="4">
-        <Grid HorizontalAlignment="Stretch">
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
+        <Viewbox>
+            <Viewbox.Style>
+                <Style TargetType="{x:Type Viewbox}">
                     <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="Stretch" Value="None"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
                             <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                            <Setter Property="Stretch" Value="Uniform"/>
+                            <Setter Property="MaxHeight" Value="800"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            </Viewbox.Style>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
                        Text="{Binding Time, Mode=OneWay}"
@@ -150,6 +156,7 @@
                     Cursor="Hand">
                 <TextBlock TextAlignment="Center" 
                            TextWrapping="WrapWithOverflow"
+                           MaxWidth="300"
                            Text="{Binding Description, Mode=OneWay}"/>
             </Button>
 
@@ -157,7 +164,7 @@
                        Text="{Binding EstimateTime, Mode=OneWay}"
                        FontSize="24"
                        FontFamily="{StaticResource MahApps.Fonts.Family.Header}"
-                       Margin="8 0"
+                       Margin="8"
                        TextAlignment="Center"
                        FontWeight="Black"/>
 
@@ -210,8 +217,7 @@
                 </Border>
 
             </Grid>
-
-            
-        </Grid>
+            </Grid>
+        </Viewbox>
     </Grid>
 </UserControl>

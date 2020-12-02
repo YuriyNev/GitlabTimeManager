@@ -27,31 +27,37 @@ namespace GitLabTimeManager.Services
     internal class SourceControl : ISourceControl
     {
 #if DEBUG
+        // GITLAB.COM
+
         //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
         //private const string Token = "KajKr2cVJ4amosry9p4v";
         //private const string Uri = "https://gitlab.com";
 
+        // DOMINATION
+        private const int WebServerId = 11;
         private const int ClientDominationId = 14;
         private const int AnalyticsId = 16;
 
         private static readonly IReadOnlyList<int> ProjectIds = new List<int>
         {
-            ClientDominationId, AnalyticsId
+            ClientDominationId, AnalyticsId, WebServerId
         };
         private const string Token = "gTUPn2KdhEFUMR3oQL81";
         private const string Uri = "http://gitlab.domination";
 #else
+        
+        private static int WebServerId = 11;
         private static int ClientDominationId = 14;
         private static int AnalyticsId = 16;
 
         private static readonly IReadOnlyList<int> ProjectIds = new List<int>
         {
-            ClientDominationId, AnalyticsId
+            ClientDominationId, AnalyticsId, WebServerId
         };
         private const string Token = "gTUPn2KdhEFUMR3oQL81";
         private const string Uri = "http://gitlab.domination";
 #endif
-        
+
         private GitLabClient GitLabClient { get; }
 
         public SourceControl()
@@ -136,8 +142,8 @@ namespace GitLabTimeManager.Services
             {
                 _isAction = true;
 
-                var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
-                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+                var allIssues = await RequestAllIssuesAsync().ConfigureAwait(true);
+                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(true);
                 return ExtentIssues(allIssues, allNotes);
             }
             finally
