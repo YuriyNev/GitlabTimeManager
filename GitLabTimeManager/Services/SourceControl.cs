@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Catel.Collections;
 using GitLabApiClient;
 using GitLabApiClient.Models;
-using GitLabApiClient.Models.AwardEmojis.Responses;
 using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
