@@ -26,6 +26,24 @@ namespace GitLabTimeManager.Services
         public ObservableCollection<LabelEx> LabelExes { get; set; }
 
         public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{Estimate:F1}\t";
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is WrappedIssue issue))
+                return false;
+
+            var otherIssue = issue.Issue;
+            return Issue.Iid == otherIssue.Iid &&
+                   Issue.Title == otherIssue.Title &&
+                   Issue.ClosedAt == otherIssue.ClosedAt &&
+                   Issue.Labels == otherIssue.Labels && 
+                   Issue.State == otherIssue.State;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     public class ReportIssue : NotifyObject

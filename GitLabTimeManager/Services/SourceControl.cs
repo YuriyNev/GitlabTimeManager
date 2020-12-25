@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Catel.Collections;
 using GitLabApiClient;
 using GitLabApiClient.Models;
+using GitLabApiClient.Models.AwardEmojis.Responses;
 using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
@@ -67,7 +69,8 @@ namespace GitLabTimeManager.Services
 
         public async Task<GitResponse> RequestDataAsync(DateTime startTime, DateTime endTime)
         {
-            var wrappedIssues = await GetPreparedDataAsync().ConfigureAwait(true);
+            var wrappedIssues = await GetPreparedDataAsync().ConfigureAwait(false);
+
             return new GitResponse
             {
                 StartDate = startTime,
@@ -142,9 +145,14 @@ namespace GitLabTimeManager.Services
             {
                 _isAction = true;
 
-                var allIssues = await RequestAllIssuesAsync().ConfigureAwait(true);
-                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(true);
+                var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
+                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
                 return ExtentIssues(allIssues, allNotes);
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(false, ex.Message);
+                return Array.Empty<WrappedIssue>();
             }
             finally
             { 
@@ -198,7 +206,7 @@ namespace GitLabTimeManager.Services
                 
                 // spend is set when issue was created
                 var startSpend = totalSpend - totalYieldSpend;
-                if (startSpend > 0)
+                if (startSpend > 0 && spendDictionary.Count > 0)
                 {
                     var minDate = spendDictionary.Keys.Min(x => x.StartDate);
                     var minKey = spendDictionary.Keys.First(x => x.StartDate == minDate);

@@ -68,6 +68,7 @@ namespace GitLabTimeManager.ViewModel
             WrappedIssues = new ObservableCollection<WrappedIssue> ();
             IssueCollectionView = (CollectionView)CollectionViewSource.GetDefaultView(WrappedIssues);
             IssueCollectionView.SortDescriptions.Add(new SortDescription(nameof(WrappedIssue.Issue.Iid), ListSortDirection.Descending));
+            IssueCollectionView.SortDescriptions.Add(new SortDescription(nameof(WrappedIssue.Spend), ListSortDirection.Descending));
             IssueCollectionView.Filter = Filter;
         }
 
@@ -88,15 +89,19 @@ namespace GitLabTimeManager.ViewModel
             SelectedIssue ??= WrappedIssues.FirstOrDefault();
         }
 
-        private static void CopyIssueValues(ICollection<WrappedIssue> dst, IEnumerable<WrappedIssue> src)
+        private static void CopyIssueValues(IList<WrappedIssue> dst, IReadOnlyList<WrappedIssue> src)
         {
             foreach (var issue in src)
             {
                 var destIssue = dst.FirstOrDefault(x => x.Issue.Iid == issue.Issue.Iid);
                 if (destIssue != null)
                 {
+                    if (destIssue.Equals(issue)) continue;
+
                     destIssue.Issue = issue.Issue;
                     destIssue.LabelExes = issue.LabelExes;
+                    destIssue.StartTime = issue.StartTime;
+                    destIssue.EndTime = issue.EndTime;
                 }
                 else
                 {

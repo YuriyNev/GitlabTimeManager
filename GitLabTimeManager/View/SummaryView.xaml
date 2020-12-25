@@ -38,7 +38,7 @@
         <Style TargetType="wpf:PieSeries">
             <Setter Property="StrokeThickness" Value="0"/>
             <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.SystemControlBackgroundChromeWhite}"/>
-            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontFamily" Value="{StaticResource MahApps.Fonts.Family.Control}"/>
             <Setter Property="PushOut" Value="2"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -106,7 +106,7 @@
         
        <Grid Grid.Row="3" Grid.Column="0">
             <wpf:PieChart Series="{Binding SpendSeries, Mode=OneWay}"
-                          InnerRadius="80"
+                          InnerRadius="40"
                           Margin="8 28"
                           Hoverable="True"
                           AnimationsSpeed="0:0:0.2">

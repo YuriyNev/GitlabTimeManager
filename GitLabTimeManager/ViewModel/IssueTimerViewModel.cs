@@ -141,6 +141,8 @@ namespace GitLabTimeManager.ViewModel
             RedrawIssue();
             _timer.Stop();
             IsStarted = false;
+
+            IsFullscreen = false;
         }
 
         private void CreateTimer()

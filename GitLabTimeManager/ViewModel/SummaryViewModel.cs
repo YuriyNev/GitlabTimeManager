@@ -302,12 +302,12 @@ namespace GitLabTimeManager.ViewModel
 
             Earning = MoneyCalculator.Calculate(TimeSpan.FromHours(AllClosedEstimates));
 
-            UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые задачи", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
-            UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Закрытые задачи", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);
+            UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
+            UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Закрытые", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Всего", TotalSpendsStartedInPeriod, TotalEstimatesStartedInPeriod);
 
-            UpdateOrAddStatsBlock(EarlyStatsBlocks, "Открытые задачи", OpenSpendsStartedBefore, OpenEstimatesStartedBefore);
-            UpdateOrAddStatsBlock(EarlyStatsBlocks, "Закрытые задачи", ClosedSpendsStartedBefore, ClosedEstimatesStartedBefore);
+            UpdateOrAddStatsBlock(EarlyStatsBlocks, "Открытые", OpenSpendsStartedBefore, OpenEstimatesStartedBefore);
+            UpdateOrAddStatsBlock(EarlyStatsBlocks, "Закрытые", ClosedSpendsStartedBefore, ClosedEstimatesStartedBefore);
             UpdateOrAddStatsBlock(EarlyStatsBlocks, "Всего", TotalSpendsStartedBefore, TotalEstimatesStartedBefore);
 
             FillCharts();
@@ -395,8 +395,11 @@ namespace GitLabTimeManager.ViewModel
 
         private void UpdatePropertiesAsync()
         {
-            var startDate = SelectedMonth;
-            var endDate = SelectedMonth.AddMonths(1).AddTicks(-1);
+            // TODO
+            //var startDate = SelectedMonth;
+            //var endDate = SelectedMonth.AddMonths(1).AddTicks(-1);
+            var startDate = TimeHelper.StartDate;
+            var endDate = TimeHelper.EndDate;
             UpdatePropertiesInternalAsync(Data, startDate, endDate).WaitAndUnwrapException();
         }
     }

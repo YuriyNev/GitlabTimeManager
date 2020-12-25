@@ -22,7 +22,7 @@ namespace GitLabTimeManager.Helpers
         private const double WeeksPerMonth = 4;
 
         public static DateTime Today => DateTime.Today;
-        public static DateTime StartDate => DateTime.Today.AddDays(-DateTime.Today.Day).AddDays(1);
+        public static DateTime StartDate => DateTime.Today.AddDays(-DateTime.Today.Day).AddDays(5);
         public static DateTime EndDate => StartDate.AddMonths(1);
         public static DateTime StartPastDate => StartDate.AddMonths(-3);
         // Parse spent time in hours

@@ -8,12 +8,12 @@ namespace GitLabTimeManager.Services
 {
     public static class StatisticsExtractor
     {
-        public static GitStatistics Process(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endTime)
+        public static GitStatistics Process(IReadOnlyList<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endTime)
         {
             var statistics = new GitStatistics();
             // Most need issues
             // started in month
-            var issues = wrappedIssues as WrappedIssue[] ?? wrappedIssues.ToArray();
+            var issues = wrappedIssues;
             var openIssues = issues.Where(x => IsOpen(x.Issue)).ToList();
             var closedIssues = issues.Where(x => IsClosed(x.Issue)).ToList();
 

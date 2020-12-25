@@ -28,7 +28,7 @@
         </Style>
 
     </UserControl.Resources>
-    <Grid>
+    <Grid TextElement.FontSize="14">
         <DataGrid ItemsSource="{Binding ReportIssues, Mode=OneWay}" 
                   ClipboardCopyMode="ExcludeHeader"
                   Background="Transparent"
