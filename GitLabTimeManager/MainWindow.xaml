@@ -21,9 +21,6 @@
         <DataTemplate DataType="{x:Type viewModel:SummaryViewModel}">
             <view:SummaryView />
         </DataTemplate>
-        <!--<DataTemplate DataType="{x:Type viewModel:GanttViewModel}">
-            <view:GanttView />
-        </DataTemplate>-->
         <DataTemplate DataType="{x:Type viewModel:TodayViewModel}">
             <view:TodayView />
         </DataTemplate>
@@ -59,8 +56,11 @@
             <mah:MetroAnimatedTabControl.Style>
                 <Style TargetType="{x:Type mah:MetroAnimatedTabControl}">
                     <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="Visibility" Value="Collapsed"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsFirstLoading, Mode=OneWay}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+
                             <DataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -94,12 +94,15 @@
                 <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
                                 Margin="0 4 0 0"/>
             </TabItem>
-            <!--<TabItem Header="Диаграмма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                <ContentControl Content="{Binding GanttVm, Mode=OneWay}"
-                                Margin="0 4 0 0"/>
-            </TabItem>-->
         </mah:MetroAnimatedTabControl>
-        <mah:ProgressRing Visibility="{Binding IsFirstLoading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <mah:ProgressRing Visibility="{Binding LaunchIsFinished, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"/>
+        
+        <!--Error Message-->
+        <TextBlock Text="{Binding Error, Mode=OneWay}"
+                   FontSize="{StaticResource MahApps.Font.Size.Default}"
+                   Foreground="{StaticResource MahApps.Brushes.Control.Validation}"
+                   Opacity="0.7"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
     </Grid>
 </mah:MetroWindow>

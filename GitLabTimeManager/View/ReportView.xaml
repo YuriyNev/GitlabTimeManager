@@ -97,6 +97,11 @@
                                     Width="80"
                                     Binding="{Binding Estimate, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
+
+                <DataGridTextColumn Header="Начало"
+                                    Width="80"
+                                    Binding="{Binding StartTime, Mode=OneWay, StringFormat='{}{0:MMMM}'}"
+                                    ElementStyle="{StaticResource TimeStatTextStyle}"/>
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}">

@@ -58,10 +58,10 @@ namespace GitLabTimeManager
            ServiceLocator.Default.RegisterType<IMoneyCalculator, MoneyCalculator>();
            ServiceLocator.Default.RegisterType<ICalendar, WorkingCalendar>();
            ServiceLocator.Default.RegisterType<IDataRequestService, DataRequestService>();
-
+           ServiceLocator.Default.RegisterType<IProfileService, ProfileService>();
+           ServiceLocator.Default.RegisterType<IUserProfile, UserProfile>();
         }
 
-        
         private static void ServiceLocator_MissingType(object sender, MissingTypeEventArgs e)
         {
             Debug.WriteLine(e.Tag);

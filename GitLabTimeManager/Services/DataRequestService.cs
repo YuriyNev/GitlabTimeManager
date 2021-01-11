@@ -4,19 +4,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Catel.IoC;
 using GitLabTimeManager.Helpers;
+using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
     public interface IDataSubscription : IDisposable
     {
         event EventHandler<GitResponse> NewData;
+        event EventHandler<Exception> NewException;
     }
 
     public class DataSubscription : IDataSubscription
     {
         public void Dispose()
         {
-
         }
 
         public void OnNewData(GitResponse data)
@@ -27,11 +28,19 @@ namespace GitLabTimeManager.Services
             }
             catch (Exception e)
             {
+                NewException?.Invoke(this, e);
+
                 Console.WriteLine(e);
             }
         }
 
+        public void OnException(Exception exception)
+        {
+            NewException?.Invoke(this, exception);
+        }
+
         public event EventHandler<GitResponse> NewData;
+        public event EventHandler<Exception> NewException;
     }
 
 
@@ -42,7 +51,6 @@ namespace GitLabTimeManager.Services
 
     public class DataRequestService : IDataRequestService, IDisposable
     {
-        private ISourceControl SourceControl { get; }
         private IReadOnlyList<DataSubscription> _dataSubscriptions = Array.Empty<DataSubscription>();
         private CancellationTokenSource _cancellation = new CancellationTokenSource();
         private bool _isFirstRequest;
@@ -58,12 +66,31 @@ namespace GitLabTimeManager.Services
 
         public DataRequestService()
         {
-            SourceControl = IoCConfiguration.DefaultDependencyResolver.Resolve<ISourceControl>();
-
-            RunAsync().ConfigureAwait(true);
+            var sourceControl = InitializeSource();
+            if (sourceControl == null)
+                return;
+            
+            RunAsync(sourceControl).ConfigureAwait(true);
         }
 
-        private async Task RunAsync()
+        private ISourceControl InitializeSource()
+        {
+            try
+            {
+                return IoCConfiguration.DefaultDependencyResolver.Resolve<ISourceControl>();
+            }
+            catch (Exception e)
+            {
+                foreach (var subscription in _dataSubscriptions) 
+                    subscription.OnException(e);
+
+                Console.WriteLine(e);
+            }
+
+            return null;
+        }
+
+        private async Task RunAsync([NotNull] ISourceControl sourceControl)
         {
             while (true)
             {
@@ -73,7 +100,7 @@ namespace GitLabTimeManager.Services
                 var startTime = _isFirstRequest ? TimeHelper.StartPastDate : TimeHelper.StartDate;
                 var endTime = TimeHelper.EndDate;
 
-                var data = await SourceControl.RequestDataAsync(startTime, endTime).ConfigureAwait(true);
+                var data = await sourceControl.RequestDataAsync(startTime, endTime).ConfigureAwait(true);
 
                 _isFirstRequest = false;
 

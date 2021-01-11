@@ -42,7 +42,8 @@ namespace GitLabTimeManager.ViewModel
                     Iid = x.Issue.Iid,
                     Title = x.Issue.Title,
                     Estimate = TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate),
-                    SpendForPeriod = StatisticsExtractor.SpendsSum(x, startDate, endDate)
+                    SpendForPeriod = StatisticsExtractor.SpendsSum(x, startDate, endDate),
+                    StartTime = x.StartTime,
                 }).Where(x => x.SpendForPeriod > 0));
 
         protected override Task CloseAsync()

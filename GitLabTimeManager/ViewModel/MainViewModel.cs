@@ -1,10 +1,12 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Catel.Data;
 using Catel.IoC;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
+using GitLabTimeManager.Types;
 using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
@@ -19,16 +21,24 @@ namespace GitLabTimeManager.ViewModel
         private IViewModelFactory ViewModelFactory { get; }
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
-        private CancellationTokenSource LifeTime { get; }
+        private CancellationTokenSource LifeTime { get; } = new CancellationTokenSource();
 
         [UsedImplicitly] public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
         [UsedImplicitly] public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
         [UsedImplicitly] public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFirstLoading, true);
         [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
         [UsedImplicitly] public static readonly PropertyData ShowOnTaskBarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskBar, true);
-        [UsedImplicitly] public static readonly PropertyData GanttVmProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttVm);
         [UsedImplicitly] public static readonly PropertyData TodayVmProperty = RegisterProperty<MainViewModel, TodayViewModel>(x => x.TodayVm);
         [UsedImplicitly] public static readonly PropertyData ReportVmProperty = RegisterProperty<MainViewModel, ReportViewModel>(x => x.ReportVm);
+        [UsedImplicitly] public static readonly PropertyData ErrorProperty = RegisterProperty<MainViewModel, string>(x => x.Error);
+        [UsedImplicitly] public static readonly PropertyData LaunchIsSuccessProperty = RegisterProperty<MainViewModel, bool>(x => x.LaunchIsFinished);
+
+        [UsedImplicitly]
+        public string Error
+        {
+            get => GetValue<string>(ErrorProperty);
+            private set => SetValue(ErrorProperty, value);
+        }
         
         public bool ShowOnTaskBar
         {
@@ -52,15 +62,9 @@ namespace GitLabTimeManager.ViewModel
         public TodayViewModel TodayVm
         {
             get => GetValue<TodayViewModel>(TodayVmProperty);
-            set => SetValue(TodayVmProperty, value);
+            private set => SetValue(TodayVmProperty, value);
         }
-
-        public GanttViewModel GanttVm
-        {
-            get => GetValue<GanttViewModel>(GanttVmProperty);
-            set => SetValue(GanttVmProperty, value);
-        }
-
+        
         public ReportViewModel ReportVm
         {
             get => GetValue<ReportViewModel>(ReportVmProperty);
@@ -80,31 +84,85 @@ namespace GitLabTimeManager.ViewModel
             get => GetValue<bool>(IsProgressProperty);
             private set => SetValue(IsProgressProperty, value);
         }
-
+        
+        public bool LaunchIsFinished
+        {
+            get => GetValue<bool>(LaunchIsSuccessProperty);
+            private set => SetValue(LaunchIsSuccessProperty, value);
+        }
+        
         private MainViewModel()
         {
-            LifeTime = new CancellationTokenSource();
+            Application.Current.Exit += Current_Exit;
+            
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
+
+            if (!GitTestLaunch(dependencyResolver))
+            {
+                return;
+            }
+            
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             DataRequestService = dependencyResolver.Resolve<IDataRequestService>();
+            
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscription_NewData;
+            DataSubscription.NewException += DataSubscription_NewException;
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
-            //GanttVm = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
+        }
 
-            Application.Current.Exit += Current_Exit;
+        private bool GitTestLaunch(IDependencyResolver dependencyResolver)
+        {
+            try
+            {
+                dependencyResolver.Resolve<ISourceControl>();
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LaunchWithError(ex);
+
+                return false;
+            }
+        }
+
+        private void DataSubscription_NewException(object sender, Exception e)
+        {
+            LaunchWithError(e);
+        }
+
+        private void LaunchWithError(Exception e)
+        {
+            LoadingFinished();
+
+            Error = e switch
+            {
+                IncorrectProfileException _ => "Не удалось загрузить профиль :(",
+                UnableConnectionException _ => "Не удалось подключиться =(",
+                _ => "Ошибочка вышла ;("
+            };
         }
 
         private void DataSubscription_NewData(object sender, GitResponse e)
         {
-            LoadingFinished();
+            SuccessLoading();
         }
 
-        private void LoadingFinished() => IsFirstLoading = false;
+        private void LoadingFinished()
+        {
+            LaunchIsFinished = true;
+        }
+
+        private void SuccessLoading()
+        {
+            IsFirstLoading = false;
+            LaunchIsFinished = true;
+        }
 
         private void Current_Exit(object sender, ExitEventArgs e) => CloseViewModelAsync(false);
 

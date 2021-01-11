@@ -27,6 +27,7 @@ namespace GitLabTimeManager.Services
 
     internal class SourceControl : ISourceControl
     {
+        private IUserProfile UserProfile { get; }
 #if DEBUG
         // GITLAB.COM
 
@@ -58,12 +59,13 @@ namespace GitLabTimeManager.Services
         private const string Token = "gTUPn2KdhEFUMR3oQL81";
         private const string Uri = "http://gitlab.domination";
 #endif
-
         private GitLabClient GitLabClient { get; }
-
-        public SourceControl()
+        
+        public SourceControl([NotNull] IUserProfile userProfile)
         {
-            GitLabClient = new GitLabClient(Uri, Token);
+            UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
+            
+            GitLabClient = new GitLabClient(UserProfile.Url, UserProfile.Token);
         }
 
         public async Task<GitResponse> RequestDataAsync(DateTime startTime, DateTime endTime)
@@ -242,8 +244,9 @@ namespace GitLabTimeManager.Services
 
         private async Task<ObservableCollection<Issue>> RequestAllIssuesAsync()
         {
+            var projects = UserProfile.Projects;
             var allIssues = new ObservableCollection<Issue>();
-            foreach (var projectId in ProjectIds)
+            foreach (var projectId in projects)
             {
                 var issues = await GitLabClient.Issues.GetAllAsync(projectId, null, Options).ConfigureAwait(false);
 

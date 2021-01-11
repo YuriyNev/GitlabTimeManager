@@ -55,5 +55,7 @@ namespace GitLabTimeManager.Services
         public double SpendForPeriod { get; set; }
         
         public double Estimate { get; set; }
+        
+        public DateTime? StartTime { get; set; }
     }
 }
