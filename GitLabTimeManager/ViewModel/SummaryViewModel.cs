@@ -52,26 +52,12 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData AverageKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.AverageKPI);
         [UsedImplicitly] public static readonly PropertyData TodayKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.TodayKPI);
         [UsedImplicitly] public static readonly PropertyData SelectedDateProperty = RegisterProperty<SummaryViewModel, DateTime?>(x => x.SelectedDate, () => DateTime.Now);
-        [UsedImplicitly] public static readonly PropertyData LastMonthsProperty = RegisterProperty<SummaryViewModel, ObservableCollection<DateTime>>(x => x.LastMonths, new ObservableCollection<DateTime>());
-        [UsedImplicitly] public static readonly PropertyData SelectedMonthProperty = RegisterProperty<SummaryViewModel, DateTime>(x => x.SelectedMonth);
         [UsedImplicitly] public static readonly PropertyData DataProperty = RegisterProperty<SummaryViewModel, GitResponse>(x => x.Data);
 
         public GitResponse Data
         {
             get => GetValue<GitResponse>(DataProperty);
             set => SetValue(DataProperty, value);
-        }
-        /// <summary> First Day </summary>
-        public DateTime SelectedMonth
-        {
-            get => GetValue<DateTime>(SelectedMonthProperty);
-            set => SetValue(SelectedMonthProperty, value);
-        }
-
-        public ObservableCollection<DateTime> LastMonths
-        {
-            get => GetValue<ObservableCollection<DateTime>>(LastMonthsProperty);
-            private set => SetValue(LastMonthsProperty, value);
         }
 
         public DateTime? SelectedDate
@@ -248,21 +234,8 @@ namespace GitLabTimeManager.ViewModel
             
             ShowEarningsCommand = new Command(() => ShowingEarning = !ShowingEarning, () => true);
 
-            LastMonths = AddLastMonths();
-            SelectedMonth = LastMonths.Max();
         }
-
-        private static ObservableCollection<DateTime> AddLastMonths()
-        {
-            var collection = new ObservableCollection<DateTime>();
-            var currentMonth = DateTime.Today.AddDays(- DateTime.Today.Day + 1);
-            collection.Add(currentMonth);
-
-            for (var i = 0; i < 3; i++) collection.Add(currentMonth.AddMonths(-(i+1)));
-
-            return collection;
-        }
-
+        
         private void DataSubscriptionOnNewData(object sender, GitResponse e) => Data = e;
 
         private async Task UpdatePropertiesInternalAsync(GitResponse data, DateTime startDate, DateTime endDate)
@@ -383,21 +356,14 @@ namespace GitLabTimeManager.ViewModel
         protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
-            if (e.PropertyName == nameof(SelectedMonth))
-            {
-                UpdatePropertiesAsync();
-            }
-            else if (e.PropertyName == nameof(Data))
+            if (e.PropertyName == nameof(Data))
             {
                 UpdatePropertiesAsync();
             }
         }
 
         private void UpdatePropertiesAsync()
-        {
-            // TODO
-            //var startDate = SelectedMonth;
-            //var endDate = SelectedMonth.AddMonths(1).AddTicks(-1);
+        { 
             var startDate = TimeHelper.StartDate;
             var endDate = TimeHelper.EndDate;
             UpdatePropertiesInternalAsync(Data, startDate, endDate).WaitAndUnwrapException();

@@ -6,8 +6,6 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:models="clr-namespace:GitLabTimeManager.Models"
-             xmlns:system="clr-namespace:System;assembly=mscorlib"
-             xmlns:gl="clr-namespace:System.Globalization;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
     <UserControl.Resources>
@@ -45,10 +43,6 @@
             <Setter Property="LabelPosition" Value="InsideSlice"/>
             <Setter Property="Margin" Value="16 0 0 0"/>
         </Style>
-
-        <DataTemplate x:Key="MonthItemTemplate" DataType="{x:Type system:DateTime}">
-            <TextBlock Text="{Binding ., Mode=OneWay, StringFormat={}{0:MMMM}, ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"/>
-        </DataTemplate>
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -161,17 +155,7 @@
             <TextBlock Text="{Binding Earning, Mode=OneWay, StringFormat={}{0:### ###}}" Margin="0 2 22 2"
                        FontSize="32" TextAlignment="Right"/>
         </Border>
-
-        <ComboBox Grid.Column="0" Grid.Row="0" 
-                  BorderThickness="0 0 0 0"
-                  HorizontalAlignment="Left"
-                  Width="100"
-                  ItemsSource="{Binding LastMonths, Mode=OneWay}"
-                  SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
-                  ItemTemplate="{StaticResource MonthItemTemplate}"
-                  Background="{StaticResource MahApps.Brushes.Gray8}"
-                  Visibility="Collapsed"/>
-
+        
         <Button Grid.Column="1" Grid.Row="0"
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 FontSize="14"
