@@ -217,6 +217,7 @@ namespace GitLabTimeManager.ViewModel
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
+
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
         }
@@ -226,7 +227,7 @@ namespace GitLabTimeManager.ViewModel
             UpdateData(e);
         }
 
-        private async void UpdateData(GitResponse data)
+        private void UpdateData(GitResponse data)
         {
             WrappedIssues = data.WrappedIssues;
 
@@ -259,8 +260,8 @@ namespace GitLabTimeManager.ViewModel
 
             var moneyCalculator = new MoneyCalculator();
 
-            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(TimeHelper.StartDate, DateTime.Now).ConfigureAwait(true)).TotalHours;
-            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(TimeHelper.StartDate, TimeHelper.EndDate).ConfigureAwait(true)).TotalHours;
+            var workingCurrentHours = Calendar.GetWorkingTime(TimeHelper.StartDate, DateTime.Now).TotalHours;
+            var workingTotalHours = Calendar.GetWorkingTime(TimeHelper.StartDate, TimeHelper.EndDate).TotalHours;
             ActualDesiredEstimate = workingCurrentHours / workingTotalHours * moneyCalculator.DesiredEstimate;
             DesiredEstimate = moneyCalculator.DesiredEstimate;
 

@@ -44,6 +44,19 @@ namespace GitLabTimeManager.Models
             Value = value;
             Total = total;
         }
+    }
 
+    public class TimeStatsProperty : NotifyObject
+    {
+        public string Title { get; }
+        public string Unit { get; }
+        public double Value { get; }
+
+        public TimeStatsProperty(string title, double value, string unit)
+        {
+            Title = title;
+            Value = value;
+            Unit = unit;
+        }
     }
 }

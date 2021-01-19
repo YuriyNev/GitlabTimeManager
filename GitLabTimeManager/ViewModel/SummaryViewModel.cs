@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using Catel.Data;
 using Catel.MVVM;
-using Catel.Threading;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Models;
 using GitLabTimeManager.Services;
@@ -19,11 +17,6 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class SummaryViewModel : ViewModelBase
     {
-        [NotNull] private ICalendar Calendar { get; }
-        [NotNull] private IDataRequestService DataRequestService { get; }
-        [NotNull] private IMoneyCalculator MoneyCalculator { get; }
-        [NotNull] private IDataSubscription DataSubscription { get; }
-
         #region Properties
         [UsedImplicitly] public static readonly PropertyData TotalSpendsStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalSpendsStartedInPeriod);
         [UsedImplicitly] public static readonly PropertyData TotalEstimatesStartedInPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.TotalEstimatesStartedInPeriod);
@@ -53,6 +46,13 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData TodayKPIProperty = RegisterProperty<SummaryViewModel, double>(x => x.TodayKPI);
         [UsedImplicitly] public static readonly PropertyData SelectedDateProperty = RegisterProperty<SummaryViewModel, DateTime?>(x => x.SelectedDate, () => DateTime.Now);
         [UsedImplicitly] public static readonly PropertyData DataProperty = RegisterProperty<SummaryViewModel, GitResponse>(x => x.Data);
+        [UsedImplicitly] public static readonly PropertyData AllSpendsForPeriodProperty = RegisterProperty<SummaryViewModel, double>(x => x.AllSpendsForPeriod);
+
+        public double AllSpendsForPeriod
+        {
+            get => GetValue<double>(AllSpendsForPeriodProperty);
+            set => SetValue(AllSpendsForPeriodProperty, value);
+        }
 
         public GitResponse Data
         {
@@ -213,6 +213,11 @@ namespace GitLabTimeManager.ViewModel
         }
         #endregion
 
+        [NotNull] private ICalendar Calendar { get; }
+        [NotNull] private IDataRequestService DataRequestService { get; }
+        [NotNull] private IMoneyCalculator MoneyCalculator { get; }
+        [NotNull] private IDataSubscription DataSubscription { get; }
+
         public ObservableCollection<StatsBlock> OnlyMonthStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
         public ObservableCollection<StatsBlock> EarlyStatsBlocks { get; } = new ObservableCollection<StatsBlock>();
 
@@ -233,12 +238,11 @@ namespace GitLabTimeManager.ViewModel
             DataSubscription.NewData += DataSubscriptionOnNewData;
             
             ShowEarningsCommand = new Command(() => ShowingEarning = !ShowingEarning, () => true);
-
         }
         
         private void DataSubscriptionOnNewData(object sender, GitResponse e) => Data = e;
 
-        private async Task UpdatePropertiesInternalAsync(GitResponse data, DateTime startDate, DateTime endDate)
+        private void UpdatePropertiesInternal(GitResponse data, DateTime startDate, DateTime endDate)
         {
             if (data == null) return;
             var stats = StatisticsExtractor.Process(data.WrappedIssues, startDate, endDate);
@@ -259,6 +263,7 @@ namespace GitLabTimeManager.ViewModel
             ClosedSpendInPeriod = stats.ClosedSpendInPeriod;
             OpenSpendBefore = stats.OpenSpendBefore;
             ClosedSpendBefore = stats.ClosedSpendBefore;
+            AllSpendsForPeriod = stats.AllSpendsForPeriod;
 
             TotalSpendsStartedInPeriod = OpenSpendsStartedInPeriod + ClosedSpendsStartedInPeriod;
             TotalEstimatesStartedInPeriod = OpenEstimatesStartedInPeriod + ClosedEstimatesStartedInPeriod;
@@ -266,8 +271,8 @@ namespace GitLabTimeManager.ViewModel
             TotalSpendsStartedBefore = OpenSpendsStartedBefore + ClosedSpendsStartedBefore;
             TotalEstimatesStartedBefore = OpenEstimatesStartedBefore + ClosedEstimatesStartedBefore;
 
-            var workingCurrentHours = (await Calendar.GetWorkingTimeAsync(startDate, DateTime.Now).ConfigureAwait(true)).TotalHours;
-            var workingTotalHours = (await Calendar.GetWorkingTimeAsync(startDate, endDate).ConfigureAwait(true)).TotalHours;
+            var workingCurrentHours = Calendar.GetWorkingTime(startDate, DateTime.Now).TotalHours;
+            var workingTotalHours = Calendar.GetWorkingTime(startDate, endDate).TotalHours;
             ActualDesiredEstimate = workingCurrentHours / workingTotalHours * MoneyCalculator.DesiredEstimate;
             DesiredEstimate = MoneyCalculator.DesiredEstimate;
 
@@ -303,12 +308,12 @@ namespace GitLabTimeManager.ViewModel
             }
         }
 
-        private async void FillCharts()
+        private void FillCharts()
         {
-            var workTime = await GetWorkingTimeAsync(TimeHelper.StartDate, DateTime.Today).ConfigureAwait(true);
+            var workTime = GetWorkingTime(TimeHelper.StartDate, DateTime.Today);
 
             var remained =
-                Math.Max(workTime - (ClosedSpendInPeriod + OpenSpendInPeriod + ClosedSpendBefore + OpenSpendBefore), 0);
+                Math.Max(workTime - AllSpendsForPeriod, 0);
 
             SpendSeries = new SeriesCollection
             {
@@ -320,11 +325,11 @@ namespace GitLabTimeManager.ViewModel
             };
         }
 
-        private async Task<double> GetWorkingTimeAsync(DateTime startDate, DateTime endDate)
+        private double GetWorkingTime(DateTime startDate, DateTime endDate)
         {
             var workTime = TimeHelper.GetWeekdaysTime(startDate, endDate).TotalHours;
 
-            var holidays = await Calendar.GetHolidaysAsync(startDate, endDate).ConfigureAwait(true);
+            var holidays = Calendar.GetHolidays();
             var holidayTime = holidays?.Where(x => x.Key > startDate && x.Key <= endDate).Sum(x => x.Value.TotalHours) ?? 0;
 
             workTime = Math.Max(workTime - holidayTime, 0);
@@ -348,7 +353,6 @@ namespace GitLabTimeManager.ViewModel
                 DataLabels = IsShowLabel(value),
                 Fill = brush
             };
-
         }
 
         private static bool IsShowLabel(double value) => value > 4;
@@ -366,7 +370,7 @@ namespace GitLabTimeManager.ViewModel
         { 
             var startDate = TimeHelper.StartDate;
             var endDate = TimeHelper.EndDate;
-            UpdatePropertiesInternalAsync(Data, startDate, endDate).WaitAndUnwrapException();
+            UpdatePropertiesInternal(Data, startDate, endDate);
         }
     }
 }

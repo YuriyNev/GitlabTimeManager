@@ -26,6 +26,8 @@ namespace GitLabTimeManager.Services
                                 FinishedInPeriod(issue.Issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
+            statistics.AllEstimatesStartedInPeriod = statistics.OpenEstimatesStartedInPeriod + statistics.ClosedEstimatesStartedInPeriod;
+
             statistics.OpenSpendsStartedInPeriod = openIssues
                 .Where(issue => StartedIn(issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
@@ -34,7 +36,7 @@ namespace GitLabTimeManager.Services
                 .Where(issue => StartedIn(issue, startDate, endTime) &&
                                 FinishedInPeriod(issue.Issue, startDate, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
-            
+
             // started before this month
             statistics.OpenEstimatesStartedBefore = openIssues
                 .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
@@ -43,6 +45,8 @@ namespace GitLabTimeManager.Services
             statistics.ClosedEstimatesStartedBefore = closedIssues
                 .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
+
+            statistics.AllEstimatesStartedBefore = statistics.OpenEstimatesStartedBefore + statistics.ClosedEstimatesStartedBefore;
 
             statistics.AllTodayEstimates = issues
                 .Where(issue => StartedIn(issue, DateTime.Today.AddDays(-6), DateTime.Today.AddDays(1)))
@@ -80,6 +84,10 @@ namespace GitLabTimeManager.Services
                 Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
                 Where(x => StartedIn(x, startDate, endTime)).
                 Sum(x => SpendsSum(x, startDate, endTime));
+
+            statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;
+            statistics.AllSpendsStartedBefore = statistics.OpenSpendBefore + statistics.ClosedSpendBefore;
+            statistics.AllSpendsForPeriod = statistics.AllSpendsStartedInPeriod + statistics.AllSpendsStartedBefore;
 
             return statistics;
         }
@@ -147,6 +155,9 @@ namespace GitLabTimeManager.Services
         /// <summary> Оценочное время закрытых задач, начатых в этом месяце </summary>
         public double ClosedEstimatesStartedInPeriod { get; set; }
 
+        /// <summary> Оценочное время всех задач, начатых в этом месяце </summary>
+        public double AllEstimatesStartedInPeriod { get; set; }
+
         /// <summary> Потраченное время закрытых задач, начатых ранее </summary>
         public double ClosedSpendsStartedInPeriod { get; set; }
 
@@ -158,6 +169,9 @@ namespace GitLabTimeManager.Services
 
         /// <summary> Оценочное время закрытых задач, начатых ранее </summary>
         public double ClosedEstimatesStartedBefore { get; set; }
+
+        /// <summary> Оценочное время всех задач, начатых ранее </summary>
+        public double AllEstimatesStartedBefore { get; set; }
 
         /// <summary> отраченное время открытых задач, начатых ранее </summary>
         public double OpenSpendsStartedBefore { get; set; }
@@ -179,5 +193,14 @@ namespace GitLabTimeManager.Services
 
         /// <summary> Среднее оценочное время за недавние дни </summary>
         public double AllTodayEstimates { get; set; }
+
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на все задачи в этом месяце открытые в этом месяце </summary>
+        public double AllSpendsStartedInPeriod { get; set; }
+
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на все задачи в этом месяце открытые ранее </summary>
+        public double AllSpendsStartedBefore { get; set; }
+
+        /// <summary> Фактическое время ПОТРАЧЕННОЕ на все задачи в этом месяце </summary>
+        public double AllSpendsForPeriod { get; set; }
     }
 }

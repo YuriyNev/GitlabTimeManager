@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Helpers;
+using GitLabTimeManager.Models;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
 
@@ -17,6 +18,7 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData LastMonthsProperty = RegisterProperty<ReportViewModel, ObservableCollection<DateTime>>(x => x.LastMonths, new ObservableCollection<DateTime>());
         [UsedImplicitly] public static readonly PropertyData SelectedMonthProperty = RegisterProperty<ReportViewModel, DateTime>(x => x.SelectedMonth);
         [UsedImplicitly] public static readonly PropertyData DataProperty = RegisterProperty<ReportViewModel, GitResponse>(x => x.Data);
+        [UsedImplicitly] public static readonly PropertyData ValuesForPeriodProperty = RegisterProperty<ReportViewModel, ObservableCollection<TimeStatsProperty>>(x => x.ValuesForPeriod);
 
         public GitResponse Data
         {
@@ -43,12 +45,20 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(ReportIssuesProperty, value);
         }
 
-        private IDataRequestService DataRequestService { get; }
-        private IDataSubscription DataSubscription { get; }
+        public ObservableCollection<TimeStatsProperty> ValuesForPeriod
+        {
+            get => GetValue<ObservableCollection<TimeStatsProperty>>(ValuesForPeriodProperty);
+            private set => SetValue(ValuesForPeriodProperty, value);
+        }
 
-        public ReportViewModel([NotNull] IDataRequestService dataRequestService)
+        private IDataRequestService DataRequestService { get; }
+        private ICalendar Calendar { get; }
+        private IDataSubscription DataSubscription { get; }
+        
+        public ReportViewModel([NotNull] IDataRequestService dataRequestService, [NotNull] ICalendar calendar)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
+            Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
@@ -75,12 +85,28 @@ namespace GitLabTimeManager.ViewModel
             FillReport(e);
         }
 
-        private void FillReport(GitResponse e)
+        private void FillReport(GitResponse response)
         {
             var startTime = SelectedMonth;
             var endTime = SelectedMonth.AddMonths(1).AddTicks(-1);
            
-            ReportIssues = CreateCollection(e.WrappedIssues, startTime, endTime);
+            ReportIssues = CreateCollection(response.WrappedIssues, startTime, endTime);
+
+            ValuesForPeriod = ExtractSums(response.WrappedIssues, startTime, endTime);
+        }
+
+        private static ObservableCollection<TimeStatsProperty> ExtractSums(IReadOnlyList<WrappedIssue> wrappedIssues, DateTime startTime, DateTime endTime)
+        {
+            var statistics = StatisticsExtractor.Process(wrappedIssues, startTime, endTime);
+            return new ObservableCollection<TimeStatsProperty>
+            {
+                new TimeStatsProperty("Оценка по закрытым задачам", statistics.ClosedEstimatesStartedInPeriod, "ч"),
+                new TimeStatsProperty("Оценка по открытым задачам", statistics.OpenEstimatesStartedInPeriod, "ч"),
+                new TimeStatsProperty("Оценка по всем задачам", statistics.AllEstimatesStartedInPeriod, "ч"),
+                new TimeStatsProperty("Затраты на старые задачи", statistics.AllSpendsStartedBefore, "ч"),
+                new TimeStatsProperty("Затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
+                new TimeStatsProperty("Затраты по всем задачам", statistics.AllSpendsForPeriod, "ч"),
+            };
         }
 
         private static ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>

@@ -9,14 +9,11 @@ using Hardcodet.Wpf.TaskbarNotification;
 
 namespace GitLabTimeManager
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
+    /// <summary> Interaction logic for App.xaml </summary>
     public partial class App
     {
         private TaskbarIcon _notifyIcon;
         private IViewModelFactory ViewModelFactory { get; set; }
-
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -28,7 +25,7 @@ namespace GitLabTimeManager
             LogManager.AddDebugListener();
 #endif
         }
-
+        
         private void InitTrayIcon()
         {
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
@@ -54,12 +51,15 @@ namespace GitLabTimeManager
 #if !DEBUG
             //serviceLocator.RegisterTypeAndInstantiate<ExceptionWatcher>();
 #endif
-           ServiceLocator.Default.RegisterType<ISourceControl, SourceControl>();
-           ServiceLocator.Default.RegisterType<IMoneyCalculator, MoneyCalculator>();
-           ServiceLocator.Default.RegisterType<ICalendar, WorkingCalendar>();
-           ServiceLocator.Default.RegisterType<IDataRequestService, DataRequestService>();
-           ServiceLocator.Default.RegisterType<IProfileService, ProfileService>();
-           ServiceLocator.Default.RegisterType<IUserProfile, UserProfile>();
+            var calendarService = new WorkingCalendar();
+            var _ = calendarService.InitializeAsync();
+
+            serviceLocator.RegisterType<ISourceControl, SourceControl>();
+            serviceLocator.RegisterType<IMoneyCalculator, MoneyCalculator>(RegistrationType.Transient);
+            serviceLocator.RegisterInstance<ICalendar>(calendarService);
+            serviceLocator.RegisterType<IDataRequestService, DataRequestService>();
+            serviceLocator.RegisterType<IProfileService, ProfileService>();
+            serviceLocator.RegisterType<IUserProfile, UserProfile>();
         }
 
         private static void ServiceLocator_MissingType(object sender, MissingTypeEventArgs e)

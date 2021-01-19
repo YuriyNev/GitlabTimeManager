@@ -13,45 +13,63 @@ namespace GitLabTimeManager.Services
     public class WorkingCalendar : ICalendar
     {
         private static int Year { get; } = DateTime.Today.Year;
-        private static string RemotePath { get; } = $"http://xmlcalendar.ru/data/ru/{Year}/calendar.xml";
+        private static string CalendarName { get; } = "calendar.xml";
+        private static string RemotePath { get; } = $"http://xmlcalendar.ru/data/ru/{Year}/{CalendarName}";
         private static string LocalDirectory { get; } = $"{AppDomain.CurrentDomain.BaseDirectory}";
-        private static string LocalPath { get; } = $"{LocalDirectory}calendar.xml";
+        private static string LocalPath { get; } = $"{LocalDirectory}{CalendarName}";
 
-        public async Task<Dictionary<DateTime, TimeSpan>> GetHolidaysAsync(DateTime from, DateTime to)
+        private bool _initialized;
+
+        private Dictionary<DateTime, TimeSpan> Holidays { get; set; } = new Dictionary<DateTime, TimeSpan>();
+
+        public async Task InitializeAsync()
         {
-            // If file don't exist
-            if (!CalendarIsExist(LocalPath))
+            try
             {
-                var downloaded = await DownloadFileAsync(RemotePath, LocalPath).ConfigureAwait(true);
-                if (!downloaded) return null;
-            }
-            var doc = LoadXmlDocument(LocalPath);
+                if (_initialized)
+                    return;
 
-            // If not actual year, try update 
-            if (!YearIsAvailable(doc, Year))
+                // If file don't exist
+                if (!CalendarIsExist(LocalPath))
+                {
+                    var downloaded = await DownloadFileAsync(RemotePath, LocalPath).ConfigureAwait(true);
+                    if (!downloaded) return;
+                }
+                var doc = LoadXmlDocument(LocalPath);
+
+                // If not actual year, try update 
+                if (!YearIsAvailable(doc, Year))
+                {
+                    var downloaded = await DownloadFileAsync(RemotePath, LocalPath).ConfigureAwait(true);
+                    if (!downloaded) return;
+
+                    // reload document
+                    doc = LoadXmlDocument(LocalPath);
+                }
+
+                // Check year again
+                if (!YearIsAvailable(doc, Year))
+                    return;
+                
+                Holidays = TryParse(doc);
+                _initialized = true;
+            }
+            catch
             {
-                var downloaded = await DownloadFileAsync(RemotePath, LocalPath).ConfigureAwait(true);
-                if (!downloaded) return null;
-
-                // reload document
-                doc = LoadXmlDocument(LocalPath);
+                _initialized = false;
             }
-
-            // Check year again
-            if (!YearIsAvailable(doc, Year))
-                return null;
-
-            return TryParse(doc);
         }
 
-        public async Task<TimeSpan> GetWorkingTimeAsync(DateTime from, DateTime to)
+        public Dictionary<DateTime, TimeSpan> GetHolidays() => Holidays;
+
+        public TimeSpan GetWorkingTime(DateTime from, DateTime to)
         {
             if (from > to)
                 throw new ArgumentOutOfRangeException();
 
             var workTime = TimeHelper.GetWeekdaysTime(from, to).TotalHours;
 
-            var holidays = await GetHolidaysAsync(from, to).ConfigureAwait(true);
+            var holidays = GetHolidays();
             var holidayTime = holidays?.Where(x => x.Key > from && x.Key <= to).Sum(x => x.Value.TotalHours) ?? 0;
 
             workTime -= holidayTime;
@@ -201,8 +219,8 @@ namespace GitLabTimeManager.Services
 
     public interface ICalendar
     {
-        Task<Dictionary<DateTime, TimeSpan>> GetHolidaysAsync(DateTime from, DateTime to);
-        Task<TimeSpan> GetWorkingTimeAsync(DateTime from, DateTime to);
+        Task InitializeAsync();
+        Dictionary<DateTime, TimeSpan> GetHolidays();
+        TimeSpan GetWorkingTime(DateTime from, DateTime to);
     }
-
 }

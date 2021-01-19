@@ -98,10 +98,8 @@ namespace GitLabTimeManager.ViewModel
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
 
             if (!GitTestLaunch(dependencyResolver))
-            {
                 return;
-            }
-            
+
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             DataRequestService = dependencyResolver.Resolve<IDataRequestService>();
             

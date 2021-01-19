@@ -6,6 +6,7 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:gl="clr-namespace:System.Globalization;assembly=mscorlib"
+             xmlns:models="clr-namespace:GitLabTimeManager.Models"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance viewModel:ReportViewModel}">
@@ -33,11 +34,48 @@
             <TextBlock Text="{Binding ., Mode=OneWay, StringFormat={}{0:MMMM}, ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"
                        FontSize="14"/>
         </DataTemplate>
+
+        <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models:TimeStatsProperty}">
+            <Grid Margin="4 2 0 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="{Binding Title, Mode=OneWay}"
+                           HorizontalAlignment="Right"
+                           TextTrimming="CharacterEllipsis"
+                           FontSize="{DynamicResource MahApps.Font.Size.Tooltip}"
+                           FontFamily="{DynamicResource MahApps.Fonts.Family.Button}"/>
+
+                <Grid Grid.Row="1">
+                    <Border BorderBrush="LightGray" BorderThickness="0 0 0 1" 
+                            HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock TextAlignment="Right"
+                                       Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F1}}" 
+                                       FontSize="{DynamicResource MahApps.Font.Size.Default}"
+                                       FontWeight="Bold" Margin="4"/>
+                            <TextBlock TextAlignment="Right"
+                                       Text="{Binding Unit, Mode=OneWay}" 
+                                       FontSize="{DynamicResource MahApps.Font.Size.Content}"
+                                       Foreground="LightGray"
+                                       Margin="0 4 4 4"/>
+                        </StackPanel>
+                        
+                    </Border>
+                </Grid>
+            </Grid>
+        </DataTemplate>
     </UserControl.Resources>
     <Grid TextElement.FontSize="13">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!--Selected Date-->
@@ -103,8 +141,7 @@
                                     Width="45"
                                     CanUserSort="True"
                                     Binding="{Binding Iid, Mode=OneWay}"
-                                    ElementStyle="{StaticResource IdTextStyle}">
-                </DataGridTextColumn>
+                                    ElementStyle="{StaticResource IdTextStyle}"/>
 
                 <DataGridTextColumn Header="Описание"
                                     Width="*"
@@ -138,5 +175,17 @@
                 </Style>
             </DataGrid.RowStyle>
         </DataGrid>
+        <ScrollViewer Grid.Row="2" 
+                      Margin="4 4 4 2"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding ValuesForPeriod, Mode=OneWay}"
+                          ItemTemplate="{StaticResource StatsItemTemplate}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="2"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
     </Grid>
 </UserControl>
