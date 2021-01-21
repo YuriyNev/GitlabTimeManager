@@ -128,8 +128,11 @@
 
             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button}">
                 <Setter Property="Focusable" Value="False" />
+                <Setter Property="Width" Value="40"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="mah:ControlsHelper.CornerRadius" Value="0"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray9}"/>
             </Style>
-
         </ResourceDictionary>
     </Application.Resources>
 

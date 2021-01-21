@@ -100,6 +100,11 @@ namespace GitLabTimeManager.Helpers
             return $@"/spend {ts.TotalMinutes:####}m";
         }
 
+        public static string ConvertEstimate(this TimeSpan ts)
+        {
+            return $@"/estimate {ts.TotalSeconds:####}s";
+        }
+
         public static TimeSpan GetWeekdaysTime(DateTime startDate, DateTime endDate)
         {
             var curDate = startDate;

@@ -21,10 +21,12 @@ namespace GitLabTimeManager.Services
     {
         [PublicAPI] Task<GitResponse> RequestDataAsync();
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
+        [PublicAPI] Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task<bool> StartIssueAsync(Issue issue);
         [PublicAPI] Task<bool> PauseIssueAsync(Issue issue);
         [PublicAPI] Task<bool> FinishIssueAsync(Issue issue);
         [PublicAPI] Task<IReadOnlyList<Label>> GetAllLabels();
+        [PublicAPI] Task<Issue> UpdateIssueAsync(Issue issue, UpdateIssueRequest request);
     }
 
     internal class SourceControl : ISourceControl
@@ -57,6 +59,13 @@ namespace GitLabTimeManager.Services
             if (timeSpan < TimeSpan.FromMinutes(5)) return;
 #endif
             var request = new CreateIssueNoteRequest(timeSpan.ConvertSpent() + "\n" + "[]");
+            var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
+            await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id).ConfigureAwait(false);
+        }
+
+        public async Task SetEstimateAsync(Issue issue, TimeSpan timeSpan)
+        {
+            var request = new CreateIssueNoteRequest(timeSpan.ConvertEstimate() + "\n" + "[]");
             var note = await GitLabClient.Issues.CreateNoteAsync(issue.ProjectId, issue.Iid, request).ConfigureAwait(false);
             await GitLabClient.Issues.DeleteNoteAsync(issue.ProjectId, issue.Iid, note.Id).ConfigureAwait(false);
         }
@@ -117,6 +126,11 @@ namespace GitLabTimeManager.Services
 
             var dist = all.Distinct(new Comparison());
             return dist.ToList();
+        }
+
+        public Task<Issue> UpdateIssueAsync(Issue issue, UpdateIssueRequest request)
+        {
+            return GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
         }
 
         private class Comparison : IEqualityComparer<Label>

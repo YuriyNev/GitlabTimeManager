@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Catel.Data;
 using Catel.MVVM;
+using GitLabApiClient.Models.Issues.Requests;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
@@ -14,10 +15,45 @@ namespace GitLabTimeManager.ViewModel
     {
         [UsedImplicitly] public static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
         [UsedImplicitly] public static readonly PropertyData TotalTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.EstimateTime);
-        [UsedImplicitly] public static readonly PropertyData TitleProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.Description);
+        [UsedImplicitly] public static readonly PropertyData DescriptionProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.IssueTitle);
         [UsedImplicitly] public static readonly PropertyData IsStartedProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsStarted);
         [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsFullscreen);
         [UsedImplicitly] public static readonly PropertyData OverallTimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.OverallTime);
+        [UsedImplicitly] public static readonly PropertyData IsEditModeProperty = RegisterProperty<IssueTimerViewModel, bool>(x => x.IsEditMode);
+        [UsedImplicitly] public static readonly PropertyData EditDescriptionProperty = RegisterProperty<IssueTimerViewModel, string>(x => x.EditedTitle);
+        [UsedImplicitly] public static readonly PropertyData EstimateHoursProperty = RegisterProperty<IssueTimerViewModel, double>(x => x.EstimateHours);
+        [UsedImplicitly] public static readonly PropertyData EstimateMinutesProperty = RegisterProperty<IssueTimerViewModel, double>(x => x.EstimateMinutes);
+        [UsedImplicitly] public static readonly PropertyData EstimateSecondsProperty = RegisterProperty<IssueTimerViewModel, double>(x => x.EstimateSeconds);
+
+        public double EstimateSeconds
+        {
+            get => GetValue<double>(EstimateSecondsProperty);
+            set => SetValue(EstimateSecondsProperty, value);
+        }
+
+        public double EstimateMinutes
+        {
+            get => GetValue<double>(EstimateMinutesProperty);
+            set => SetValue(EstimateMinutesProperty, value);
+        }
+
+        public double EstimateHours
+        {
+            get => GetValue<double>(EstimateHoursProperty);
+            set => SetValue(EstimateHoursProperty, value);
+        }
+
+        public string EditedTitle
+        {
+            get => GetValue<string>(EditDescriptionProperty);
+            set => SetValue(EditDescriptionProperty, value);
+        }
+
+        public bool IsEditMode
+        {
+            get => GetValue<bool>(IsEditModeProperty);
+            private set => SetValue(IsEditModeProperty, value);
+        }
 
         public TimeSpan OverallTime
         {
@@ -37,10 +73,10 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(IsStartedProperty, value);
         }
 
-        public string Description
+        public string IssueTitle
         {
-            get => GetValue<string>(TitleProperty);
-            private set => SetValue(TitleProperty, value);
+            get => GetValue<string>(DescriptionProperty);
+            private set => SetValue(DescriptionProperty, value);
         }
 
         public TimeSpan EstimateTime
@@ -71,15 +107,24 @@ namespace GitLabTimeManager.ViewModel
         public Command StopTimeCommand { get; }
         public Command FullscreenCommand { get; }
         public Command<string> GoToBrowserCommand { get; }
+        public Command<WrappedIssue> EditIssueCommand { get; }
+        public Command ApplyCommand { get; }
+        public Command CancelCommand { get; }
 
         public IssueTimerViewModel([NotNull] ISourceControl sourceControl, [NotNull] WrappedIssue issue)
         {
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             Issue = issue ?? throw new ArgumentNullException(nameof(issue));
 
-            Description = Issue.Issue.Title;
+            IssueTitle = Issue.Issue.Title;
+            EditedTitle = IssueTitle;
             Time = LastSaveTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TotalTimeSpent);
             EstimateTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TimeEstimate);
+            
+            EstimateHours = EstimateTime.Hours;
+            EstimateMinutes = EstimateTime.Minutes;
+            EstimateSeconds = EstimateTime.Seconds;
+
             CalculateOverallTime(Time, EstimateTime);
 
             StartTimeCommand = new Command(StartTime);
@@ -89,7 +134,48 @@ namespace GitLabTimeManager.ViewModel
 
             GoToBrowserCommand = new Command<string>(GoToBrowser);
 
+            EditIssueCommand = new Command<WrappedIssue>(EditIssue);
+
+            ApplyCommand = new Command(Apply);
+            CancelCommand = new Command(Cancel);
+
             CreateTimer();
+        }
+
+        private void EditIssue(WrappedIssue obj)
+        {
+            IsEditMode = !IsEditMode;
+        }
+
+        private async void Apply()
+        {
+            var timeSpan = new TimeSpan((int)EstimateHours, (int)EstimateMinutes, (int)EstimateSeconds);
+            var request = new UpdateIssueRequest
+            {
+                Title = EditedTitle,
+            };
+
+            try
+            {
+                var newIssue = await SourceControl.UpdateIssueAsync(Issue.Issue, request).ConfigureAwait(true);
+
+                await SourceControl.SetEstimateAsync(newIssue, timeSpan).ConfigureAwait(true);
+
+                EstimateTime = timeSpan;
+                IssueTitle = newIssue.Title;
+                Issue.Issue.Title = IssueTitle;
+
+                OnPropertyChanged(new AdvancedPropertyChangedEventArgs(this, nameof(Issue.Issue.Title)));
+            }
+            finally
+            {
+                Cancel();
+            }
+        }
+
+        private void Cancel()
+        {
+            IsEditMode = false;
         }
 
         private static void GoToBrowser(string textUri)

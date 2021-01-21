@@ -95,12 +95,9 @@
 
         <Grid Grid.Row="0"
               HorizontalAlignment="Left"
-              Height="32">
+              Height="40">
 
-            <Button Width="32"
-                    Height="32"
-                    Content="{iconPacks:FeatherIcons Kind=Save}"
-                    Foreground="{StaticResource MahApps.Brushes.Gray1}"
+            <Button Content="{iconPacks:FeatherIcons Kind=Save}"
                     Command="{Binding ExportCsvCommand, Mode=OneWay}"/>
 
             <mah:ProgressRing IsActive="{Binding IsProgress, Mode=OneWay}"

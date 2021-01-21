@@ -327,8 +327,10 @@
     <Compile Include="Behavior\MonthCalendarBehavior.cs" />
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Controls\PopupButton.cs" />
+    <Compile Include="Controls\TimeSpanPicker.xaml.cs">
+      <DependentUpon>TimeSpanPicker.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\LamdaConverters.cs" />
-    <Compile Include="Helpers\AsyncHelper.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\LabelProcessor.cs" />
@@ -375,6 +377,10 @@
     <Page Include="Controls\PopupButtonTemplate.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\TimeSpanPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TinyScrollBarStyle.xaml">
       <SubType>Designer</SubType>
