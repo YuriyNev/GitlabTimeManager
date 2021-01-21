@@ -111,6 +111,24 @@
                 <Setter Property="DarkMaxButtonStyle" Value="{StaticResource CustomDarkMetroWindowButtonStyle}" />
                 <Setter Property="DarkCloseButtonStyle" Value="{StaticResource CustomDarkMetroWindowButtonStyle}" />
             </Style>
+            <Style x:Key="MahApps.Styles.Button.FocusVisualStyle.Flat">
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Rectangle Margin="4"
+                                       SnapsToDevicePixels="True"
+                                       Stroke="{DynamicResource MahApps.Brushes.Button.Flat.Foreground}"
+                                       StrokeDashArray="1 2"
+                                       StrokeThickness="1"
+                                       UseLayoutRounding="True" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button}">
+                <Setter Property="Focusable" Value="False" />
+            </Style>
 
         </ResourceDictionary>
     </Application.Resources>

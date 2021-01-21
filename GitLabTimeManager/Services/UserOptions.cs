@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using GitLabTimeManager.Types;
 using JetBrains.Annotations;
@@ -37,9 +36,6 @@ namespace GitLabTimeManager.Services
             if (string.IsNullOrEmpty(profile.Url))
                 return false;
             
-            if (profile.Projects?.Count == 0)
-                return false;
-
             return true;
         }
     }
@@ -57,7 +53,7 @@ namespace GitLabTimeManager.Services
 
         public string Url { get; set; }
 
-        public IReadOnlyList<int> Projects { get; set; }
+        public int RequestMonths { get; set; }
     }
 
     public class UserProfile : IUserProfile
@@ -66,11 +62,10 @@ namespace GitLabTimeManager.Services
 
         public string Url { get; set; }
 
-        public IReadOnlyList<int> Projects { get; set; }
+        public int RequestMonths { get; set; }
 
         public UserProfile()
         {
-            
         }
         
         public UserProfile([NotNull] IProfileService profileService)
@@ -79,7 +74,7 @@ namespace GitLabTimeManager.Services
 
             Url = userProfile.Url;
             Token = userProfile.Token;
-            Projects = userProfile.Projects;
+            RequestMonths = 3;
         }
     }
 }

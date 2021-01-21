@@ -11,6 +11,7 @@ using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
+using GitLabApiClient.Models.Projects.Responses;
 using GitLabTimeManager.Helpers;
 using JetBrains.Annotations;
 
@@ -18,47 +19,17 @@ namespace GitLabTimeManager.Services
 {
     public interface ISourceControl
     {
-        [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime startTime, DateTime endTime);
+        [PublicAPI] Task<GitResponse> RequestDataAsync();
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task<bool> StartIssueAsync(Issue issue);
         [PublicAPI] Task<bool> PauseIssueAsync(Issue issue);
         [PublicAPI] Task<bool> FinishIssueAsync(Issue issue);
+        [PublicAPI] Task<IReadOnlyList<Label>> GetAllLabels();
     }
 
     internal class SourceControl : ISourceControl
     {
         private IUserProfile UserProfile { get; }
-#if DEBUG
-        // GITLAB.COM
-
-        //private static readonly IReadOnlyList<int> ProjectIds = new List<int> { 17053052 };
-        //private const string Token = "KajKr2cVJ4amosry9p4v";
-        //private const string Uri = "https://gitlab.com";
-
-        // DOMINATION
-        private const int WebServerId = 11;
-        private const int ClientDominationId = 14;
-        private const int AnalyticsId = 16;
-
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int>
-        {
-            ClientDominationId, AnalyticsId, WebServerId
-        };
-        private const string Token = "gTUPn2KdhEFUMR3oQL81";
-        private const string Uri = "http://gitlab.domination";
-#else
-        
-        private static int WebServerId = 11;
-        private static int ClientDominationId = 14;
-        private static int AnalyticsId = 16;
-
-        private static readonly IReadOnlyList<int> ProjectIds = new List<int>
-        {
-            ClientDominationId, AnalyticsId, WebServerId
-        };
-        private const string Token = "gTUPn2KdhEFUMR3oQL81";
-        private const string Uri = "http://gitlab.domination";
-#endif
         private GitLabClient GitLabClient { get; }
         
         public SourceControl([NotNull] IUserProfile userProfile)
@@ -68,14 +39,12 @@ namespace GitLabTimeManager.Services
             GitLabClient = new GitLabClient(UserProfile.Url, UserProfile.Token);
         }
 
-        public async Task<GitResponse> RequestDataAsync(DateTime startTime, DateTime endTime)
+        public async Task<GitResponse> RequestDataAsync()
         {
             var wrappedIssues = await GetPreparedDataAsync().ConfigureAwait(false);
 
             return new GitResponse
             {
-                StartDate = startTime,
-                EndDate = endTime,
                 WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues),
             };
         }
@@ -135,6 +104,46 @@ namespace GitLabTimeManager.Services
             return true;
         }
 
+        public async Task<IReadOnlyList<Label>> GetAllLabels()
+        {
+            var projects = await GitLabClient.Projects.GetAsync();
+            var all = new Collection<Label>();
+
+            foreach (var project in projects)
+            {
+                var labels = await GitLabClient.Projects.GetLabelsAsync(project.Id);
+                all.AddRange(labels);
+            }
+
+            var dist = all.Distinct(new Comparison());
+            return dist.ToList();
+        }
+
+        private class Comparison : IEqualityComparer<Label>
+        {
+            public bool Equals(Label x, Label y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.GetType() != y.GetType()) return false;
+                return x.Id == y.Id;
+            }
+
+            public int GetHashCode(Label obj)
+            {
+                unchecked
+                {
+                    var hashCode = obj.Id;
+                    hashCode = (hashCode * 397) ^ (obj.Name != null ? obj.Name.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (obj.Color != null ? obj.Color.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (obj.Description != null ? obj.Description.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ obj.Priority.GetHashCode();
+                    return hashCode;
+                }
+            }
+        }
+
         private bool _isAction;
 
         private async Task<IEnumerable<WrappedIssue>> GetPreparedDataAsync()
@@ -148,6 +157,7 @@ namespace GitLabTimeManager.Services
 
                 var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
                 var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+
                 return ExtentIssues(allIssues, allNotes);
             }
             catch (Exception ex)
@@ -244,27 +254,17 @@ namespace GitLabTimeManager.Services
 
         private async Task<ObservableCollection<Issue>> RequestAllIssuesAsync()
         {
-            var projects = UserProfile.Projects;
-            var allIssues = new ObservableCollection<Issue>();
-            foreach (var projectId in projects)
-            {
-                var issues = await GitLabClient.Issues.GetAllAsync(projectId, null, Options).ConfigureAwait(false);
+            var issues = await GitLabClient.Issues.GetAllAsync(projectId: null, groupId: null, options: Options).ConfigureAwait(false);
 
-                issues = issues.Where(x => x.State == IssueState.Closed && 
-                                           x.ClosedAt != null 
-                                           ||
-                                           x.State == IssueState.Opened).ToList();
-
-                allIssues.AddRange(issues);
-            }
+            var allIssues = new ObservableCollection<Issue>(issues);
 
             return allIssues;
         }
 
-        private static void Options(IssuesQueryOptions options)
+        private void Options(IssuesQueryOptions options)
         {
             options.Scope = Scope.AssignedToMe;
-            options.CreatedAfter = TimeHelper.Today.AddMonths(-6);
+            options.CreatedAfter = TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
             options.State = IssueState.All;
         }
 
@@ -320,9 +320,6 @@ namespace GitLabTimeManager.Services
 
     public class GitResponse
     {
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-       
         public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
     }
 }

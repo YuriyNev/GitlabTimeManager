@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Catel.IoC;
-using GitLabTimeManager.Helpers;
 using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
@@ -53,7 +52,6 @@ namespace GitLabTimeManager.Services
     {
         private IReadOnlyList<DataSubscription> _dataSubscriptions = Array.Empty<DataSubscription>();
         private CancellationTokenSource _cancellation = new CancellationTokenSource();
-        private bool _isFirstRequest;
 
         public IDataSubscription CreateSubscription()
         {
@@ -97,12 +95,7 @@ namespace GitLabTimeManager.Services
                 if (_cancellation.IsCancellationRequested)
                     return;
 
-                var startTime = _isFirstRequest ? TimeHelper.StartPastDate : TimeHelper.StartDate;
-                var endTime = TimeHelper.EndDate;
-
-                var data = await sourceControl.RequestDataAsync(startTime, endTime).ConfigureAwait(true);
-
-                _isFirstRequest = false;
+                var data = await sourceControl.RequestDataAsync().ConfigureAwait(true);
 
                 foreach (var subscription in _dataSubscriptions)
                 {

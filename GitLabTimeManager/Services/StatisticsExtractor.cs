@@ -143,7 +143,7 @@ namespace GitLabTimeManager.Services
         private static bool IsClosed(Issue issue) => !IsOpen(issue);
     }
     
-    public struct GitStatistics
+    public class GitStatistics
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

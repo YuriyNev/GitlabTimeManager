@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Catel.Data;
 using Catel.MVVM;
+using Catel.Threading;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Models;
 using GitLabTimeManager.Services;
@@ -19,6 +21,13 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData SelectedMonthProperty = RegisterProperty<ReportViewModel, DateTime>(x => x.SelectedMonth);
         [UsedImplicitly] public static readonly PropertyData DataProperty = RegisterProperty<ReportViewModel, GitResponse>(x => x.Data);
         [UsedImplicitly] public static readonly PropertyData ValuesForPeriodProperty = RegisterProperty<ReportViewModel, ObservableCollection<TimeStatsProperty>>(x => x.ValuesForPeriod);
+        [UsedImplicitly] public static readonly PropertyData IsProgressProperty = RegisterProperty<ReportViewModel, bool>(x => x.IsProgress);
+
+        public bool IsProgress
+        {
+            get => GetValue<bool>(IsProgressProperty);
+            private set => SetValue(IsProgressProperty, value);
+        }
 
         public GitResponse Data
         {
@@ -51,37 +60,88 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(ValuesForPeriodProperty, value);
         }
 
-        private IDataRequestService DataRequestService { get; }
-        private ICalendar Calendar { get; }
-        private IDataSubscription DataSubscription { get; }
-        
-        public ReportViewModel([NotNull] IDataRequestService dataRequestService, [NotNull] ICalendar calendar)
+        [NotNull] private IDataRequestService DataRequestService { get; }
+        [NotNull] private ICalendar Calendar { get; }
+        [NotNull] private IUserProfile UserProfile { get; }
+        [NotNull] private IDataSubscription DataSubscription { get; }
+
+        private GitStatistics Statistics { get; set; }
+        private TimeSpan WorkingTime { get; set; }
+
+        public Command ExportCsvCommand { get; }
+
+        private bool _canSave = true;
+
+        private bool CanSave() => _canSave;
+
+        public ReportViewModel(
+            [NotNull] IDataRequestService dataRequestService, 
+            [NotNull] ICalendar calendar,
+            [NotNull] IUserProfile userProfile)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
+            UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
 
+            ExportCsvCommand = new Command(() => ExportCsv().WaitAndUnwrapException(), CanSave);
+
             LastMonths = AddLastMonths();
             SelectedMonth = LastMonths.Max();
         }
-        
-        private static ObservableCollection<DateTime> AddLastMonths()
+
+        private async Task ExportCsv()
+        {
+            _canSave = false;
+            try
+            {
+                var export = new ExcelExporter();
+
+                var defaultName = $"{SelectedMonth.ToString("yyyy MMMM", CultureInfo.CurrentCulture)}";
+                var extension = "xlsx";
+                var path = await FileHelper.SaveDialog(defaultName, extension).ConfigureAwait(false);
+                if (path == null)
+                    throw new ArgumentNullException();
+
+                var data = new ExportData {Issues = ReportIssues, Statistics = Statistics, WorkingTime = WorkingTime};
+
+                IsProgress = true;
+                
+                var result = export.SaveAsync(path, data).ConfigureAwait(false);
+                var awaiter = result.GetAwaiter();
+                awaiter.OnCompleted(OnSavingFinished);
+            }
+            catch
+            {
+                OnSavingFinished();
+            }
+        }
+
+        private void OnSavingFinished()
+        {
+            _canSave = true;
+            ExportCsvCommand?.RaiseCanExecuteChanged();
+            IsProgress = false;
+        }
+
+        private ObservableCollection<DateTime> AddLastMonths()
         {
             var collection = new ObservableCollection<DateTime>();
             var currentMonth = DateTime.Today.AddDays(-DateTime.Today.Day + 1);
             collection.Add(currentMonth);
-
-            const int monthCount = 6;
+            
+            int monthCount = UserProfile.RequestMonths;
             for (var i = 0; i < monthCount - 1; i++) collection.Add(currentMonth.AddMonths(-(i + 1)));
-
+           
             return collection;
         }
         
         private void DataSubscriptionOnNewData(object sender, GitResponse e)
         {
             Data = e;
+
             FillReport(e);
         }
 
@@ -89,25 +149,29 @@ namespace GitLabTimeManager.ViewModel
         {
             var startTime = SelectedMonth;
             var endTime = SelectedMonth.AddMonths(1).AddTicks(-1);
-           
+
+            WorkingTime = Calendar.GetWorkingTime(startTime, endTime);
+
             ReportIssues = CreateCollection(response.WrappedIssues, startTime, endTime);
 
-            ValuesForPeriod = ExtractSums(response.WrappedIssues, startTime, endTime);
+            Statistics = StatisticsExtractor.Process(response.WrappedIssues, startTime, endTime);
+
+            ValuesForPeriod = ExtractSums(Statistics, WorkingTime);
         }
 
-        private static ObservableCollection<TimeStatsProperty> ExtractSums(IReadOnlyList<WrappedIssue> wrappedIssues, DateTime startTime, DateTime endTime)
-        {
-            var statistics = StatisticsExtractor.Process(wrappedIssues, startTime, endTime);
-            return new ObservableCollection<TimeStatsProperty>
+        private static ObservableCollection<TimeStatsProperty> ExtractSums(GitStatistics statistics, TimeSpan workingHours) 
+            => new ObservableCollection<TimeStatsProperty>
             {
-                new TimeStatsProperty("Оценка по закрытым задачам", statistics.ClosedEstimatesStartedInPeriod, "ч"),
-                new TimeStatsProperty("Оценка по открытым задачам", statistics.OpenEstimatesStartedInPeriod, "ч"),
-                new TimeStatsProperty("Оценка по всем задачам", statistics.AllEstimatesStartedInPeriod, "ч"),
-                new TimeStatsProperty("Затраты на старые задачи", statistics.AllSpendsStartedBefore, "ч"),
-                new TimeStatsProperty("Затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
-                new TimeStatsProperty("Затраты по всем задачам", statistics.AllSpendsForPeriod, "ч"),
+                new TimeStatsProperty("Выполнено задач", statistics.ClosedEstimatesStartedInPeriod, "ч"),
+                //new TimeStatsProperty("Оценка по открытым задачам", statistics.OpenEstimatesStartedInPeriod, "ч"),
+                new TimeStatsProperty("из", statistics.AllEstimatesStartedInPeriod, "ч"),
+
+                new TimeStatsProperty("Временные затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
+                new TimeStatsProperty("из", statistics.AllSpendsForPeriod, "ч"),
+
+                new TimeStatsProperty("В этом месяце рабочих часов", workingHours.TotalHours, "ч"),
+                new TimeStatsProperty("не заполнено", workingHours.TotalHours - statistics.AllSpendsForPeriod, "ч"),
             };
-        }
 
         private static ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>
             new ObservableCollection<ReportIssue>(
