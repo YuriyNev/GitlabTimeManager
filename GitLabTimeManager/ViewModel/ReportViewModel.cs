@@ -66,6 +66,7 @@ namespace GitLabTimeManager.ViewModel
         [NotNull] private IUserProfile UserProfile { get; }
         [NotNull] private INotificationMessageService MessageService { get; }
         [NotNull] private IDataSubscription DataSubscription { get; }
+        [NotNull] private IMessageSubscription MessageSubscription { get; }
 
         private GitStatistics Statistics { get; set; }
         private TimeSpan WorkingTime { get; set; }
@@ -86,6 +87,8 @@ namespace GitLabTimeManager.ViewModel
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+
+            MessageSubscription = MessageService.CreateSubscription();
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
@@ -119,7 +122,7 @@ namespace GitLabTimeManager.ViewModel
             }
             catch
             {
-                MessageService.OnSendMessage(this, "Не удалось сохранить документ!");
+                MessageSubscription.OnSendMessage(this, "Не удалось сохранить документ!");
                 OnSavingFinished();
             }
         }
@@ -130,7 +133,7 @@ namespace GitLabTimeManager.ViewModel
             ExportCsvCommand?.RaiseCanExecuteChanged();
             IsProgress = false;
 
-            MessageService.OnSendMessage(this, "Документ сохранен");
+            MessageSubscription.OnSendMessage(this, "Документ сохранен");
         }
 
         private ObservableCollection<DateTime> AddLastMonths()

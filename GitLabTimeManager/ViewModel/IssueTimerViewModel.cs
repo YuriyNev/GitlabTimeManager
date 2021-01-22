@@ -94,6 +94,8 @@ namespace GitLabTimeManager.ViewModel
 
         private ISourceControl SourceControl { get; }
         private INotificationMessageService MessageService { get; }
+        private IMessageSubscription MessageSubscription { get; }
+
         public WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
 
@@ -117,6 +119,8 @@ namespace GitLabTimeManager.ViewModel
         {
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+
+            MessageSubscription = MessageService.CreateSubscription();
 
             Issue = issue ?? throw new ArgumentNullException(nameof(issue));
 
@@ -174,11 +178,11 @@ namespace GitLabTimeManager.ViewModel
                 IssueTitle = newIssue.Title;
                 Issue.Issue.Title = IssueTitle;
 
-                MessageService.OnSendMessage(this, "Задача обновлена");
+                MessageSubscription.OnSendMessage(this, "Задача обновлена");
             }
             catch
             {
-                MessageService.OnSendMessage(this, "Не удалось отредактировать задачу");
+                MessageSubscription.OnSendMessage(this, "Не удалось отредактировать задачу");
             }
             finally
             {

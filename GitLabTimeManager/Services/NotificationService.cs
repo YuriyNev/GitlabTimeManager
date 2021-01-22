@@ -2,7 +2,7 @@
 
 namespace GitLabTimeManager.Services
 {
-    public class NotificationMessageService : INotificationMessageService
+    public class MessageSubscription : IMessageSubscription
     {
         public event EventHandler<string> NewMessage;
 
@@ -12,7 +12,21 @@ namespace GitLabTimeManager.Services
         }
     }
 
+    public class NotificationMessageService : INotificationMessageService
+    {
+        public IMessageSubscription CreateSubscription()
+        {
+            return new MessageSubscription();
+        }
+    }
+
     public interface INotificationMessageService
+    {
+        IMessageSubscription CreateSubscription();
+
+    }
+
+    public interface IMessageSubscription
     {
         event EventHandler<string> NewMessage;
 

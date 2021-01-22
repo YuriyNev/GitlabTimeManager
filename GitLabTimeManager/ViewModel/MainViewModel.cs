@@ -22,6 +22,7 @@ namespace GitLabTimeManager.ViewModel
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
         private INotificationMessageService NotificationService { get; }
+        private IMessageSubscription MessageSubscription { get; }
 
         private CancellationTokenSource LifeTime { get; } = new CancellationTokenSource();
 
@@ -123,7 +124,8 @@ namespace GitLabTimeManager.ViewModel
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
 
-            NotificationService.NewMessage += Notification_NewMessage;
+            MessageSubscription = NotificationService.CreateSubscription();
+            MessageSubscription.NewMessage += Notification_NewMessage;
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
@@ -190,6 +192,8 @@ namespace GitLabTimeManager.ViewModel
 
         protected override Task CloseAsync()
         {
+            MessageSubscription.NewMessage -= Notification_NewMessage;
+
             LifeTime.Cancel();
             LifeTime.Dispose();
             return base.CloseAsync();
