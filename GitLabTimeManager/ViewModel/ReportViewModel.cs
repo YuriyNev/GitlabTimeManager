@@ -14,6 +14,7 @@ using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
 {
+    [UsedImplicitly]
     public class ReportViewModel : ViewModelBase
     {
         [UsedImplicitly] public static readonly PropertyData ReportIssuesProperty = RegisterProperty<ReportViewModel, ObservableCollection<ReportIssue>>(x => x.ReportIssues);
@@ -63,6 +64,7 @@ namespace GitLabTimeManager.ViewModel
         [NotNull] private IDataRequestService DataRequestService { get; }
         [NotNull] private ICalendar Calendar { get; }
         [NotNull] private IUserProfile UserProfile { get; }
+        [NotNull] private INotificationMessageService MessageService { get; }
         [NotNull] private IDataSubscription DataSubscription { get; }
 
         private GitStatistics Statistics { get; set; }
@@ -77,11 +79,13 @@ namespace GitLabTimeManager.ViewModel
         public ReportViewModel(
             [NotNull] IDataRequestService dataRequestService, 
             [NotNull] ICalendar calendar,
-            [NotNull] IUserProfile userProfile)
+            [NotNull] IUserProfile userProfile,
+            [NotNull] INotificationMessageService messageService)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
+            MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
@@ -115,6 +119,7 @@ namespace GitLabTimeManager.ViewModel
             }
             catch
             {
+                MessageService.OnSendMessage(this, "Не удалось сохранить документ!");
                 OnSavingFinished();
             }
         }
@@ -124,6 +129,8 @@ namespace GitLabTimeManager.ViewModel
             _canSave = true;
             ExportCsvCommand?.RaiseCanExecuteChanged();
             IsProgress = false;
+
+            MessageService.OnSendMessage(this, "Документ сохранен");
         }
 
         private ObservableCollection<DateTime> AddLastMonths()

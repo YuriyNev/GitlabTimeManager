@@ -190,7 +190,7 @@
                 </Grid>
 
                 <Grid Grid.Row="3"
-                      Height="50">
+                      Height="60">
                     <Button Command="{Binding GoToBrowserCommand, Mode=OneWay}"
                             CommandParameter="{Binding Issue.Issue.WebUrl, Mode=OneWay}"
                             Style="{StaticResource MahApps.Styles.Button.Chromeless}"
@@ -204,11 +204,13 @@
                     </Button>
                     <TextBox Text="{Binding EditedTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              TextAlignment="Center"
-                             TextWrapping="WrapWithOverflow"
-                             VerticalAlignment="Top"
-                             MaxWidth="300"
-                             Visibility="{Binding IsEditMode, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}}"
-                    />
+                             TextWrapping="Wrap"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             MaxWidth="225"
+                             MaxLength="512"
+                             MaxLines="3"
+                             Visibility="{Binding IsEditMode, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}}"/>
                 </Grid>
                 
                 <Grid Grid.Row="4"

@@ -21,6 +21,8 @@ namespace GitLabTimeManager.ViewModel
         private IViewModelFactory ViewModelFactory { get; }
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
+        private INotificationMessageService NotificationService { get; }
+
         private CancellationTokenSource LifeTime { get; } = new CancellationTokenSource();
 
         [UsedImplicitly] public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
@@ -32,8 +34,21 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData ReportVmProperty = RegisterProperty<MainViewModel, ReportViewModel>(x => x.ReportVm);
         [UsedImplicitly] public static readonly PropertyData ErrorProperty = RegisterProperty<MainViewModel, string>(x => x.Error);
         [UsedImplicitly] public static readonly PropertyData LaunchIsSuccessProperty = RegisterProperty<MainViewModel, bool>(x => x.LaunchIsFinished);
+        [UsedImplicitly] public static readonly PropertyData MessageProperty = RegisterProperty<MainViewModel, string>(x => x.Message);
+        [UsedImplicitly] public static readonly PropertyData IsMessageOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsMessageOpen);
 
-        [UsedImplicitly]
+        public bool IsMessageOpen
+        {
+            get => GetValue<bool>(IsMessageOpenProperty);
+            set => SetValue(IsMessageOpenProperty, value);
+        }
+
+        public string Message
+        {
+            get => GetValue<string>(MessageProperty);
+            private set => SetValue(MessageProperty, value);
+        }
+
         public string Error
         {
             get => GetValue<string>(ErrorProperty);
@@ -90,7 +105,7 @@ namespace GitLabTimeManager.ViewModel
             get => GetValue<bool>(LaunchIsSuccessProperty);
             private set => SetValue(LaunchIsSuccessProperty, value);
         }
-        
+
         private MainViewModel()
         {
             Application.Current.Exit += Current_Exit;
@@ -102,15 +117,24 @@ namespace GitLabTimeManager.ViewModel
 
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             DataRequestService = dependencyResolver.Resolve<IDataRequestService>();
+            NotificationService = dependencyResolver.Resolve<INotificationMessageService>();
             
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
 
+            NotificationService.NewMessage += Notification_NewMessage;
+
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
+        }
+
+        private void Notification_NewMessage(object sender, string message)
+        {
+            Message = message;
+            IsMessageOpen = true;
         }
 
         private bool GitTestLaunch(IDependencyResolver dependencyResolver)

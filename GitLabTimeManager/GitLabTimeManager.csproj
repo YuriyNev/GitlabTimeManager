@@ -336,6 +336,7 @@
     <Compile Include="Services\DataRequestService.cs" />
     <Compile Include="Services\ExcelExporter.cs" />
     <Compile Include="Services\MoneyCalculator.cs" />
+    <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\StatisticsExtractor.cs" />
     <Compile Include="Services\UserOptions.cs" />
     <Compile Include="Services\WorkingCalendar.cs" />

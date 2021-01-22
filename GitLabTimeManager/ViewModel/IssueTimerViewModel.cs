@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
 {
+    [UsedImplicitly]
     public class IssueTimerViewModel : ViewModelBase
     {
         [UsedImplicitly] public static readonly PropertyData TimeProperty = RegisterProperty<IssueTimerViewModel, TimeSpan>(x => x.Time);
@@ -92,6 +93,7 @@ namespace GitLabTimeManager.ViewModel
         }
 
         private ISourceControl SourceControl { get; }
+        private INotificationMessageService MessageService { get; }
         public WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
 
@@ -111,16 +113,18 @@ namespace GitLabTimeManager.ViewModel
         public Command ApplyCommand { get; }
         public Command CancelCommand { get; }
 
-        public IssueTimerViewModel([NotNull] ISourceControl sourceControl, [NotNull] WrappedIssue issue)
+        public IssueTimerViewModel([NotNull] WrappedIssue issue, [NotNull] ISourceControl sourceControl, [NotNull] INotificationMessageService messageService)
         {
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+            MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+
             Issue = issue ?? throw new ArgumentNullException(nameof(issue));
 
             IssueTitle = Issue.Issue.Title;
             EditedTitle = IssueTitle;
             Time = LastSaveTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TotalTimeSpent);
             EstimateTime = TimeSpan.FromSeconds(Issue.Issue.TimeStats.TimeEstimate);
-            
+
             EstimateHours = EstimateTime.Hours;
             EstimateMinutes = EstimateTime.Minutes;
             EstimateSeconds = EstimateTime.Seconds;
@@ -144,6 +148,11 @@ namespace GitLabTimeManager.ViewModel
 
         private void EditIssue(WrappedIssue obj)
         {
+            EditedTitle = IssueTitle;
+            EstimateHours = EstimateTime.Hours;
+            EstimateMinutes = EstimateTime.Minutes;
+            EstimateSeconds = EstimateTime.Seconds;
+
             IsEditMode = !IsEditMode;
         }
 
@@ -165,7 +174,11 @@ namespace GitLabTimeManager.ViewModel
                 IssueTitle = newIssue.Title;
                 Issue.Issue.Title = IssueTitle;
 
-                OnPropertyChanged(new AdvancedPropertyChangedEventArgs(this, nameof(Issue.Issue.Title)));
+                MessageService.OnSendMessage(this, "Задача обновлена");
+            }
+            catch
+            {
+                MessageService.OnSendMessage(this, "Не удалось отредактировать задачу");
             }
             finally
             {

@@ -60,6 +60,7 @@ namespace GitLabTimeManager
             serviceLocator.RegisterType<IDataRequestService, DataRequestService>();
             serviceLocator.RegisterType<IProfileService, ProfileService>();
             serviceLocator.RegisterType<IUserProfile, UserProfile>();
+            serviceLocator.RegisterType<INotificationMessageService, NotificationMessageService>();
         }
 
         private static void ServiceLocator_MissingType(object sender, MissingTypeEventArgs e)

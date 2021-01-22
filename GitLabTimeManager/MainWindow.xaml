@@ -97,12 +97,21 @@
         </mah:MetroAnimatedTabControl>
         <mah:ProgressRing Visibility="{Binding LaunchIsFinished, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"/>
         
-        <!--Error Message-->
+        <!--Error Message On Loading-->
         <TextBlock Text="{Binding Error, Mode=OneWay}"
                    FontSize="{StaticResource MahApps.Font.Size.Default}"
                    Foreground="{StaticResource MahApps.Brushes.Control.Validation}"
                    Opacity="0.7"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
+
+        <!--Error Message-->
+        <mah:Flyout AutoCloseInterval="5000"
+                    IsAutoCloseEnabled="True"
+                    Margin="-10 0 -10 -8"
+                    CloseButtonVisibility="Collapsed"
+                    Header="{Binding Message, Mode=OneWay}"
+                    IsOpen="{Binding IsMessageOpen, Mode=TwoWay}"
+                    Position="Bottom"/>
     </Grid>
 </mah:MetroWindow>

@@ -17,7 +17,6 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class IssueListViewModel : ViewModelBase
     {
-        [UsedImplicitly] public static readonly PropertyData WrappedIssuesProperty = RegisterProperty<IssueListViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
         [UsedImplicitly] public static readonly PropertyData CurrentIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.CurrentIssue);
         [UsedImplicitly] public static readonly PropertyData IssueTimerVmProperty = RegisterProperty<IssueListViewModel, IssueTimerViewModel>(x => x.IssueTimerVm);
         [UsedImplicitly] public static readonly PropertyData SelectedIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.SelectedIssue);
@@ -46,21 +45,18 @@ namespace GitLabTimeManager.ViewModel
 
         private WrappedIssue CurrentIssue => GetValue<WrappedIssue>(CurrentIssueProperty);
 
-        public ObservableCollection<WrappedIssue> WrappedIssues
-        {
-            get => GetValue<ObservableCollection<WrappedIssue>>(WrappedIssuesProperty);
-            set => SetValue(WrappedIssuesProperty, value);
-        }
+        private ObservableCollection<WrappedIssue> WrappedIssues { get; }
 
-        private ISourceControl SourceControl { get; }
         private IDataRequestService DataRequestService { get; }
-        public CollectionView IssueCollectionView { get; }
+        private IViewModelFactory ViewModelFactory { get; }
         private IDataSubscription DataSubscription { get; }
 
-        public IssueListViewModel([NotNull] ISourceControl sourceControl, [NotNull] IDataRequestService dataRequestService)
+        public CollectionView IssueCollectionView { get; }
+
+        public IssueListViewModel([NotNull] ISourceControl sourceControl, [NotNull] IDataRequestService dataRequestService, [NotNull] IViewModelFactory modelFactory)
         {
-            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
+            ViewModelFactory = modelFactory ?? throw new ArgumentNullException(nameof(modelFactory));
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
@@ -89,7 +85,7 @@ namespace GitLabTimeManager.ViewModel
             SelectedIssue ??= WrappedIssues.FirstOrDefault();
         }
 
-        private static void CopyIssueValues(IList<WrappedIssue> dst, IReadOnlyList<WrappedIssue> src)
+        private static void CopyIssueValues(ICollection<WrappedIssue> dst, IReadOnlyList<WrappedIssue> src)
         {
             foreach (var issue in src)
             {
@@ -116,7 +112,7 @@ namespace GitLabTimeManager.ViewModel
             if (e.PropertyName == nameof(SelectedIssue))
             {
                 if (SelectedIssue != null)
-                    IssueTimerVm = new IssueTimerViewModel(SourceControl, SelectedIssue);
+                    IssueTimerVm = ViewModelFactory.CreateViewModel<IssueTimerViewModel>(SelectedIssue);
             }
         }
 
