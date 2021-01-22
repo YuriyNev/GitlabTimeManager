@@ -7,12 +7,11 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using Catel.MVVM.Converters;
+using GitLabTimeManager.Helpers;
 using LambdaConverters;
 using IValueConverter = System.Windows.Data.IValueConverter;
-using System.Windows.Media;
-using GitLabTimeManager.Helpers;
-
 
 namespace GitLabTimeManager.Converters
 {

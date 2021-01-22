@@ -24,7 +24,7 @@ namespace GitLabTimeManager.Services
         public void Serialize(IUserProfile profile)
         {
             using var stream = new StreamWriter(Location);
-            var json = JsonSerializer.Serialize<IUserProfile>(profile);
+            var json = JsonSerializer.Serialize(profile);
             stream.Write(json);
         }
         

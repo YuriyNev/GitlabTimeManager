@@ -183,8 +183,7 @@
                                       AnimationsSpeed="0:0:0.2"
                                       LabelFormatter="{x:Null}"
                                       IsHitTestVisible="False"
-                                      GaugeActiveFill="{StaticResource AccentBaseColorBrush}">
-                    </liveCharts:Gauge>
+                                      GaugeActiveFill="{StaticResource AccentBaseColorBrush}" />
 
 
                 </Grid>

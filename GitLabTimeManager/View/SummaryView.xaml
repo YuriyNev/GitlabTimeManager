@@ -112,16 +112,14 @@
                                         ShowTitle="True"
                                         ShowSeries="True" 
                                         SelectionMode="OnlySender"
-                                        CornerRadius="5">
-                    </wpf:DefaultTooltip>
+                                        CornerRadius="5" />
 
                 </wpf:PieChart.DataTooltip>
                 <wpf:PieChart.ChartLegend>
                     <wpf:DefaultLegend BulletSize="6"
                                        FontSize="10"
                                        Foreground="DarkSlateGray" 
-                                       Margin="0 0 0 0">
-                    </wpf:DefaultLegend>
+                                       Margin="0 0 0 0" />
                 </wpf:PieChart.ChartLegend>
             </wpf:PieChart>
 

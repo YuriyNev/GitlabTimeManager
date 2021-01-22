@@ -59,8 +59,7 @@
                                                           ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                                           RecognizesAccessKey="True"
                                                           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                                          UseLayoutRounding="False" >
-                            </mah:ContentControlEx>
+                                                          UseLayoutRounding="False" />
                         </ToggleButton>
                         <Popup x:Name="PART_Popup"
                                     MinWidth="{TemplateBinding ActualWidth}"

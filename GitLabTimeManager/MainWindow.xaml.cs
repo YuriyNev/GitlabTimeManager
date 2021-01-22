@@ -1,6 +1,4 @@
-﻿using Catel.IoC;
-using Catel.MVVM;
-using GitLabTimeManager.ViewModel;
+﻿using GitLabTimeManager.ViewModel;
 
 namespace GitLabTimeManager
 {

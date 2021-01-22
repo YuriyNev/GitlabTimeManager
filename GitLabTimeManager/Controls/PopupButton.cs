@@ -6,9 +6,7 @@ using MahApps.Metro.Controls;
 
 namespace NetVideo.UICommon.Controls
 {
-    [TemplatePart(Name = "PART_ToggleButton", Type = typeof(ToggleButton)),
-     TemplatePart(Name = "PART_ButtonContent", Type = typeof(ContentControlEx)),
-     TemplatePart(Name = "PART_Popup", Type = typeof(Popup))]
+    [TemplatePart(Name = "PART_ToggleButton", Type = typeof(ToggleButton))][TemplatePart(Name = "PART_ButtonContent", Type = typeof(ContentControlEx))][TemplatePart(Name = "PART_Popup", Type = typeof(Popup))]
     public sealed class PopupButton : ContentControl
     {
         private ToggleButton _toggleButton;

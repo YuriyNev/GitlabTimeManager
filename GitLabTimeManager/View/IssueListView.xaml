@@ -294,8 +294,7 @@
                      SelectionMode="Single"
                      SelectedItem="{Binding SelectedIssue, Mode=TwoWay}"
                      IsEnabled="{Binding IssueTimerVm.IsStarted, Mode=OneWay, Converter={catel:BooleanToOppositeBooleanConverter}}"
-                     Grid.IsSharedSizeScope="True">
-            </ListBox>
+                     Grid.IsSharedSizeScope="True" />
         </ItemsControl>
     </Grid>
 </UserControl>

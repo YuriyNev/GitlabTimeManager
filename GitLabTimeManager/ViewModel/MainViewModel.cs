@@ -62,7 +62,7 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(ShowOnTaskBarProperty, value);
         }
         
-        [ViewModelToModel, UsedImplicitly]
+        [ViewModelToModel][UsedImplicitly]
         public bool IsFullscreen
         {
             get => GetValue<bool>(IsFullscreenProperty);
@@ -87,7 +87,7 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(ReportVmProperty, value);
         }
 
-        [Model(SupportIEditableObject = false), NotNull]
+        [Model(SupportIEditableObject = false)][NotNull]
         [UsedImplicitly]
         public IssueListViewModel IssueListVm
         {

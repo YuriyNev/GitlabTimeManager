@@ -5,12 +5,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using Catel.MVVM;
-using JetBrains.Annotations;
 using Catel.Data;
+using Catel.MVVM;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
+using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
 {
@@ -22,7 +22,7 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData SelectedIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.SelectedIssue);
         [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueListViewModel, bool>(x => x.IsFullscreen);
 
-        [ViewModelToModel, UsedImplicitly]
+        [ViewModelToModel][UsedImplicitly]
         public bool IsFullscreen
         {
             get => GetValue<bool>(IsFullscreenProperty);
@@ -35,7 +35,7 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(SelectedIssueProperty, value);
         }
 
-        [Model(SupportIEditableObject = false), NotNull]
+        [Model(SupportIEditableObject = false)][NotNull]
         [UsedImplicitly]
         public IssueTimerViewModel IssueTimerVm
         {
