@@ -21,7 +21,7 @@ namespace GitLabTimeManager.ViewModel
         private IViewModelFactory ViewModelFactory { get; }
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
-        private INotificationMessageService NotificationService { get; }
+        private INotificationMessageService MessageService { get; }
         private IMessageSubscription MessageSubscription { get; }
 
         private CancellationTokenSource LifeTime { get; } = new CancellationTokenSource();
@@ -118,13 +118,13 @@ namespace GitLabTimeManager.ViewModel
 
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             DataRequestService = dependencyResolver.Resolve<IDataRequestService>();
-            NotificationService = dependencyResolver.Resolve<INotificationMessageService>();
+            MessageService = dependencyResolver.Resolve<INotificationMessageService>();
             
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
 
-            MessageSubscription = NotificationService.CreateSubscription();
+            MessageSubscription = MessageService.CreateSubscription();
             MessageSubscription.NewMessage += Notification_NewMessage;
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);

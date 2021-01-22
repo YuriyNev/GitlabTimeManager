@@ -41,77 +41,81 @@
     </b:Interaction.Behaviors>
 
     <Grid>
-        <Grid.Style>
-            <Style TargetType="{x:Type Grid}">
-                <Setter Property="Margin" Value="4 -26 4 8"/>
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
-                        <Setter Property="Margin" Value="0 0 0 0"/>
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </Grid.Style>
-        <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
-                                     Background="{x:Null}">
-            <mah:MetroAnimatedTabControl.Style>
-                <Style TargetType="{x:Type mah:MetroAnimatedTabControl}">
-                    <Setter Property="Opacity" Value="0"/>
-                    <Setter Property="Visibility" Value="Collapsed"/>
+        <Grid>
+            <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Margin" Value="4 -26 4 8"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsFirstLoading, Mode=OneWay}" Value="False">
-                            <Setter Property="Visibility" Value="Visible"/>
-
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                         From="0.0" To="1.0" Duration="0:0:1"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.EnterActions>
+                        <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                            <Setter Property="Margin" Value="0 0 0 0"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </mah:MetroAnimatedTabControl.Style>
+            </Grid.Style>
+            <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
+                                         Background="{x:Null}">
+                <mah:MetroAnimatedTabControl.Style>
+                    <Style TargetType="{x:Type mah:MetroAnimatedTabControl}">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsFirstLoading, Mode=OneWay}" Value="False">
+                                <Setter Property="Visibility" Value="Visible"/>
 
-            <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                <ContentControl Content="{Binding TodayVm, Mode=OneWay}"
-                                Margin="0 4 0 0"/>
-            </TabItem>
-            <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
-                                Margin="0 4 0 0"/>
-            </TabItem>
-            <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
-                                Margin="0 4 0 0"/>
-            </TabItem>
-            <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                     Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
-                                Margin="0 4 0 0"/>
-            </TabItem>
-        </mah:MetroAnimatedTabControl>
-        <mah:ProgressRing Visibility="{Binding LaunchIsFinished, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"/>
-        
-        <!--Error Message On Loading-->
-        <TextBlock Text="{Binding Error, Mode=OneWay}"
-                   FontSize="{StaticResource MahApps.Font.Size.Default}"
-                   Foreground="{StaticResource MahApps.Brushes.Control.Validation}"
-                   Opacity="0.7"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                             From="0.0" To="1.0" Duration="0:0:1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </mah:MetroAnimatedTabControl.Style>
 
+                <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                    <ContentControl Content="{Binding TodayVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+                <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                    <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+                <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                    <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+                <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                    <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+            </mah:MetroAnimatedTabControl>
+            <mah:ProgressRing Visibility="{Binding LaunchIsFinished, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"/>
+            
+            <!--Error Message On Loading-->
+            <TextBlock Text="{Binding Error, Mode=OneWay}"
+                       FontSize="{StaticResource MahApps.Font.Size.Default}"
+                       Foreground="{StaticResource MahApps.Brushes.Control.Validation}"
+                       Opacity="0.7"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Grid>
         <!--Error Message-->
         <mah:Flyout AutoCloseInterval="5000"
                     IsAutoCloseEnabled="True"
-                    Margin="-10 0 -10 -8"
+                    Margin="0 0 -0 -0"
+                    AnimateOpacity="True"
                     CloseButtonVisibility="Collapsed"
                     Header="{Binding Message, Mode=OneWay}"
                     IsOpen="{Binding IsMessageOpen, Mode=TwoWay}"
+                    VerticalAlignment="Bottom"
+                    VerticalContentAlignment="Bottom"
                     Position="Bottom"/>
     </Grid>
 </mah:MetroWindow>

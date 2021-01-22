@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GitLabTimeManager.Services
 {
@@ -14,9 +15,23 @@ namespace GitLabTimeManager.Services
 
     public class NotificationMessageService : INotificationMessageService
     {
+        private IList<MessageSubscription> Subscriptions { get; } = new List<MessageSubscription>();
+
         public IMessageSubscription CreateSubscription()
         {
-            return new MessageSubscription();
+            var subscription = new MessageSubscription();
+
+            Subscriptions.Add(subscription);
+
+            return subscription;
+        }
+
+        public void OnMessage(object sender, string message)
+        {
+            foreach (var subscription in Subscriptions)
+            {
+                subscription.OnSendMessage(sender, message);
+            }
         }
     }
 
@@ -24,12 +39,11 @@ namespace GitLabTimeManager.Services
     {
         IMessageSubscription CreateSubscription();
 
+        void OnMessage(object sender, string message);
     }
 
     public interface IMessageSubscription
     {
         event EventHandler<string> NewMessage;
-
-        void OnSendMessage(object sender, string message);
     }
 }
