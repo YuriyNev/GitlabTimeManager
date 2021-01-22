@@ -278,7 +278,7 @@ namespace GitLabTimeManager.ViewModel
 
             AllClosedEstimates = Math.Round(ClosedEstimatesStartedInPeriod, 1);
 
-            Earning = MoneyCalculator.Calculate(TimeSpan.FromHours(AllClosedEstimates));
+            Earning = MoneyCalculator.Calculate(TimeSpan.FromHours(stats.AllEstimatesStartedInPeriod));
 
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
             UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Закрытые", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);

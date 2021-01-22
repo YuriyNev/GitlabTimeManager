@@ -258,7 +258,7 @@ namespace GitLabTimeManager.ViewModel
             TotalSpendsStartedBefore = OpenSpendsStartedBefore + ClosedSpendsStartedBefore;
             TotalEstimatesStartedBefore = OpenEstimatesStartedBefore + ClosedEstimatesStartedBefore;
 
-            var moneyCalculator = new MoneyCalculator();
+            var moneyCalculator = new MoneyCalculator(Calendar);
 
             var workingCurrentHours = Calendar.GetWorkingTime(TimeHelper.StartDate, DateTime.Now).TotalHours;
             var workingTotalHours = Calendar.GetWorkingTime(TimeHelper.StartDate, TimeHelper.EndDate).TotalHours;
