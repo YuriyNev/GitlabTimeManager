@@ -53,7 +53,7 @@ namespace GitLabTimeManager.ViewModel
 
         public CollectionView IssueCollectionView { get; }
 
-        public IssueListViewModel([NotNull] ISourceControl sourceControl, [NotNull] IDataRequestService dataRequestService, [NotNull] IViewModelFactory modelFactory)
+        public IssueListViewModel([NotNull] IDataRequestService dataRequestService, [NotNull] IViewModelFactory modelFactory)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             ViewModelFactory = modelFactory ?? throw new ArgumentNullException(nameof(modelFactory));
