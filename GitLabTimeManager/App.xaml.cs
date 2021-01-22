@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using Catel.IoC;
+using Catel.Logging;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
 using GitLabTimeManager.ViewModel;

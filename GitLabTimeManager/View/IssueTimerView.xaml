@@ -351,9 +351,21 @@
                 HorizontalAlignment="Right"
                 Margin="0 -4 -4 0"
                 Content="{iconPacks:EvaIcons EditOutline, Width=12, Height=12}"
-                Visibility="{Binding IsEditMode, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"
                 Command="{Binding EditIssueCommand, Mode=OneWay}"
-                CommandParameter="{Binding Issue, Mode=OneWay}" />
-       
+                CommandParameter="{Binding Issue, Mode=OneWay}">
+            <Button.Style>
+                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsEditMode, Mode=OneWay}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
     </Grid>
 </UserControl>
