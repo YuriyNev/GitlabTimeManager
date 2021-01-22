@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace GitLabTimeManager.Helpers
@@ -109,7 +111,7 @@ namespace GitLabTimeManager.Helpers
         {
             var curDate = startDate;
             var holidays = 0;
-            var allDays = (int)(endDate - startDate).TotalDays;
+            var allDays = Math.Ceiling((endDate - startDate).TotalDays);
             while (curDate <= endDate)
             {
                 if (curDate.DayOfWeek == DayOfWeek.Saturday ||
@@ -130,6 +132,17 @@ namespace GitLabTimeManager.Helpers
 
                 return DateTime.Now > nightTime;
             }
+        }
+    }
+
+    public static class LinqEx
+    {
+        public static TimeSpan Sum(this IEnumerable<TimeSpan> source)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            return source.Aggregate(TimeSpan.Zero, (current, span) => current + span);
         }
     }
 }

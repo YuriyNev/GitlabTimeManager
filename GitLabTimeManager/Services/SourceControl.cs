@@ -133,6 +133,12 @@ namespace GitLabTimeManager.Services
             return GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
         }
 
+        //public Task GetLabels()
+        //{
+        //    var labels = GitLabClient.Projects.GetLabelsAsync();
+
+        //}
+
         private class Comparison : IEqualityComparer<Label>
         {
             public bool Equals(Label x, Label y)

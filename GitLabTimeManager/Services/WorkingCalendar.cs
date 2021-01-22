@@ -60,22 +60,27 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public Dictionary<DateTime, TimeSpan> GetHolidays() => Holidays;
+        public TimeSpan GetHolidays(DateTime from, DateTime to) =>
+            Holidays
+                .Where(x => x.Key >= from && x.Key < to)
+                .Select(x => x.Value)
+                .Sum();
+
 
         public TimeSpan GetWorkingTime(DateTime from, DateTime to)
         {
             if (from > to)
                 throw new ArgumentOutOfRangeException();
 
-            var workTime = TimeHelper.GetWeekdaysTime(from, to).TotalHours;
+            var workTime = TimeHelper.GetWeekdaysTime(from, to);
 
-            var holidays = GetHolidays();
-            var holidayTime = holidays?.Where(x => x.Key > from && x.Key <= to).Sum(x => x.Value.TotalHours) ?? 0;
+            var holidayTime = GetHolidays(from, to);
 
             workTime -= holidayTime;
-            if (workTime < 0) workTime = 0;
+            if (workTime < TimeSpan.Zero)
+                workTime = TimeSpan.Zero;
 
-            return TimeSpan.FromHours(workTime);
+            return workTime;
         }
 
         private static async Task<bool> DownloadFileAsync(string remotePath, string localPath)
@@ -219,8 +224,7 @@ namespace GitLabTimeManager.Services
 
     public interface ICalendar
     {
-        Task InitializeAsync();
-        Dictionary<DateTime, TimeSpan> GetHolidays();
+        TimeSpan GetHolidays(DateTime from, DateTime to);
         TimeSpan GetWorkingTime(DateTime from, DateTime to);
     }
 }

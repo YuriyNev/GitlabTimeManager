@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using GitLabTimeManager.Helpers;
 using JetBrains.Annotations;
 
@@ -12,21 +11,9 @@ namespace GitLabTimeManager.Services
         public double MinimalEarning { get; } = 20_000;
         public double DesiredEstimate { get; } = 100;
 
-        private readonly double _workingHours;
-        private readonly double _totalHours;
-
         public MoneyCalculator([NotNull] ICalendar calendar)
         {
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
-
-            var holidayHours = Calendar.GetHolidays()
-                .Where(x => x.Key >= TimeHelper.StartDate && x.Key < TimeHelper.EndDate)
-                .Select(x => x.Value)
-                .Sum(x => x.TotalHours);
-
-            _workingHours = Calendar.GetWorkingTime(TimeHelper.StartDate, TimeHelper.EndDate).TotalHours;
-
-            _totalHours = _workingHours + holidayHours;
         }
 
         public double Calculate(TimeSpan estimates)
@@ -40,7 +27,11 @@ namespace GitLabTimeManager.Services
                 _ => 0
             };
 
-            var desiredWithHolidays = DesiredEstimate * (_workingHours / _totalHours);
+            var holidayHours = Calendar.GetHolidays(TimeHelper.StartDate, TimeHelper.EndDate).TotalHours;
+            var workingHours = Calendar.GetWorkingTime(TimeHelper.StartDate, TimeHelper.EndDate).TotalHours;
+
+            var totalHours = workingHours + holidayHours;
+            var desiredWithHolidays = DesiredEstimate * (workingHours / totalHours);
 
             var earning = baseEarning + (estimates.TotalHours - desiredWithHolidays) * 1000;
             earning = Math.Max(earning, MinimalEarning);

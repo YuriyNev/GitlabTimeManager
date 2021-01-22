@@ -310,10 +310,9 @@ namespace GitLabTimeManager.ViewModel
 
         private void FillCharts()
         {
-            var workTime = GetWorkingTime(TimeHelper.StartDate, DateTime.Today);
+            var workTime = Calendar.GetWorkingTime(TimeHelper.StartDate, DateTime.Now).TotalHours;
 
-            var remained =
-                Math.Max(workTime - AllSpendsForPeriod, 0);
+            var remained = Math.Max(workTime - AllSpendsForPeriod, 0);
 
             SpendSeries = new SeriesCollection
             {
@@ -324,18 +323,7 @@ namespace GitLabTimeManager.ViewModel
                 CreatePieSeries(remained, "Пропущенные часы", new SolidColorBrush(Colors.DarkGray)),
             };
         }
-
-        private double GetWorkingTime(DateTime startDate, DateTime endDate)
-        {
-            var workTime = TimeHelper.GetWeekdaysTime(startDate, endDate).TotalHours;
-
-            var holidays = Calendar.GetHolidays();
-            var holidayTime = holidays?.Where(x => x.Key > startDate && x.Key <= endDate).Sum(x => x.Value.TotalHours) ?? 0;
-
-            workTime = Math.Max(workTime - holidayTime, 0);
-            return workTime;
-        }
-
+        
         private static PieSeries CreatePieSeries(double value, string title, [CanBeNull] Brush brush = null)
         {
             if (brush == null)
