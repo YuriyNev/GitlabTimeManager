@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Catel.IoC;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Helpers;
 
@@ -60,10 +61,12 @@ namespace GitLabTimeManager.Services
                 .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
+            var labelProcessor = IoCConfiguration.DefaultDependencyResolver.Resolve<ILabelService>();
+
             // Потраченное время только в этом месяце
             // На задачи начатые в этом месяце
             var withoutExcludes = issues.
-                Where(x => !x.LabelExes.IsExcludeLabels()).ToList();
+                Where(x => !labelProcessor.ContainsExcludeLabels(x.Labels)).ToList();
 
             statistics.OpenSpendBefore = withoutExcludes.
                 Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).

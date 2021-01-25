@@ -8,7 +8,6 @@ using System.Windows.Data;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabApiClient.Models.Issues.Responses;
-using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
 using JetBrains.Annotations;
 
@@ -47,16 +46,18 @@ namespace GitLabTimeManager.ViewModel
 
         private ObservableCollection<WrappedIssue> WrappedIssues { get; }
 
-        private IDataRequestService DataRequestService { get; }
-        private IViewModelFactory ViewModelFactory { get; }
-        private IDataSubscription DataSubscription { get; }
+        [NotNull] private IDataRequestService DataRequestService { get; }
+        [NotNull] private IViewModelFactory ViewModelFactory { get; }
+        [NotNull] private ILabelService LabelService { get; }
+        [NotNull] private IDataSubscription DataSubscription { get; }
 
-        public CollectionView IssueCollectionView { get; }
+        [NotNull] public CollectionView IssueCollectionView { get; }
 
-        public IssueListViewModel([NotNull] IDataRequestService dataRequestService, [NotNull] IViewModelFactory modelFactory)
+        public IssueListViewModel([NotNull] IDataRequestService dataRequestService, [NotNull] IViewModelFactory modelFactory, [NotNull] ILabelService labelService)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             ViewModelFactory = modelFactory ?? throw new ArgumentNullException(nameof(modelFactory));
+            LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
@@ -73,10 +74,9 @@ namespace GitLabTimeManager.ViewModel
             UpdateData(e);
         }
 
-        private static bool Filter(object obj) => obj is WrappedIssue wi 
-                                                  && wi.Issue.State == IssueState.Opened 
-                                                  && !wi.LabelExes.Contains(LabelsCollection.DistributiveLabel)
-                                                  && !wi.LabelExes.Contains(LabelsCollection.RevisionLabel);
+        private bool Filter(object obj) => obj is WrappedIssue wi
+                                           && wi.Issue.State == IssueState.Opened
+                                           && LabelService.ContainsBoardLabels(wi.Labels);
 
         private void UpdateData(GitResponse data)
         {
@@ -95,7 +95,7 @@ namespace GitLabTimeManager.ViewModel
                     if (destIssue.Equals(issue)) continue;
 
                     destIssue.Issue = issue.Issue;
-                    destIssue.LabelExes = issue.LabelExes;
+                    destIssue.Labels = issue.Labels;
                     destIssue.StartTime = issue.StartTime;
                     destIssue.EndTime = issue.EndTime;
                 }

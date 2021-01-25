@@ -55,6 +55,7 @@ namespace GitLabTimeManager
             var _ = calendarService.InitializeAsync();
 
             serviceLocator.RegisterType<ISourceControl, SourceControl>();
+            serviceLocator.RegisterType<ILabelService, LabelProcessor>();
             serviceLocator.RegisterType<IMoneyCalculator, MoneyCalculator>(RegistrationType.Transient);
             serviceLocator.RegisterInstance<ICalendar>(calendarService);
             serviceLocator.RegisterType<IDataRequestService, DataRequestService>();

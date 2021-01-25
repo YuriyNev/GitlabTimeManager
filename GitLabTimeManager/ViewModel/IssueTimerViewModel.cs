@@ -92,10 +92,10 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(TimeProperty, value);
         }
 
-        private ISourceControl SourceControl { get; }
-        private INotificationMessageService MessageService { get; }
+        [NotNull] private ISourceControl SourceControl { get; }
+        [NotNull] private INotificationMessageService MessageService { get; }
 
-        public WrappedIssue Issue { get; }
+        [NotNull] public WrappedIssue Issue { get; }
         private TimeSpan LastSaveTime { get; set; }
 
 #if DEBUG
@@ -114,7 +114,10 @@ namespace GitLabTimeManager.ViewModel
         public Command ApplyCommand { get; }
         public Command CancelCommand { get; }
 
-        public IssueTimerViewModel([NotNull] WrappedIssue issue, [NotNull] ISourceControl sourceControl, [NotNull] INotificationMessageService messageService)
+        public IssueTimerViewModel(
+            [NotNull] WrappedIssue issue, 
+            [NotNull] ISourceControl sourceControl, 
+            [NotNull] INotificationMessageService messageService)
         {
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
@@ -274,34 +277,27 @@ namespace GitLabTimeManager.ViewModel
             }
         }
 
-        private void SaveSpend()
+        private async void SaveSpend()
         {
-            SaveSpendInternal(Time - LastSaveTime);
+            await SaveSpendInternalAsync(Time - LastSaveTime).ConfigureAwait(true);
             LastSaveTime = Time;
         }
 
-        private void SaveSpendInternal(TimeSpan timeSpan)
+        private Task SaveSpendInternalAsync(TimeSpan timeSpan)
         {
-            SourceControl.AddSpendAsync(Issue.Issue, timeSpan);
+            return SourceControl.AddSpendAsync(Issue.Issue, timeSpan);
         }
 
         private async void StartIssue(WrappedIssue issue)
         {
-            var result = await SourceControl.StartIssueAsync(issue.Issue).ConfigureAwait(true);
-            if (result)
-                UpdateLabels();
-        }
-
-        private void UpdateLabels()
-        {
-            LabelProcessor.UpdateLabelsEx(Issue.LabelExes, Issue.Issue.Labels);
+            var newIssue = await SourceControl.StartIssueAsync(issue).ConfigureAwait(true);
+            issue.Labels = newIssue.Labels;
         }
 
         private async void FinishIssue(WrappedIssue issue)
         {
-            var result = await SourceControl.FinishIssueAsync(issue.Issue).ConfigureAwait(true);
-            if (result)
-                UpdateLabels();
+            var newIssue = await SourceControl.FinishIssueAsync(issue).ConfigureAwait(true);
+            issue.Labels = newIssue.Labels;
         }
     }
 }

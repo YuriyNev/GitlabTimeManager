@@ -11,8 +11,8 @@
              xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
-             xmlns:helpers="clr-namespace:GitLabTimeManager.Helpers"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:responses="clr-namespace:GitLabApiClient.Models.Projects.Responses;assembly=GitLabApiClient"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              d:DataContext="{d:DesignInstance viewModel:IssueListViewModel}">
@@ -138,7 +138,7 @@
             </Style.Triggers>
         </Style>
 
-        <DataTemplate x:Key="LabelItemTemplate" DataType="{x:Type helpers:LabelEx}">
+        <DataTemplate x:Key="LabelItemTemplate" DataType="{x:Type responses:Label}">
             <Grid Margin="2 1"
                   ToolTip="{Binding Name, Mode=OneWay}"
                   ToolTipService.InitialShowDelay="0">
@@ -244,7 +244,7 @@
                                   Margin="4 0" />
 
                        <ItemsControl Grid.Row="1"
-                                     ItemsSource="{Binding LabelExes, Mode=OneWay}"
+                                     ItemsSource="{Binding Labels, Mode=OneWay}"
                                      ItemTemplate="{StaticResource LabelItemTemplate}"
                                      VerticalAlignment="Bottom"
                                      HorizontalAlignment="Right">

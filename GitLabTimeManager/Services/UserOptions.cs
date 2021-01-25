@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using GitLabTimeManager.Types;
 using JetBrains.Annotations;
 
@@ -13,6 +16,8 @@ namespace GitLabTimeManager.Services
         {
             using var stream = new StreamReader(Location);
             var json = stream.ReadToEnd();
+            
+
             var profile = JsonSerializer.Deserialize<UserProfile>(json);
 
             if (!Verify(profile))
@@ -49,11 +54,34 @@ namespace GitLabTimeManager.Services
 
     public interface IUserProfile
     {
-        public string Token { get; set; }
+        string Token { get; set; }
 
-        public string Url { get; set; }
+        string Url { get; set; }
 
-        public int RequestMonths { get; set; }
+        int RequestMonths { get; set; }
+
+        LabelSettings LabelSettings { get; set; }
+    }
+
+    public class LabelSettings
+    {
+        public BoardStateLabels BoardStateLabels { get; set; }
+        
+        public IReadOnlyList<string> OtherBoardLabels { get; set; }
+
+        [JsonIgnore]
+        public IReadOnlyList<string> AllBoardLabels { get; set; }
+
+        public IReadOnlyList<string> ExcludeLabels { get; set; }
+    }
+
+    public class BoardStateLabels
+    {
+        public string ToDoLabel { get; set; }
+
+        public string DoingLabel { get; set; }
+
+        public string Done { get; set; }
     }
 
     public class UserProfile : IUserProfile
@@ -62,19 +90,44 @@ namespace GitLabTimeManager.Services
 
         public string Url { get; set; }
 
-        public int RequestMonths { get; set; }
+        public int RequestMonths { get; set; } = 3;
 
+        public LabelSettings LabelSettings { get; set; } = new LabelSettings
+        {
+            BoardStateLabels = new BoardStateLabels
+            {
+                DoingLabel = "* В работе",
+                ToDoLabel = "* Можно выполнять",
+                Done = "* Ревизия",
+            },
+            OtherBoardLabels = new List<string>
+            {
+                "* В дистрибутиве",
+                "* Проверяется",
+            },
+            ExcludeLabels = Array.Empty<string>(),
+        };
+
+        /// <summary> Constructor for Json Deserializer</summary>
         public UserProfile()
         {
         }
-        
+
         public UserProfile([NotNull] IProfileService profileService)
         {
             var userProfile = profileService.Deserialize();
 
             Url = userProfile.Url;
             Token = userProfile.Token;
-            RequestMonths = 3;
+            RequestMonths = userProfile.RequestMonths;
+            LabelSettings = userProfile.LabelSettings;
+
+            LabelSettings.AllBoardLabels = new List<string>(LabelSettings.OtherBoardLabels)
+            {
+                LabelSettings.BoardStateLabels.ToDoLabel, 
+                LabelSettings.BoardStateLabels.DoingLabel, 
+                LabelSettings.BoardStateLabels.Done, 
+            };
         }
     }
 }

@@ -219,11 +219,11 @@
     <Compile Include="Converters\LamdaConverters.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
-    <Compile Include="Helpers\LabelProcessor.cs" />
     <Compile Include="Helpers\TaskHelper.cs" />
     <Compile Include="Helpers\UriNavigateHelper.cs" />
     <Compile Include="Services\DataRequestService.cs" />
     <Compile Include="Services\ExcelExporter.cs" />
+    <Compile Include="Services\LabelProcessor.cs" />
     <Compile Include="Services\MoneyCalculator.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\StatisticsExtractor.cs" />
