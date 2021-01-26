@@ -18,7 +18,7 @@ namespace GitLabTimeManager.Services
 
         bool IsPaused(List<string> labels);
 
-        IReadOnlyList<Label> CreateIssueLabels(IReadOnlyList<Label> all, IList<string> source);
+        IReadOnlyList<Label> FilterLabels(IReadOnlyList<Label> all, IList<string> source);
 
         bool ContainsExcludeLabels(IReadOnlyList<Label> labels);
 
@@ -48,7 +48,7 @@ namespace GitLabTimeManager.Services
             
             ToDoLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.ToDoLabel);
             DoingLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.DoingLabel);
-            DoneLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.Done);
+            DoneLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.DoneLabel);
 
             ExcludeLabels = settings.ExcludeLabels;
         }
@@ -88,7 +88,7 @@ namespace GitLabTimeManager.Services
 
         public bool IsPaused(List<string> labels) => !labels.Contains(DoingLabel);
 
-        public IReadOnlyList<Label> CreateIssueLabels(IReadOnlyList<Label> all, IList<string> source) => all.Where(x => source.Contains(x.Name)).ToList();
+        public IReadOnlyList<Label> FilterLabels(IReadOnlyList<Label> all, IList<string> source) => all.Where(x => source.Contains(x.Name)).ToList();
 
         public bool ContainsExcludeLabels(IReadOnlyList<Label> labels)
         {

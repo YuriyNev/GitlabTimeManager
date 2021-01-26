@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -7,6 +8,7 @@ using Catel.IoC;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
 using GitLabTimeManager.Types;
+using GitLabTimeManager.View;
 using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
@@ -37,6 +39,20 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData LaunchIsSuccessProperty = RegisterProperty<MainViewModel, bool>(x => x.LaunchIsFinished);
         [UsedImplicitly] public static readonly PropertyData MessageProperty = RegisterProperty<MainViewModel, string>(x => x.Message);
         [UsedImplicitly] public static readonly PropertyData IsMessageOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsMessageOpen);
+        [UsedImplicitly] public static readonly PropertyData SettingsVmProperty = RegisterProperty<MainViewModel, SettingsViewModel>(x => x.SettingsVm);
+        [UsedImplicitly] public static readonly PropertyData IsSettingsOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsSettingsOpen);
+
+        public bool IsSettingsOpen
+        {
+            get => GetValue<bool>(IsSettingsOpenProperty);
+            set => SetValue(IsSettingsOpenProperty, value);
+        }
+
+        public SettingsViewModel SettingsVm
+        {
+            get => GetValue<SettingsViewModel>(SettingsVmProperty);
+            private set => SetValue(SettingsVmProperty, value);
+        }
 
         public bool IsMessageOpen
         {
@@ -84,7 +100,7 @@ namespace GitLabTimeManager.ViewModel
         public ReportViewModel ReportVm
         {
             get => GetValue<ReportViewModel>(ReportVmProperty);
-            set => SetValue(ReportVmProperty, value);
+            private set => SetValue(ReportVmProperty, value);
         }
 
         [Model(SupportIEditableObject = false)][NotNull]
@@ -115,11 +131,11 @@ namespace GitLabTimeManager.ViewModel
 
             if (!GitTestLaunch(dependencyResolver))
                 return;
-
+            
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             DataRequestService = dependencyResolver.Resolve<IDataRequestService>();
             MessageService = dependencyResolver.Resolve<INotificationMessageService>();
-            
+
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
@@ -203,6 +219,28 @@ namespace GitLabTimeManager.ViewModel
         {
             IssueListVm.CancelAndCloseViewModelAsync();
             return base.OnClosingAsync();
+        }
+
+        protected override async void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.PropertyName == nameof(IsSettingsOpen))
+            {
+                // Was Settings then close
+                if (e.OldValue is bool closed && closed)
+                {
+                    if (SettingsVm != null)
+                    {
+                        await SettingsVm?.CloseViewModelAsync(false);
+                        SettingsVm = null;
+                    }
+                }
+
+                if (e.NewValue is bool open && open)
+                {
+                    SettingsVm = ViewModelFactory.CreateViewModel<SettingsViewModel>(null);
+                }
+            }
         }
     }
 }

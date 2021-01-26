@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Catel.Collections;
 using GitLabApiClient;
+using GitLabApiClient.Internal.Paths;
 using GitLabApiClient.Models;
 using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
@@ -26,7 +27,12 @@ namespace GitLabTimeManager.Services
         [PublicAPI] Task<WrappedIssue> PauseIssueAsync(WrappedIssue issue);
         [PublicAPI] Task<WrappedIssue> FinishIssueAsync(WrappedIssue issue);
         [PublicAPI] Task<Issue> UpdateIssueAsync(Issue issue, UpdateIssueRequest request);
-        [PublicAPI] Task<IReadOnlyList<Label>> GetLabelsAsync();
+        
+        [PublicAPI] Task<IReadOnlyList<Label>> SetLabelsAsync(IReadOnlyList<ProjectId> projects);
+        [PublicAPI] IReadOnlyList<Label> GetLabels();
+
+        [PublicAPI] IReadOnlyList<ProjectId> SetActiveProjects(IReadOnlyList<Issue> issues);
+        [PublicAPI] IReadOnlyList<ProjectId> GetActiveProjects();
     }
 
     internal class SourceControl : ISourceControl
@@ -40,7 +46,8 @@ namespace GitLabTimeManager.Services
 
         private static DateTime Now => DateTime.Now;
 
-        private IReadOnlyList<Label> CachedLabels { get; set; } = new List<Label>();
+        private IReadOnlyList<Label> CachedLabels { get; set; } 
+        private IReadOnlyList<ProjectId> CachedProjects { get; set; } 
 
         public SourceControl(
             [NotNull] IUserProfile userProfile,
@@ -108,24 +115,28 @@ namespace GitLabTimeManager.Services
             return await UpdateIssueLabelsAsync(issue, newLabels).ConfigureAwait(false);
         }
 
-        private async Task<IReadOnlyList<Label>> GetAllLabelsAsync()
+        private async Task<IReadOnlyList<Label>> GetLabelsCoreAsync(IReadOnlyList<ProjectId> projects)
         {
-            var projects = await GitLabClient.Projects.GetAsync(options =>
-            {
-                options.Simple = true;
-                if (GitLabClient.HostUrl.Contains("gitlab.com"))
-                {
-                    options.Owned = true;
-                }
-            }).ConfigureAwait(false);
+            //IList<ProjectId> activeProjects = 
+            //    (await GitLabClient.Projects.GetAsync(options =>
+            //    {
+            //        options.Simple = true;
+            //        options.IsMemberOf = true;
+            //        if (GitLabClient.HostUrl.Contains("gitlab.com"))
+            //        {
+            //            options.Owned = true;
+            //        }
+            //    }).ConfigureAwait(false))
+            //    .Select(x => (ProjectId) x.Id.ToString())
+            //    .ToList();
+
             var all = new Collection<Label>();
 
             foreach (var project in projects)
             {
-                var labels = await GitLabClient.Projects.GetLabelsAsync(project.Id).ConfigureAwait(false);
+                var labels = await GitLabClient.Projects.GetLabelsAsync(project).ConfigureAwait(false);
                 all.AddRange(labels);
             }
-
             var dist = all.Distinct(new Comparison()).ToList();
             return dist;
         }
@@ -134,7 +145,16 @@ namespace GitLabTimeManager.Services
         {
             return GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
         }
-        
+
+        public async Task<IReadOnlyList<Label>> SetLabelsAsync(IReadOnlyList<ProjectId> projects)
+        {
+            var labels = await GetLabelsCoreAsync(projects);
+
+            CachedLabels ??= labels;
+
+            return labels;
+        }
+
         private class Comparison : IEqualityComparer<Label>
         {
             public bool Equals(Label x, Label y)
@@ -172,8 +192,11 @@ namespace GitLabTimeManager.Services
                 _isAction = true;
 
                 var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
+
+                var projects = SetActiveProjects(allIssues);
+                var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
+
                 var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
-                var allLabels = await GetLabelsAsync().ConfigureAwait(false);
 
                 return ExtentIssues(allIssues, allNotes, allLabels);
             }
@@ -199,9 +222,9 @@ namespace GitLabTimeManager.Services
 
             var newIssue = await GitLabClient.Issues.UpdateAsync(internalIssue.ProjectId, internalIssue.Iid, request).ConfigureAwait(true);
 
-            var allLabels = await GetLabelsAsync().ConfigureAwait(true);
+            var allLabels = GetLabels();
 
-            var issueLabels = LabelService.CreateIssueLabels(allLabels, newIssue.Labels);
+            var issueLabels = LabelService.FilterLabels(allLabels, newIssue.Labels);
 
             var newWrapIssue = issue.Clone();
             newWrapIssue.Labels = issueLabels;
@@ -268,7 +291,7 @@ namespace GitLabTimeManager.Services
                 spendDictionary[minKey] += startSpend;
             }
 
-            var issueLabels = LabelService.CreateIssueLabels(labels, issue.Labels);
+            var issueLabels = LabelService.FilterLabels(labels, issue.Labels);
 
             var wrappedIssue = new WrappedIssue(issue)
             {
@@ -327,15 +350,23 @@ namespace GitLabTimeManager.Services
             return notes.ToList();
         }
         
-        public async Task<IReadOnlyList<Label>> GetLabelsAsync()
+        public IReadOnlyList<Label> GetLabels()
         {
-            if (Now - _lastRequest <= _requestInterval)
-                return CachedLabels;
-
-            CachedLabels = await GetAllLabelsAsync().ConfigureAwait(false);
-            _lastRequest = Now;
-
             return CachedLabels;
+        }
+
+        public IReadOnlyList<ProjectId> SetActiveProjects(IReadOnlyList<Issue> issues)
+        {
+            var projects = issues.Select(x => x.ProjectId).Distinct().Select(x => (ProjectId)x).ToList();
+
+            CachedProjects ??= projects;
+
+            return projects;
+        }
+
+        public IReadOnlyList<ProjectId> GetActiveProjects()
+        {
+            return CachedProjects.Select(x => x).ToList();
         }
     }
 

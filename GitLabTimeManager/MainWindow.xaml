@@ -27,6 +27,9 @@
         <DataTemplate DataType="{x:Type viewModel:ReportViewModel}">
             <view:ReportView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:SettingsViewModel}">
+            <view:SettingsView />
+        </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
                 <TextBlock Text="{Binding}" FontSize="14" />
@@ -93,6 +96,12 @@
                 <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+                <TabItem Header="Настройки" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"
+                         IsSelected="{Binding IsSettingsOpen, Mode=TwoWay}">
+                    <ContentControl Content="{Binding SettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
             </mah:MetroAnimatedTabControl>

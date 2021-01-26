@@ -81,7 +81,7 @@ namespace GitLabTimeManager.Services
 
         public string DoingLabel { get; set; }
 
-        public string Done { get; set; }
+        public string DoneLabel { get; set; }
     }
 
     public class UserProfile : IUserProfile
@@ -94,17 +94,8 @@ namespace GitLabTimeManager.Services
 
         public LabelSettings LabelSettings { get; set; } = new LabelSettings
         {
-            BoardStateLabels = new BoardStateLabels
-            {
-                DoingLabel = "* В работе",
-                ToDoLabel = "* Можно выполнять",
-                Done = "* Ревизия",
-            },
-            OtherBoardLabels = new List<string>
-            {
-                "* В дистрибутиве",
-                "* Проверяется",
-            },
+            BoardStateLabels = new BoardStateLabels(),
+            OtherBoardLabels = Array.Empty<string>(),
             ExcludeLabels = Array.Empty<string>(),
         };
 
@@ -126,7 +117,7 @@ namespace GitLabTimeManager.Services
             {
                 LabelSettings.BoardStateLabels.ToDoLabel, 
                 LabelSettings.BoardStateLabels.DoingLabel, 
-                LabelSettings.BoardStateLabels.Done, 
+                LabelSettings.BoardStateLabels.DoneLabel, 
             };
         }
     }

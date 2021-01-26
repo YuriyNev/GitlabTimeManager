@@ -4,6 +4,7 @@ using Catel.IoC;
 using Catel.Logging;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
+using GitLabTimeManager.View;
 using GitLabTimeManager.ViewModel;
 using Hardcodet.Wpf.TaskbarNotification;
 

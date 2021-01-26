@@ -285,7 +285,11 @@
                      ItemContainerStyle="{StaticResource IssueItemStyle}"
                      IsSynchronizedWithCurrentItem="False"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ScrollViewer.CanContentScroll="False"
+                     SnapsToDevicePixels="True"
+                     ScrollViewer.CanContentScroll="True"
+                     ScrollViewer.IsDeferredScrollingEnabled="False"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+
                      VirtualizingPanel.IsVirtualizing="True"
                      VirtualizingPanel.VirtualizationMode="Recycling"
                      VirtualizingPanel.CacheLengthUnit="Page"
