@@ -14,16 +14,27 @@ namespace GitLabTimeManager.Services
 
         public IUserProfile Deserialize()
         {
-            using var stream = new StreamReader(Location);
-            var json = stream.ReadToEnd();
-            
-
-            var profile = JsonSerializer.Deserialize<UserProfile>(json);
-
-            if (!Verify(profile))
+            var profile = new UserProfile();
+            try
+            {
+                using var stream = new StreamReader(Location);
+                var json = stream.ReadToEnd();
+                profile = JsonSerializer.Deserialize<UserProfile>(json);
+            }
+            catch (FileNotFoundException)
+            {
+                Serialize(profile);
+            }
+            catch 
+            {
                 throw new IncorrectProfileException();
-            
-            return profile!;
+            }
+
+            //if (!Verify(profile))
+            //    throw new IncorrectProfileException();
+
+
+            return profile;
         }
 
         public void Serialize(IUserProfile profile)

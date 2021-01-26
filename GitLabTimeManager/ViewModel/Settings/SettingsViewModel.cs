@@ -5,14 +5,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using Catel.Data;
 using Catel.MVVM;
-using Catel.Services;
 using GitLabTimeManager.Services;
 using GongSolutions.Wpf.DragDrop;
 using JetBrains.Annotations;
-using Microsoft.Office.Interop.Excel;
 using Label = GitLabApiClient.Models.Projects.Responses.Label;
 
 // ReSharper disable once CheckNamespace
@@ -74,11 +71,11 @@ namespace GitLabTimeManager.ViewModel
         public Command ResetStartLabelCommand { get; }
         public Command ResetPauseLabelCommand { get; }
         public Command ResetFinishLabelCommand { get; }
-        
+
+        [CanBeNull] public IReadOnlyList<Label> Labels { get; }
         [NotNull] private IProfileService ProfileService { get; }
         [NotNull] private IUserProfile UserProfile { get; }
         [NotNull] private ILabelService LabelService { get; }
-        [NotNull] private ISourceControl SourceControl { get; }
         [NotNull] private INotificationMessageService MessageService { get; }
 
         public LabelDropHandler LabelDropHandler { get; } = new LabelDropHandler();
@@ -87,17 +84,18 @@ namespace GitLabTimeManager.ViewModel
         public SingleDropHandler FinishLabelDropHandler { get; } = new SingleDropHandler();
         
         public SettingsViewModel(
+            [CanBeNull] SettingsArgument settingsArgument,
             [NotNull] IProfileService profileService,
             [NotNull] IUserProfile userProfile, 
             [NotNull] ILabelService labelService,
-            [NotNull] ISourceControl sourceControl,
             [NotNull] INotificationMessageService messageService)
         {
             ProfileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
-            SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+
+            Labels = settingsArgument?.Labels;
 
             StartLabelDropHandler.Dropped += StartLabel_Dropped;
             PauseLabelDropHandler.Dropped += PauseLabel_Dropped;
@@ -123,21 +121,21 @@ namespace GitLabTimeManager.ViewModel
             Uri = userProfile.Url;
 
             var labelSetting = userProfile.LabelSettings;
-            if (labelSetting != null)
-            {
-                var allLabels = SourceControl.GetLabels();
 
-                var allBoardLabels = LabelService.FilterLabels(allLabels, labelSetting.AllBoardLabels.ToList());
+            var allLabels = Labels;
 
-                BoardLabels = new ObservableCollection<Label>(allBoardLabels);
+            if (labelSetting == null || allLabels == null) return;
+            
+            var allBoardLabels = LabelService.FilterLabels(allLabels, labelSetting.AllBoardLabels.ToList());
 
-                var labels = SourceControl.GetLabels().Except(BoardLabels);
-                AvailableLabels = new ObservableCollection<Label>(labels);
+            BoardLabels = new ObservableCollection<Label>(allBoardLabels);
 
-                StartLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.ToDoLabel);
-                PauseLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoingLabel);
-                FinishLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoneLabel);
-            }
+            var labels = allLabels.Except(BoardLabels);
+            AvailableLabels = new ObservableCollection<Label>(labels);
+
+            StartLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.ToDoLabel);
+            PauseLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoingLabel);
+            FinishLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoneLabel);
         }
 
         private void SaveOptions()
@@ -147,18 +145,22 @@ namespace GitLabTimeManager.ViewModel
                 UserProfile.Token = Token;
                 UserProfile.Url = Uri;
 
-                var boardLabels = UserProfile.LabelSettings.BoardStateLabels;
-                boardLabels.ToDoLabel = StartLabel?.Name;
-                boardLabels.DoingLabel = PauseLabel?.Name;
-                boardLabels.DoneLabel = FinishLabel?.Name;
-                UserProfile.LabelSettings.BoardStateLabels = boardLabels;
+                if (Labels != null)
+                {
+                    var boardLabels = UserProfile.LabelSettings.BoardStateLabels;
 
-                UserProfile.LabelSettings.OtherBoardLabels = BoardLabels
-                    .Select(x => x.Name)
-                    .Where(x => x != boardLabels.ToDoLabel)
-                    .Where(x => x != boardLabels.DoingLabel)
-                    .Where(x => x != boardLabels.DoneLabel)
-                    .ToList();
+                    boardLabels.ToDoLabel = StartLabel?.Name;
+                    boardLabels.DoingLabel = PauseLabel?.Name;
+                    boardLabels.DoneLabel = FinishLabel?.Name;
+                    UserProfile.LabelSettings.BoardStateLabels = boardLabels;
+
+                    UserProfile.LabelSettings.OtherBoardLabels = BoardLabels
+                        .Select(x => x.Name)
+                        .Where(x => x != boardLabels.ToDoLabel)
+                        .Where(x => x != boardLabels.DoingLabel)
+                        .Where(x => x != boardLabels.DoneLabel)
+                        .ToList();
+                }
 
                 ProfileService.Serialize(UserProfile);
 
@@ -238,4 +240,10 @@ namespace GitLabTimeManager.ViewModel
             }
         }
     }
+
+    public class SettingsArgument
+    {
+        public IReadOnlyList<Label> Labels { get; set; }
+    }
+
 }

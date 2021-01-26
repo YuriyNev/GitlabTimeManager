@@ -72,7 +72,8 @@
 
         <!--Label Collections-->
         <Grid Grid.Row="1"
-              Margin="0 16 0 0 ">
+              Margin="0 16 0 0"
+              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="2*"/>
@@ -150,14 +151,16 @@
         <!--Header-->
         <TextBlock Grid.Row="2"
                    Margin="0 8 0 4"
-                   Text="Действия"/>
+                   Text="Действия"
+                   Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"/>
 
         <!--Set Start Label-->
         <Grid Grid.Row="3" 
               Margin="0 8 0 0"
               Background="Transparent"
               dd:DragDrop.IsDropTarget="True"
-              dd:DragDrop.DropHandler="{Binding StartLabelDropHandler, Mode=OneWay}">
+              dd:DragDrop.DropHandler="{Binding StartLabelDropHandler, Mode=OneWay}"
+              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -206,7 +209,8 @@
               Margin="0 8 0 0"
               Background="Transparent"
               dd:DragDrop.IsDropTarget="True"
-              dd:DragDrop.DropHandler="{Binding PauseLabelDropHandler, Mode=OneWay}">
+              dd:DragDrop.DropHandler="{Binding PauseLabelDropHandler, Mode=OneWay}"
+              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -255,7 +259,8 @@
               Margin="0 8 0 0"
               Background="Transparent"
               dd:DragDrop.IsDropTarget="True"
-              dd:DragDrop.DropHandler="{Binding FinishLabelDropHandler, Mode=OneWay}">
+              dd:DragDrop.DropHandler="{Binding FinishLabelDropHandler, Mode=OneWay}"
+              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>

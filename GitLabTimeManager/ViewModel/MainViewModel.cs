@@ -25,6 +25,7 @@ namespace GitLabTimeManager.ViewModel
         private IDataSubscription DataSubscription { get; }
         private INotificationMessageService MessageService { get; }
         private IMessageSubscription MessageSubscription { get; }
+        private ISourceControl SourceControl { get; }
 
         private CancellationTokenSource LifeTime { get; } = new CancellationTokenSource();
 
@@ -128,20 +129,22 @@ namespace GitLabTimeManager.ViewModel
             Application.Current.Exit += Current_Exit;
             
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
-
-            if (!GitTestLaunch(dependencyResolver))
-                return;
             
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
             DataRequestService = dependencyResolver.Resolve<IDataRequestService>();
             MessageService = dependencyResolver.Resolve<INotificationMessageService>();
+            
+            MessageSubscription = MessageService.CreateSubscription();
+            MessageSubscription.NewMessage += Notification_NewMessage;
+
+            if (!GitTestLaunch(dependencyResolver))
+                return;
+
+            SourceControl = dependencyResolver.Resolve<ISourceControl>();
 
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
-
-            MessageSubscription = MessageService.CreateSubscription();
-            MessageSubscription.NewMessage += Notification_NewMessage;
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
@@ -186,6 +189,9 @@ namespace GitLabTimeManager.ViewModel
                 UnableConnectionException _ => "Не удалось подключиться =(",
                 _ => "Ошибочка вышла ;("
             };
+
+            IsFullscreen = true;
+            IsSettingsOpen = true;
         }
 
         private void DataSubscription_NewData(object sender, GitResponse e)
@@ -238,7 +244,8 @@ namespace GitLabTimeManager.ViewModel
 
                 if (e.NewValue is bool open && open)
                 {
-                    SettingsVm = ViewModelFactory.CreateViewModel<SettingsViewModel>(null);
+                    var labels = SourceControl?.GetLabels();
+                    SettingsVm = ViewModelFactory.CreateViewModel<SettingsViewModel>(new SettingsArgument {Labels = labels});
                 }
             }
         }

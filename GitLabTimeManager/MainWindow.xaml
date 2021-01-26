@@ -62,7 +62,7 @@
                         <Setter Property="Opacity" Value="0"/>
                         <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsFirstLoading, Mode=OneWay}" Value="False">
+                            <DataTrigger Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True">
                                 <Setter Property="Visibility" Value="Visible"/>
 
                                 <DataTrigger.EnterActions>
