@@ -133,8 +133,8 @@ namespace GitLabTimeManager.ViewModel
             var labels = allLabels.Except(BoardLabels);
             AvailableLabels = new ObservableCollection<Label>(labels);
 
-            StartLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.ToDoLabel);
-            PauseLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoingLabel);
+            StartLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoingLabel);
+            PauseLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.ToDoLabel);
             FinishLabel = allLabels.FirstOrDefault(l => l.Name == labelSetting.BoardStateLabels?.DoneLabel);
         }
 
@@ -149,8 +149,8 @@ namespace GitLabTimeManager.ViewModel
                 {
                     var boardLabels = UserProfile.LabelSettings.BoardStateLabels;
 
-                    boardLabels.ToDoLabel = StartLabel?.Name;
-                    boardLabels.DoingLabel = PauseLabel?.Name;
+                    boardLabels.ToDoLabel = PauseLabel?.Name;
+                    boardLabels.DoingLabel = StartLabel?.Name;
                     boardLabels.DoneLabel = FinishLabel?.Name;
                     UserProfile.LabelSettings.BoardStateLabels = boardLabels;
 

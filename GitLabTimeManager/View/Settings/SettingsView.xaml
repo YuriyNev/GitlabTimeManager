@@ -56,14 +56,14 @@
                        Text="Поключение"/>
 
             <TextBox Grid.Row="1"
-                     Text="{Binding Token, Mode=TwoWay}"
+                     Text="{Binding Token, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      mah:TextBoxHelper.Watermark="Token"
                      Margin="8"
                      MaxWidth="450"
                      FontSize="20"/>
 
             <TextBox Grid.Row="2"
-                     Text="{Binding Uri, Mode=TwoWay}"
+                     Text="{Binding Uri, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      mah:TextBoxHelper.Watermark="URL"
                      FontSize="20"
                      MaxWidth="450"
