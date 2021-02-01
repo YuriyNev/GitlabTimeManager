@@ -75,7 +75,7 @@
                         <ColumnDefinition.Style>
                             <Style TargetType="{x:Type ColumnDefinition}">
                                 <Setter Property="Width" Value="*"/>
-                                <Setter Property="MinWidth" Value="100"/>
+                                <Setter Property="MinWidth" Value="50"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IssueTimerVm.IsFullscreen, Mode=OneWay}" Value="True">
                                         <Setter Property="Width" Value="*"/>

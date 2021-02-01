@@ -74,9 +74,8 @@ namespace GitLabTimeManager.ViewModel
             UpdateData(e);
         }
 
-        private bool Filter(object obj) => obj is WrappedIssue wi
-                                           && wi.Issue.State == IssueState.Opened
-                                           && LabelService.ContainsBoardLabels(wi.Labels);
+        private static bool Filter(object obj) => obj is WrappedIssue wi
+                                                  && wi.Issue.State == IssueState.Opened;
 
         private void UpdateData(GitResponse data)
         {

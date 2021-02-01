@@ -16,15 +16,15 @@ using Label = GitLabApiClient.Models.Projects.Responses.Label;
 namespace GitLabTimeManager.ViewModel
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class SettingsViewModel : ViewModelBase
+    public class ConnectionSettingsViewModel : ViewModelBase
     {
-        [UsedImplicitly] public static readonly PropertyData TokenProperty = RegisterProperty<SettingsViewModel, string>(x => x.Token);
-        [UsedImplicitly] public static readonly PropertyData UriProperty = RegisterProperty<SettingsViewModel, string>(x => x.Uri);
-        [UsedImplicitly] public static readonly PropertyData AvailableLabelsProperty = RegisterProperty<SettingsViewModel, ObservableCollection<Label>>(x => x.AvailableLabels);
-        [UsedImplicitly] public static readonly PropertyData BoardLabelsProperty = RegisterProperty<SettingsViewModel, ObservableCollection<Label>>(x => x.BoardLabels, () => new ObservableCollection<Label>());
-        [UsedImplicitly] public static readonly PropertyData StartLabelProperty = RegisterProperty<SettingsViewModel, Label>(x => x.StartLabel);
-        [UsedImplicitly] public static readonly PropertyData PauseLabelProperty = RegisterProperty<SettingsViewModel, Label>(x => x.PauseLabel);
-        [UsedImplicitly] public static readonly PropertyData FinishLabelProperty = RegisterProperty<SettingsViewModel, Label>(x => x.FinishLabel);
+        [UsedImplicitly] public static readonly PropertyData TokenProperty = RegisterProperty<ConnectionSettingsViewModel, string>(x => x.Token);
+        [UsedImplicitly] public static readonly PropertyData UriProperty = RegisterProperty<ConnectionSettingsViewModel, string>(x => x.Uri);
+        [UsedImplicitly] public static readonly PropertyData AvailableLabelsProperty = RegisterProperty<ConnectionSettingsViewModel, ObservableCollection<Label>>(x => x.AvailableLabels);
+        [UsedImplicitly] public static readonly PropertyData BoardLabelsProperty = RegisterProperty<ConnectionSettingsViewModel, ObservableCollection<Label>>(x => x.BoardLabels, () => new ObservableCollection<Label>());
+        [UsedImplicitly] public static readonly PropertyData StartLabelProperty = RegisterProperty<ConnectionSettingsViewModel, Label>(x => x.StartLabel);
+        [UsedImplicitly] public static readonly PropertyData PauseLabelProperty = RegisterProperty<ConnectionSettingsViewModel, Label>(x => x.PauseLabel);
+        [UsedImplicitly] public static readonly PropertyData FinishLabelProperty = RegisterProperty<ConnectionSettingsViewModel, Label>(x => x.FinishLabel);
 
         public Label FinishLabel
         {
@@ -83,7 +83,7 @@ namespace GitLabTimeManager.ViewModel
         public SingleDropHandler PauseLabelDropHandler { get; } = new SingleDropHandler();
         public SingleDropHandler FinishLabelDropHandler { get; } = new SingleDropHandler();
         
-        public SettingsViewModel(
+        public ConnectionSettingsViewModel(
             [CanBeNull] SettingsArgument settingsArgument,
             [NotNull] IProfileService profileService,
             [NotNull] IUserProfile userProfile, 

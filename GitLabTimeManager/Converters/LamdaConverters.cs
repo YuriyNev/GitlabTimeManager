@@ -81,7 +81,7 @@ namespace GitLabTimeManager.Converters
 
                 return Brushes.Magenta;
             }, errorStrategy: ConverterErrorStrategy.UseFallbackOrDefaultValue);
-
+        
         public static readonly IValueConverter UColorToBrush =
             ValueConverter.Create<uint, SolidColorBrush>(e => ColorHelper.SolidColorBrush(e.Value));
         

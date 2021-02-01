@@ -40,8 +40,15 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData LaunchIsSuccessProperty = RegisterProperty<MainViewModel, bool>(x => x.LaunchIsFinished);
         [UsedImplicitly] public static readonly PropertyData MessageProperty = RegisterProperty<MainViewModel, string>(x => x.Message);
         [UsedImplicitly] public static readonly PropertyData IsMessageOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsMessageOpen);
-        [UsedImplicitly] public static readonly PropertyData SettingsVmProperty = RegisterProperty<MainViewModel, SettingsViewModel>(x => x.SettingsVm);
+        [UsedImplicitly] public static readonly PropertyData SettingsVmProperty = RegisterProperty<MainViewModel, ConnectionSettingsViewModel>(x => x.ConnectionSettingsVm);
         [UsedImplicitly] public static readonly PropertyData IsSettingsOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsSettingsOpen);
+        [UsedImplicitly] public static readonly PropertyData IsDefaultTabProperty = RegisterProperty<MainViewModel, bool>(x => x.IsDefaultTab);
+
+        public bool IsDefaultTab
+        {
+            get => GetValue<bool>(IsDefaultTabProperty);
+            set => SetValue(IsDefaultTabProperty, value);
+        }
 
         public bool IsSettingsOpen
         {
@@ -49,9 +56,9 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(IsSettingsOpenProperty, value);
         }
 
-        public SettingsViewModel SettingsVm
+        public ConnectionSettingsViewModel ConnectionSettingsVm
         {
-            get => GetValue<SettingsViewModel>(SettingsVmProperty);
+            get => GetValue<ConnectionSettingsViewModel>(SettingsVmProperty);
             private set => SetValue(SettingsVmProperty, value);
         }
 
@@ -124,6 +131,8 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(LaunchIsSuccessProperty, value);
         }
 
+        public Command SwitchSettingsCommand { get; }
+
         private MainViewModel()
         {
             Application.Current.Exit += Current_Exit;
@@ -150,6 +159,15 @@ namespace GitLabTimeManager.ViewModel
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
+
+            SwitchSettingsCommand = new Command(SwitchSettings);
+        }
+
+        private void SwitchSettings()
+        {
+            IsSettingsOpen = !IsSettingsOpen;
+            if (!IsSettingsOpen)
+                IsDefaultTab = true;
         }
 
         private void Notification_NewMessage(object sender, string message)
@@ -235,17 +253,17 @@ namespace GitLabTimeManager.ViewModel
                 // Was Settings then close
                 if (e.OldValue is bool closed && closed)
                 {
-                    if (SettingsVm != null)
+                    if (ConnectionSettingsVm != null)
                     {
-                        await SettingsVm?.CloseViewModelAsync(false);
-                        SettingsVm = null;
+                        await ConnectionSettingsVm?.CloseViewModelAsync(false);
+                        ConnectionSettingsVm = null;
                     }
                 }
 
                 if (e.NewValue is bool open && open)
                 {
                     var labels = SourceControl?.GetLabels();
-                    SettingsVm = ViewModelFactory.CreateViewModel<SettingsViewModel>(new SettingsArgument {Labels = labels});
+                    ConnectionSettingsVm = ViewModelFactory.CreateViewModel<ConnectionSettingsViewModel>(new SettingsArgument {Labels = labels});
                 }
             }
         }

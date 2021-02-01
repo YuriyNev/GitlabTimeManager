@@ -101,7 +101,11 @@ namespace GitLabTimeManager.Services
 
         public string Url { get; set; }
 
+#if DEBUG
+        public int RequestMonths { get; set; } = 1;
+#else
         public int RequestMonths { get; set; } = 3;
+#endif
 
         public LabelSettings LabelSettings { get; set; } = new LabelSettings
         {

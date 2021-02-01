@@ -198,7 +198,7 @@
                             Visibility="{Binding IsEditMode, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                         <TextBlock TextAlignment="Center"
                                    TextWrapping="WrapWithOverflow"
-                                   MaxWidth="300"
+                                   MaxWidth="250"
                                    Text="{Binding IssueTitle, Mode=OneWay}" />
                     </Button>
                     <TextBox Text="{Binding EditedTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -361,6 +361,9 @@
                             <Setter Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsStarted, Mode=OneWay}" Value="True">
                             <Setter Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
                     </Style.Triggers>

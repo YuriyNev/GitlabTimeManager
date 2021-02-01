@@ -12,7 +12,7 @@
                    mc:Ignorable="d" 
                    x:Name="Root"
                    d:DesignHeight="450" d:DesignWidth="800"
-                   d:DataContext="{d:DesignInstance settings:SettingsViewModel}">
+                   d:DataContext="{d:DesignInstance settings:ConnectionSettingsViewModel}">
     <UserControl.Resources>
         <DataTemplate DataType="{x:Type responses:Label}">
             <Grid Background="Transparent">
@@ -23,12 +23,13 @@
                 </Rectangle>
 
                 <TextBlock Text="{Binding Name, Mode=OneWay}"
-                           Foreground="{StaticResource MahApps.Brushes.SystemControlBackgroundChromeWhite}" 
-                           Margin="8 2" />
+                           Foreground="{StaticResource WhiteBrush}"
+                           Margin="8 2">
+                </TextBlock>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
-    <Grid TextElement.FontSize="14"
+    <Grid TextElement.FontSize="13"
           Margin="8 8 0 0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>

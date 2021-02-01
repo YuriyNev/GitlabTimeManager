@@ -27,7 +27,7 @@
         <DataTemplate DataType="{x:Type viewModel:ReportViewModel}">
             <view:ReportView />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type viewModel:SettingsViewModel}">
+        <DataTemplate DataType="{x:Type viewModel:ConnectionSettingsViewModel}">
             <view:SettingsView />
         </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
@@ -55,31 +55,36 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
+            <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems"
                                          Background="{x:Null}">
                 <mah:MetroAnimatedTabControl.Style>
                     <Style TargetType="{x:Type mah:MetroAnimatedTabControl}">
                         <Setter Property="Opacity" Value="0"/>
                         <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True">
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True"/>
+                                    <Condition Binding="{Binding IsSettingsOpen, Mode=OneWay}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
                                 <Setter Property="Visibility" Value="Visible"/>
 
-                                <DataTrigger.EnterActions>
+                                <MultiDataTrigger.EnterActions>
                                     <BeginStoryboard>
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="Opacity"
                                                              From="0.0" To="1.0" Duration="0:0:1"/>
                                         </Storyboard>
                                     </BeginStoryboard>
-                                </DataTrigger.EnterActions>
-                            </DataTrigger>
+                                </MultiDataTrigger.EnterActions>
+                            </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
                 </mah:MetroAnimatedTabControl.Style>
 
-                <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}" 
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"
+                         IsSelected="{Binding IsDefaultTab, Mode=TwoWay}">
                     <ContentControl Content="{Binding TodayVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
@@ -98,13 +103,41 @@
                     <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
-                <TabItem Header="Настройки" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"
-                         IsSelected="{Binding IsSettingsOpen, Mode=TwoWay}">
-                    <ContentControl Content="{Binding SettingsVm, Mode=OneWay}"
+            </mah:MetroAnimatedTabControl>
+
+            <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 
+                                                   Background="{x:Null}">
+                <mah:MetroAnimatedTabControl.Style>
+                    <Style TargetType="{x:Type mah:MetroAnimatedTabControl}">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True"/>
+                                    <Condition Binding="{Binding IsSettingsOpen, Mode=OneWay}" Value="True"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+
+                                <MultiDataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                             From="0.0" To="1.0" Duration="0:0:1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </MultiDataTrigger.EnterActions>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </mah:MetroAnimatedTabControl.Style>
+
+                <TabItem Header="Подключение" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                    <ContentControl Content="{Binding ConnectionSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
             </mah:MetroAnimatedTabControl>
+
             <mah:ProgressRing Visibility="{Binding LaunchIsFinished, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"/>
             
             <!--Error Message On Loading-->
@@ -115,10 +148,10 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>
         </Grid>
+
         <!--Error Message-->
         <mah:Flyout AutoCloseInterval="5000"
                     IsAutoCloseEnabled="True"
-                    Margin="0 0 -0 -0"
                     AnimateOpacity="True"
                     CloseButtonVisibility="Collapsed"
                     Header="{Binding Message, Mode=OneWay}"
