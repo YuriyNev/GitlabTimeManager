@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -8,7 +7,7 @@ using Catel.IoC;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
 using GitLabTimeManager.Types;
-using GitLabTimeManager.View;
+using GitLabTimeManager.ViewModel.Settings;
 using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
@@ -31,7 +30,6 @@ namespace GitLabTimeManager.ViewModel
 
         [UsedImplicitly] public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
         [UsedImplicitly] public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
-        [UsedImplicitly] public static readonly PropertyData IsProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFirstLoading, true);
         [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
         [UsedImplicitly] public static readonly PropertyData ShowOnTaskBarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskBar, true);
         [UsedImplicitly] public static readonly PropertyData TodayVmProperty = RegisterProperty<MainViewModel, TodayViewModel>(x => x.TodayVm);
@@ -40,9 +38,16 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData LaunchIsSuccessProperty = RegisterProperty<MainViewModel, bool>(x => x.LaunchIsFinished);
         [UsedImplicitly] public static readonly PropertyData MessageProperty = RegisterProperty<MainViewModel, string>(x => x.Message);
         [UsedImplicitly] public static readonly PropertyData IsMessageOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsMessageOpen);
-        [UsedImplicitly] public static readonly PropertyData SettingsVmProperty = RegisterProperty<MainViewModel, ConnectionSettingsViewModel>(x => x.ConnectionSettingsVm);
         [UsedImplicitly] public static readonly PropertyData IsSettingsOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsSettingsOpen);
         [UsedImplicitly] public static readonly PropertyData IsDefaultTabProperty = RegisterProperty<MainViewModel, bool>(x => x.IsDefaultTab);
+        [UsedImplicitly] public static readonly PropertyData ConnectionSettingsVmProperty = RegisterProperty<MainViewModel, ConnectionSettingsViewModel>(x => x.ConnectionSettingsVm);
+        [UsedImplicitly] public static readonly PropertyData LabelSettingsVmProperty = RegisterProperty<MainViewModel, LabelSettingsViewModel>(x => x.LabelSettingsVm);
+
+        public LabelSettingsViewModel LabelSettingsVm
+        {
+            get => GetValue<LabelSettingsViewModel>(LabelSettingsVmProperty);
+            private set => SetValue(LabelSettingsVmProperty, value);
+        }
 
         public bool IsDefaultTab
         {
@@ -58,8 +63,8 @@ namespace GitLabTimeManager.ViewModel
 
         public ConnectionSettingsViewModel ConnectionSettingsVm
         {
-            get => GetValue<ConnectionSettingsViewModel>(SettingsVmProperty);
-            private set => SetValue(SettingsVmProperty, value);
+            get => GetValue<ConnectionSettingsViewModel>(ConnectionSettingsVmProperty);
+            private set => SetValue(ConnectionSettingsVmProperty, value);
         }
 
         public bool IsMessageOpen
@@ -119,18 +124,13 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(IssueListVmProperty, value);
         }
 
-        public bool IsFirstLoading
-        {
-            get => GetValue<bool>(IsProgressProperty);
-            private set => SetValue(IsProgressProperty, value);
-        }
-        
         public bool LaunchIsFinished
         {
             get => GetValue<bool>(LaunchIsSuccessProperty);
             private set => SetValue(LaunchIsSuccessProperty, value);
         }
 
+        [UsedImplicitly]
         public Command SwitchSettingsCommand { get; }
 
         private MainViewModel()
@@ -166,8 +166,6 @@ namespace GitLabTimeManager.ViewModel
         private void SwitchSettings()
         {
             IsSettingsOpen = !IsSettingsOpen;
-            if (!IsSettingsOpen)
-                IsDefaultTab = true;
         }
 
         private void Notification_NewMessage(object sender, string message)
@@ -214,17 +212,11 @@ namespace GitLabTimeManager.ViewModel
 
         private void DataSubscription_NewData(object sender, GitResponse e)
         {
-            SuccessLoading();
+            LoadingFinished();
         }
 
         private void LoadingFinished()
         {
-            LaunchIsFinished = true;
-        }
-
-        private void SuccessLoading()
-        {
-            IsFirstLoading = false;
             LaunchIsFinished = true;
         }
 
@@ -258,12 +250,28 @@ namespace GitLabTimeManager.ViewModel
                         await ConnectionSettingsVm?.CloseViewModelAsync(false);
                         ConnectionSettingsVm = null;
                     }
+                    
+                    if (LabelSettingsVm != null)
+                    {
+                        await LabelSettingsVm?.CloseViewModelAsync(false);
+                        LabelSettingsVm = null;
+                    }
                 }
 
                 if (e.NewValue is bool open && open)
                 {
                     var labels = SourceControl?.GetLabels();
-                    ConnectionSettingsVm = ViewModelFactory.CreateViewModel<ConnectionSettingsViewModel>(new SettingsArgument {Labels = labels});
+                    ConnectionSettingsVm = ViewModelFactory.CreateViewModel<ConnectionSettingsViewModel>(null);
+                    ConnectionSettingsVm.SetOnClose(() =>
+                    {
+                        IsSettingsOpen = false;
+                    });
+
+                    LabelSettingsVm = ViewModelFactory.CreateViewModel<LabelSettingsViewModel>(new SettingsArgument {Labels = labels});
+                    LabelSettingsVm.SetOnClose(() =>
+                    {
+                        IsSettingsOpen = false;
+                    });
                 }
             }
         }

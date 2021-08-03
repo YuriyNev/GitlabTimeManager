@@ -76,8 +76,8 @@
     <Reference Include="ControlzEx, Version=4.0.0.0, Culture=neutral, PublicKeyToken=69f1c32f803d307e, processorArchitecture=MSIL">
       <HintPath>..\packages\ControlzEx.4.4.0\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
-    <Reference Include="GitLabApiClient, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GitLabApiClient.1.7.0\lib\netstandard2.0\GitLabApiClient.dll</HintPath>
+    <Reference Include="GitLabApiClient, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\GitLabApiClient.1.8.0\lib\netstandard2.0\GitLabApiClient.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.WPF.DragDrop, Version=2.0.0.0, Culture=neutral, PublicKeyToken=91f1945125b7a587, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.2.3.2\lib\net47\GongSolutions.WPF.DragDrop.dll</HintPath>
@@ -244,14 +244,19 @@
     <Compile Include="ViewModel\IssueListViewModel.cs" />
     <Compile Include="ViewModel\ReportViewModel.cs" />
     <Compile Include="ViewModel\Settings\ConnectionSettingsViewModel.cs" />
+    <Compile Include="ViewModel\Settings\LabelSettingsViewModel.cs" />
+    <Compile Include="ViewModel\Settings\SettingsViewModelBase.cs" />
     <Compile Include="ViewModel\SummaryViewModel.cs" />
     <Compile Include="ViewModel\TodayViewModel.cs" />
     <Compile Include="ViewModel\TrayViewModel.cs" />
     <Compile Include="View\ReportView.xaml.cs">
       <DependentUpon>ReportView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Settings\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
+    <Compile Include="View\Settings\ConnectionSettingsView.xaml.cs">
+      <DependentUpon>ConnectionSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Settings\LabelSettingsView.xaml.cs">
+      <DependentUpon>LabelSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\TodayView.xaml.cs">
       <DependentUpon>TodayView.xaml</DependentUpon>
@@ -308,7 +313,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Settings\SettingsView.xaml">
+    <Page Include="View\Settings\ConnectionSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Settings\LabelSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

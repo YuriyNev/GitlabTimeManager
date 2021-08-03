@@ -9,6 +9,8 @@
                  xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
                  xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
                  xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+                 xmlns:settings="clr-namespace:GitLabTimeManager.ViewModel.Settings"
+                 xmlns:settings1="clr-namespace:GitLabTimeManager.View.Settings"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
                  ShowInTaskbar="{Binding ShowOnTaskBar, Mode=OneWay}"
@@ -28,7 +30,10 @@
             <view:ReportView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:ConnectionSettingsViewModel}">
-            <view:SettingsView />
+            <view:ConnectionSettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type settings:LabelSettingsViewModel}">
+            <settings1:LabelSettingsView />
         </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
@@ -83,8 +88,7 @@
                 </mah:MetroAnimatedTabControl.Style>
 
                 <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}" 
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"
-                         IsSelected="{Binding IsDefaultTab, Mode=TwoWay}">
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding TodayVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
@@ -134,6 +138,11 @@
 
                 <TabItem Header="Подключение" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding ConnectionSettingsVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+
+                <TabItem Header="Метки" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                    <ContentControl Content="{Binding LabelSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
             </mah:MetroAnimatedTabControl>

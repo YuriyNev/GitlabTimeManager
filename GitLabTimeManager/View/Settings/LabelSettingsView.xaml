@@ -1,18 +1,16 @@
-﻿<UserControl x:Class="GitLabTimeManager.View.SettingsView"
-                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-                   xmlns:settings="clr-namespace:GitLabTimeManager.ViewModel"
-                   xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-                   xmlns:responses="clr-namespace:GitLabApiClient.Models.Projects.Responses;assembly=GitLabApiClient"
-                   xmlns:dd="urn:gong-wpf-dragdrop"
-                   xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                   xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
-                   mc:Ignorable="d" 
-                   x:Name="Root"
-                   d:DesignHeight="450" d:DesignWidth="800"
-                   d:DataContext="{d:DesignInstance settings:ConnectionSettingsViewModel}">
+﻿<UserControl x:Class="GitLabTimeManager.View.Settings.LabelSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:settings="clr-namespace:GitLabTimeManager.ViewModel.Settings"
+             xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:dd="urn:gong-wpf-dragdrop"
+             xmlns:responses="clr-namespace:GitLabApiClient.Models.Projects.Responses;assembly=GitLabApiClient"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance settings:LabelSettingsViewModel}">
     <UserControl.Resources>
         <DataTemplate DataType="{x:Type responses:Label}">
             <Grid Background="Transparent">
@@ -29,64 +27,25 @@
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
-    <Grid TextElement.FontSize="13"
-          Margin="8 8 0 0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!--Token / Uri-->
-        <Grid Grid.Row="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-            <TextBlock Grid.Row="0"
-                       Text="Поключение"/>
-
-            <TextBox Grid.Row="1"
-                     Text="{Binding Token, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     mah:TextBoxHelper.Watermark="Token"
-                     Margin="8"
-                     MaxWidth="450"
-                     FontSize="20"/>
-
-            <TextBox Grid.Row="2"
-                     Text="{Binding Uri, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     mah:TextBoxHelper.Watermark="URL"
-                     FontSize="20"
-                     MaxWidth="450"
-                     Margin="8"/>
-        </Grid>
-
-        <!--Label Collections-->
-        <Grid Grid.Row="1"
+        <!--All Labels-->
+        <Grid Grid.Row="0"
               Margin="0 16 0 0"
               Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
-                       Text="Метки"/>
-
+                       Text="Все метки"/>
 
             <ListBox Grid.Row="1"
                      ItemsSource="{Binding AvailableLabels, Mode=TwoWay}"
@@ -111,13 +70,20 @@
                     </Style>
                 </ItemsControl.ItemContainerStyle>
             </ListBox>
-            
+        </Grid>
 
-            <TextBlock Grid.Row="2"
+        <!--Board Labels-->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
                        Margin="0 8 0 0"
                        Text="Используемые на доске"/>
 
-            <ListBox Grid.Row="3"
+            <ListBox Grid.Row="1"
                      ItemsSource="{Binding BoardLabels, Mode=TwoWay}"
                      dd:DragDrop.IsDropTarget="True"
                      dd:DragDrop.IsDragSource="True"
@@ -140,7 +106,7 @@
                 </ItemsControl.ItemContainerStyle>
             </ListBox>
 
-            <TextBlock Grid.Row="3"
+            <TextBlock Grid.Row="1"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
                        Text="Перетащите сюда метки"
                        VerticalAlignment="Center"
@@ -149,38 +115,45 @@
                        Visibility="{Binding BoardLabels.Count, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfZero}}"/>
         </Grid>
 
-        <!--Header-->
-        <TextBlock Grid.Row="2"
-                   Margin="0 8 0 4"
-                   Text="Действия"
-                   Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"/>
-
-        <!--Set Start Label-->
-        <Grid Grid.Row="3" 
-              Margin="0 8 0 0"
-              Background="Transparent"
-              dd:DragDrop.IsDropTarget="True"
-              dd:DragDrop.DropHandler="{Binding StartLabelDropHandler, Mode=OneWay}"
-              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <!--Label Actions-->
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
-                  Margin="4">
-                <iconPacks:MaterialLight Kind="Play" Height="16" Width="16"/>
-            </Grid>
+            <!--Header-->
+            <TextBlock Grid.Row="0"
+                   Margin="0 8 0 4"
+                   Text="Действия"
+                   Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"/>
 
-            <TextBlock Grid.Row="1" Grid.Column="1"
+            <!--Set Start Label-->
+            <Grid Grid.Row="1" 
+                  Margin="0 8 0 0"
+                  Background="Transparent"
+                  dd:DragDrop.IsDropTarget="True"
+                  dd:DragDrop.DropHandler="{Binding StartLabelDropHandler, Mode=OneWay}"
+                  Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
+                  Margin="4">
+                    <iconPacks:MaterialLight Kind="Play" Height="16" Width="16"/>
+                </Grid>
+
+                <TextBlock Grid.Row="1" Grid.Column="1"
                        Text="Не задано"
                        FontSize="16"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
@@ -188,13 +161,13 @@
                        HorizontalAlignment="Left"
                        IsHitTestVisible="False"
                        Visibility="{Binding StartLabel, Converter={x:Static converters:Converter.VisibleIfNull}}"/>
-            
-            <ContentControl Grid.Row="1" Grid.Column="1"
+
+                <ContentControl Grid.Row="1" Grid.Column="1"
                             HorizontalAlignment="Left"
                             IsHitTestVisible="False"
                             Content="{Binding StartLabel, Mode=TwoWay}"/>
 
-            <Button Grid.Row="1" Grid.Column="2"
+                <Button Grid.Row="1" Grid.Column="2"
                     Content="{iconPacks:FeatherIcons Kind=XCircle}"
                     Width="20" Height="20"
                     Background="White"
@@ -203,34 +176,31 @@
                     Command="{Binding ResetStartLabelCommand, Mode=OneWay}"
                     Visibility="{Binding StartLabel, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"
                     Style="{StaticResource FlatCircleButton}"/>
-        </Grid>
-
-        <!--Set Pause Label-->
-        <Grid Grid.Row="4" 
-              Margin="0 8 0 0"
-              Background="Transparent"
-              dd:DragDrop.IsDropTarget="True"
-              dd:DragDrop.DropHandler="{Binding PauseLabelDropHandler, Mode=OneWay}"
-              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
-                  Margin="4">
-                <iconPacks:MaterialLight Kind="Pause" Height="16" Width="16"/>
             </Grid>
 
-            <TextBlock Grid.Row="1" Grid.Column="1"
+            <!--Set Pause Label-->
+            <Grid Grid.Row="2" 
+                  Margin="0 8 0 0"
+                  Background="Transparent"
+                  dd:DragDrop.IsDropTarget="True"
+                  dd:DragDrop.DropHandler="{Binding PauseLabelDropHandler, Mode=OneWay}"
+                  Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
+                  Margin="4">
+                    <iconPacks:MaterialLight Kind="Pause" Height="16" Width="16"/>
+                </Grid>
+
+                <TextBlock Grid.Row="1" Grid.Column="1"
                        Text="Не задано"
                        FontSize="16"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
@@ -238,13 +208,13 @@
                        HorizontalAlignment="Left"
                        IsHitTestVisible="False"
                        Visibility="{Binding PauseLabel, Converter={x:Static converters:Converter.VisibleIfNull}}"/>
-            
-            <ContentControl Grid.Row="1" Grid.Column="1"
+
+                <ContentControl Grid.Row="1" Grid.Column="1"
                             HorizontalAlignment="Left"
                             IsHitTestVisible="False"
                             Content="{Binding PauseLabel, Mode=TwoWay}"/>
 
-            <Button Grid.Row="1" Grid.Column="2"
+                <Button Grid.Row="1" Grid.Column="2"
                     Content="{iconPacks:FeatherIcons Kind=XCircle}"
                     Width="20" Height="20"
                     Background="White"
@@ -253,34 +223,31 @@
                     Command="{Binding ResetPauseLabelCommand, Mode=OneWay}"
                     Visibility="{Binding PauseLabel, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"
                     Style="{StaticResource FlatCircleButton}"/>
-        </Grid>
-
-        <!--Set Finish Label-->
-        <Grid Grid.Row="5" 
-              Margin="0 8 0 0"
-              Background="Transparent"
-              dd:DragDrop.IsDropTarget="True"
-              dd:DragDrop.DropHandler="{Binding FinishLabelDropHandler, Mode=OneWay}"
-              Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
-                  Margin="4">
-                <iconPacks:MaterialLight Kind="Flag" Height="16" Width="16"/>
             </Grid>
 
-            <TextBlock Grid.Row="1" Grid.Column="1"
+            <!--Set Finish Label-->
+            <Grid Grid.Row="3" 
+                  Margin="0 8 0 0"
+                  Background="Transparent"
+                  dd:DragDrop.IsDropTarget="True"
+                  dd:DragDrop.DropHandler="{Binding FinishLabelDropHandler, Mode=OneWay}"
+                  Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
+                  Margin="4">
+                    <iconPacks:MaterialLight Kind="Flag" Height="16" Width="16"/>
+                </Grid>
+
+                <TextBlock Grid.Row="1" Grid.Column="1"
                        Text="Не задано"
                        FontSize="16"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
@@ -288,13 +255,13 @@
                        HorizontalAlignment="Left"
                        IsHitTestVisible="False"
                        Visibility="{Binding FinishLabel, Converter={x:Static converters:Converter.VisibleIfNull}}"/>
-            
-            <ContentControl Grid.Row="1" Grid.Column="1"
+
+                <ContentControl Grid.Row="1" Grid.Column="1"
                             HorizontalAlignment="Left"
                             IsHitTestVisible="False"
                             Content="{Binding FinishLabel, Mode=TwoWay}"/>
 
-            <Button Grid.Row="1" Grid.Column="2"
+                <Button Grid.Row="1" Grid.Column="2"
                     Content="{iconPacks:FeatherIcons Kind=XCircle}"
                     Width="20" Height="20"
                     Background="White"
@@ -303,13 +270,14 @@
                     Command="{Binding ResetFinishLabelCommand, Mode=OneWay}"
                     Visibility="{Binding FinishLabel, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"
                     Style="{StaticResource FlatCircleButton}"/>
+            </Grid>
         </Grid>
 
         <!--Apply Button-->
-        <Grid Grid.Row="6" 
+        <Grid Grid.Row="3" 
               HorizontalAlignment="Center"
               VerticalAlignment="Bottom">
-          
+
             <!--Apply-->
             <Button Width="120"
                     Content="{iconPacks:MaterialLight Kind=Check}"

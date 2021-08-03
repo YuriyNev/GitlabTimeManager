@@ -33,7 +33,6 @@ namespace GitLabTimeManager.Services
             //if (!Verify(profile))
             //    throw new IncorrectProfileException();
 
-
             return profile;
         }
 
@@ -42,8 +41,12 @@ namespace GitLabTimeManager.Services
             using var stream = new StreamWriter(Location);
             var json = JsonSerializer.Serialize(profile);
             stream.Write(json);
+
+            Serialized?.Invoke(this, profile);
         }
-        
+
+        public event EventHandler<IUserProfile> Serialized;
+
         private static bool Verify(IUserProfile profile)
         {
             if (string.IsNullOrEmpty(profile.Token))
@@ -61,6 +64,8 @@ namespace GitLabTimeManager.Services
         [NotNull] IUserProfile Deserialize();
 
         [NotNull] void Serialize(IUserProfile profile);
+
+        event EventHandler<IUserProfile> Serialized;
     }
 
     public interface IUserProfile
@@ -104,7 +109,7 @@ namespace GitLabTimeManager.Services
 #if DEBUG
         public int RequestMonths { get; set; } = 1;
 #else
-        public int RequestMonths { get; set; } = 3;
+        public int RequestMonths { get; set; } = 4;
 #endif
 
         public LabelSettings LabelSettings { get; set; } = new LabelSettings

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using Catel.Data;
 using GitLabApiClient.Models.Projects.Responses;
 using JetBrains.Annotations;
 
@@ -25,27 +28,42 @@ namespace GitLabTimeManager.Services
         bool ContainsBoardLabels(IReadOnlyList<Label> labels);
     }
 
-    public class LabelProcessor : ILabelService
+    public class LabelProcessor : ILabelService, IDisposable
     {
         [NotNull] private IUserProfile UserProfile { get; }
+        public IProfileService ProfileService { get; }
 
-        private string ToDoLabel { get; } 
-        private string DoingLabel { get; }
-        private string DoneLabel { get; }
+        private string ToDoLabel { get; set; }
+        private string DoingLabel { get; set; }
+        private string DoneLabel { get; set; }
 
-        private IReadOnlyList<string> AllBoardLabels { get; }
-        private IReadOnlyList<string> ExcludeLabels { get; }
-        private BoardStateLabels BoardStateLabels { get; }
+        private IReadOnlyList<string> AllBoardLabels { get; set; }
+        private IReadOnlyList<string> ExcludeLabels { get; set; }
+        private BoardStateLabels BoardStateLabels { get; set; }
 
-        public LabelProcessor([NotNull] IUserProfile userProfile)
+        public LabelProcessor(
+            [NotNull] IUserProfile userProfile,
+            [NotNull] IProfileService profileService)
         {
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
+            ProfileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
 
-            var settings = UserProfile.LabelSettings;
+            Update(UserProfile.LabelSettings);
+
+            ProfileService.Serialized += ProfileService_Serialized;
+        }
+
+        private void ProfileService_Serialized(object sender, IUserProfile e)
+        {
+            Update(UserProfile.LabelSettings);
+        }
+
+        private void Update(LabelSettings settings)
+        {
             AllBoardLabels = settings.AllBoardLabels;
             ExcludeLabels = settings.ExcludeLabels;
             BoardStateLabels = settings.BoardStateLabels;
-            
+
             ToDoLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.ToDoLabel);
             DoingLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.DoingLabel);
             DoneLabel = AllBoardLabels.FirstOrDefault(x => x == BoardStateLabels.DoneLabel);
@@ -83,7 +101,6 @@ namespace GitLabTimeManager.Services
             return newLabels;
         }
 
-       
         public bool IsStarted(List<string> labels) => labels.Contains(DoingLabel);
 
         public bool IsPaused(List<string> labels) => !labels.Contains(DoingLabel);
@@ -98,6 +115,11 @@ namespace GitLabTimeManager.Services
         public bool ContainsBoardLabels(IReadOnlyList<Label> labels)
         {
             return labels.Any(l => AllBoardLabels.Contains(l.Name));
+        }
+
+        public void Dispose()
+        {
+            ProfileService.Serialized -= ProfileService_Serialized;
         }
     }
 }

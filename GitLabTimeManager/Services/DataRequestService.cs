@@ -90,6 +90,12 @@ namespace GitLabTimeManager.Services
 
         private async Task RunAsync([NotNull] ISourceControl sourceControl)
         {
+            //var newestData = await sourceControl.RequestNewestDataAsync().ConfigureAwait(true);
+            //foreach (var subscription in _dataSubscriptions)
+            //{
+            //    subscription.OnNewData(newestData);
+            //}
+
             while (true)
             {
                 if (_cancellation.IsCancellationRequested)

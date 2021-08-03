@@ -21,6 +21,7 @@ namespace GitLabTimeManager.Services
     public interface ISourceControl
     {
         [PublicAPI] Task<GitResponse> RequestDataAsync();
+        [PublicAPI] Task<GitResponse> RequestNewestDataAsync();
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
@@ -33,6 +34,8 @@ namespace GitLabTimeManager.Services
 
         [PublicAPI] IReadOnlyList<ProjectId> SetActiveProjects(IReadOnlyList<Issue> issues);
         [PublicAPI] IReadOnlyList<ProjectId> GetActiveProjects();
+
+        [PublicAPI] Task GetLabelsEventsAsync();
     }
 
     internal class SourceControl : ISourceControl
@@ -61,7 +64,17 @@ namespace GitLabTimeManager.Services
 
         public async Task<GitResponse> RequestDataAsync()
         {
-            var wrappedIssues = await GetPreparedDataAsync().ConfigureAwait(false);
+            var wrappedIssues = await GetRawDataAsync().ConfigureAwait(false);
+
+            return new GitResponse
+            {
+                WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues),
+            };
+        }
+
+        public async Task<GitResponse> RequestNewestDataAsync()
+        {
+            var wrappedIssues = await GetActualDataAsync().ConfigureAwait(false);
 
             return new GitResponse
             {
@@ -182,7 +195,7 @@ namespace GitLabTimeManager.Services
 
         private bool _isAction;
 
-        private async Task<IReadOnlyList<WrappedIssue>> GetPreparedDataAsync()
+        private async Task<IReadOnlyList<WrappedIssue>> GetRawDataAsync()
         {
             if (_isAction)
                 return null;
@@ -191,7 +204,36 @@ namespace GitLabTimeManager.Services
             {
                 _isAction = true;
 
-                var allIssues = await RequestAllIssuesAsync().ConfigureAwait(false);
+                var allIssues = await RequestAllIssuesAsync(AllDataOptions).ConfigureAwait(false);
+
+                var projects = SetActiveProjects(allIssues);
+                var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
+
+                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+
+                return ExtentIssues(allIssues, allNotes, allLabels);
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(false, ex.Message);
+                return Array.Empty<WrappedIssue>();
+            }
+            finally
+            { 
+                _isAction = false;
+            }
+        }
+
+        private async Task<IReadOnlyList<WrappedIssue>> GetActualDataAsync()
+        {
+            if (_isAction)
+                return null;
+
+            try
+            {
+                _isAction = true;
+
+                var allIssues = await RequestAllIssuesAsync(ActualDataOptions).ConfigureAwait(false);
 
                 var projects = SetActiveProjects(allIssues);
                 var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
@@ -315,19 +357,40 @@ namespace GitLabTimeManager.Services
             return dict;
         }
 
-        private async Task<ObservableCollection<Issue>> RequestAllIssuesAsync()
+        private async Task<ObservableCollection<Issue>> RequestAllIssuesAsync(Action<IssuesQueryOptions> options)
         {
-            var issues = await GitLabClient.Issues.GetAllAsync(projectId: null, groupId: null, options: Options).ConfigureAwait(false);
+            var issues = await GitLabClient.Issues.GetAllAsync(projectId: null, groupId: null, options: options).ConfigureAwait(false);
 
             var allIssues = new ObservableCollection<Issue>(issues);
 
             return allIssues;
         }
 
-        private void Options(IssuesQueryOptions options)
+        private void ActualDataOptions(IssuesQueryOptions options)
         {
             options.Scope = Scope.AssignedToMe;
+
+            options.CreatedAfter = TimeHelper.Today.AddMonths(-2);
+
+            options.State = IssueState.All;
+        }
+
+        private void RawDataOptions(IssuesQueryOptions options)
+        {
+            options.Scope = Scope.AssignedToMe;
+
             options.CreatedAfter = TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
+            options.CreatedBefore = TimeHelper.Today.AddMonths(-2);
+
+            options.State = IssueState.All;
+        }
+
+        private void AllDataOptions(IssuesQueryOptions options)
+        {
+            options.Scope = Scope.AssignedToMe;
+
+            options.UpdatedAfter = TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
+
             options.State = IssueState.All;
         }
 
@@ -367,6 +430,11 @@ namespace GitLabTimeManager.Services
         public IReadOnlyList<ProjectId> GetActiveProjects()
         {
             return CachedProjects.Select(x => x).ToList();
+        }
+
+        public Task GetLabelsEventsAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 
