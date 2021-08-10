@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Catel.Collections;
 using GitLabApiClient;
@@ -35,13 +36,14 @@ namespace GitLabTimeManager.Services
         [PublicAPI] IReadOnlyList<ProjectId> SetActiveProjects(IReadOnlyList<Issue> issues);
         [PublicAPI] IReadOnlyList<ProjectId> GetActiveProjects();
 
-        [PublicAPI] Task GetLabelsEventsAsync();
+        [PublicAPI] Task<IReadOnlyList<LabelEvent>> GetLabelsEventsAsync(int projectId, int issueIid);
     }
 
     internal class SourceControl : ISourceControl
     {
         [NotNull] private IUserProfile UserProfile { get; }
         [NotNull] private ILabelService LabelService { get; }
+        [NotNull] private IHttpService HttpService { get; }
         [NotNull] private GitLabClient GitLabClient { get; }
 
         private DateTime _lastRequest = DateTime.MinValue;
@@ -54,10 +56,12 @@ namespace GitLabTimeManager.Services
 
         public SourceControl(
             [NotNull] IUserProfile userProfile,
-            [NotNull] ILabelService labelService)
+            [NotNull] ILabelService labelService,
+            [NotNull] IHttpService httpService)
         {
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
+            HttpService = httpService ?? throw new ArgumentNullException(nameof(httpService));
 
             GitLabClient = new GitLabClient(UserProfile.Url, UserProfile.Token);
         }
@@ -207,11 +211,14 @@ namespace GitLabTimeManager.Services
                 var allIssues = await RequestAllIssuesAsync(AllDataOptions).ConfigureAwait(false);
 
                 var projects = SetActiveProjects(allIssues);
+
                 var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
 
                 var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
 
-                return ExtentIssues(allIssues, allNotes, allLabels);
+                var allEvents = await GetAllLabelActionsAsync(allIssues).ConfigureAwait(false);
+
+                return ExtentIssues(allIssues, allNotes, allLabels, allEvents);
             }
             catch (Exception ex)
             {
@@ -236,11 +243,14 @@ namespace GitLabTimeManager.Services
                 var allIssues = await RequestAllIssuesAsync(ActualDataOptions).ConfigureAwait(false);
 
                 var projects = SetActiveProjects(allIssues);
+
                 var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
 
                 var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
 
-                return ExtentIssues(allIssues, allNotes, allLabels);
+                var allEvents = await GetAllLabelActionsAsync(allIssues).ConfigureAwait(false);
+
+                return ExtentIssues(allIssues, allNotes, allLabels, allEvents);
             }
             catch (Exception ex)
             {
@@ -277,16 +287,18 @@ namespace GitLabTimeManager.Services
         private static DateTime? FinishTime(Issue issue) => issue.ClosedAt;
 
         private IReadOnlyList<WrappedIssue> ExtentIssues(
-            IReadOnlyList<Issue> sourceIssues,
-            IReadOnlyDictionary<Issue, IReadOnlyList<Note>> notes, 
-            IReadOnlyList<Label> labels)
+            IReadOnlyList<Issue> sourceIssues, 
+            IReadOnlyDictionary<Issue, IReadOnlyList<Note>> notes,
+            IReadOnlyList<Label> labels,
+            IReadOnlyDictionary<Issue, IReadOnlyList<LabelEvent>> events)
         {
             var issues = new ObservableCollection<WrappedIssue>();
             foreach (var issue in sourceIssues)
             {
                 notes.TryGetValue(issue, out var note);
+                events.TryGetValue(issue, out var labelEvents);
 
-                var wrappedIssue = CreateIssue(issue, labels, note);
+                var wrappedIssue = CreateIssue(issue, labels, note, labelEvents);
 
                 issues.Add(wrappedIssue);
             }
@@ -294,7 +306,7 @@ namespace GitLabTimeManager.Services
             return issues;
         }
 
-        private WrappedIssue CreateIssue(Issue issue, IReadOnlyList<Label> labels, IReadOnlyList<Note> note)
+        private WrappedIssue CreateIssue(Issue issue, IReadOnlyList<Label> labels, IReadOnlyList<Note> note, IReadOnlyList<LabelEvent> events)
         {
             DateTime? startDate = null;
 
@@ -307,8 +319,13 @@ namespace GitLabTimeManager.Services
                 // if more 0 notes then getting data from notes
                 var timeNotes = note.Where(x => x.Body.ParseSpent() > 0 || x.Body.ParseEstimate() > 0).ToList();
 
-                if (timeNotes.Count > 0)
-                    startDate = timeNotes.Min(x => x.CreatedAt);
+                //if (timeNotes.Count > 0)
+                //    startDate = timeNotes.Min(x => x.CreatedAt);
+                if (events.Count > 0)
+                    startDate = events
+                        .OrderBy(x => x.CreatedAt)
+                        .Where(x => x.Label != null)
+                        .FirstOrDefault(x => LabelService.IsStarted(new List<string> {x.Label.Name}))?.CreatedAt;
 
                 var currentDate = TimeHelper.StartPastDate;
                 var endDate = TimeHelper.EndDate;
@@ -341,6 +358,7 @@ namespace GitLabTimeManager.Services
                 EndTime = FinishTime(issue),
                 Spends = spendDictionary,
                 Labels = issueLabels,
+                Events = events,
             };
             return wrappedIssue;
         }
@@ -432,9 +450,23 @@ namespace GitLabTimeManager.Services
             return CachedProjects.Select(x => x).ToList();
         }
 
-        public Task GetLabelsEventsAsync()
+        public async Task<IReadOnlyList<LabelEvent>> GetLabelsEventsAsync(int projectId, int issueIid)
         {
-            throw new NotImplementedException();
+            var request = new LabelEventsRequest {ProjectId = projectId, IssueIid = issueIid };
+            return await HttpService.GetLabelsEventsAsync(request, CancellationToken.None);
+        }
+
+        private async Task<Dictionary<Issue, IReadOnlyList<LabelEvent>>> GetAllLabelActionsAsync(IReadOnlyList<Issue> issues)
+        {
+            var dictionary = new Dictionary<Issue, IReadOnlyList<LabelEvent>>();
+            foreach (var issue in issues)
+            {
+                var events = await GetLabelsEventsAsync(Convert.ToInt32(issue.ProjectId), issue.Iid);
+
+                dictionary.Add(issue, events);
+            }
+
+            return dictionary;
         }
     }
 

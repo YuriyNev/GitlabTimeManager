@@ -65,13 +65,19 @@ namespace GitLabTimeManager.ViewModel
 
             var labels = new List<string>();
 
+            var minDate = WrappedIssues.SelectMany(x => x.Events).Min(x => x.CreatedAt);
+            var maxDate = WrappedIssues.SelectMany(x => x.Events).Max(x => x.CreatedAt);
+
             foreach (var issue in WrappedIssues)
             {
-                if (issue.StartTime != null && issue.EndTime != null)
+                if (issue.StartTime != null)
                 {
-                    TimeSpan timeSpanStart = issue.StartTime.Value.Subtract(new DateTime(2020, 1, 1));
-                    TimeSpan timeSpanEnd = issue.EndTime.Value.Subtract(new DateTime(2020, 1, 1));
-                    _values.Add(new GanttPoint(timeSpanStart.TotalMinutes, timeSpanEnd.TotalMinutes));
+                    //TimeSpan timeSpanStart = issue.StartTime.Value.Subtract(minDate);
+                    //TimeSpan timeSpanEnd = issue.EndTime.Value.Subtract(minDate);
+                    if (!issue.EndTime.HasValue)
+                        continue;
+
+                    _values.Add(new GanttPoint(issue.StartTime.Value.Ticks, (issue.EndTime ?? maxDate).Ticks));
                     labels.Add(issue.Issue.Title);
                 }
             }
@@ -93,7 +99,7 @@ namespace GitLabTimeManager.ViewModel
                     DataLabels = true
                 }
             };
-            Formatter = value => new DateTime((long)value).ToString("dd MMM");
+            Formatter = value => new DateTime((long)value).ToString("dd MMM yyyy");
             Labels = labels.ToArray();
         }
     }

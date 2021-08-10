@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using Catel.Data;
+using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Projects.Responses;
 using JetBrains.Annotations;
 
@@ -26,12 +24,13 @@ namespace GitLabTimeManager.Services
         bool ContainsExcludeLabels(IReadOnlyList<Label> labels);
 
         bool ContainsBoardLabels(IReadOnlyList<Label> labels);
+
     }
 
     public class LabelProcessor : ILabelService, IDisposable
     {
         [NotNull] private IUserProfile UserProfile { get; }
-        public IProfileService ProfileService { get; }
+        [NotNull] private IProfileService ProfileService { get; }
 
         private string ToDoLabel { get; set; }
         private string DoingLabel { get; set; }
@@ -101,7 +100,7 @@ namespace GitLabTimeManager.Services
             return newLabels;
         }
 
-        public bool IsStarted(List<string> labels) => labels.Contains(DoingLabel);
+        public bool IsStarted(List<string> labels) => labels.Contains(DoingLabel) || labels.Contains(DoneLabel);
 
         public bool IsPaused(List<string> labels) => !labels.Contains(DoingLabel);
 
@@ -121,5 +120,11 @@ namespace GitLabTimeManager.Services
         {
             ProfileService.Serialized -= ProfileService_Serialized;
         }
+    }
+
+    public static class LabelHelper
+    {
+        public static bool IsStarted(this Issue issue, ILabelService labelService) => labelService.IsStarted(issue.Labels);
+        public static bool IsPaused(this Issue issue, ILabelService labelService) => labelService.IsPaused(issue.Labels);
     }
 }

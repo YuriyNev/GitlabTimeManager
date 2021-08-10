@@ -44,7 +44,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>8</LangVersion>
+    <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -54,7 +54,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>8</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\icons8_time_64_PRs_icon.ico</ApplicationIcon>
@@ -226,6 +226,22 @@
     <Compile Include="Helpers\UriNavigateHelper.cs" />
     <Compile Include="Services\DataRequestService.cs" />
     <Compile Include="Services\ExcelExporter.cs" />
+    <Compile Include="Services\HttpService\BasicAuthentication.cs" />
+    <Compile Include="Services\HttpService\Converters.cs" />
+    <Compile Include="Services\HttpService\HttpApiException.cs" />
+    <Compile Include="Services\HttpService\HttpConstants.cs" />
+    <Compile Include="Services\HttpService\HttpMethods.cs" />
+    <Compile Include="Services\HttpService\HttpSendErrorException.cs" />
+    <Compile Include="Services\HttpService\HttpService.cs" />
+    <Compile Include="Services\HttpService\HttpRequestExtensions.cs" />
+    <Compile Include="Services\HttpService\IHttpService.cs" />
+    <Compile Include="Services\HttpService\LabelEventsRequest.cs" />
+    <Compile Include="Services\HttpService\MediaTypes.cs" />
+    <Compile Include="Services\HttpService\PointFConverter.cs" />
+    <Compile Include="Services\HttpService\RequestParameters.cs" />
+    <Compile Include="Services\HttpService\SdkJsonSettings.cs" />
+    <Compile Include="Services\HttpService\TimeoutHandler.cs" />
+    <Compile Include="Services\HttpService\LabelEvent.cs" />
     <Compile Include="Services\LabelProcessor.cs" />
     <Compile Include="Services\MoneyCalculator.cs" />
     <Compile Include="Services\NotificationService.cs" />

@@ -29,6 +29,9 @@
         <DataTemplate DataType="{x:Type viewModel:ReportViewModel}">
             <view:ReportView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:GanttViewModel}">
+            <view:GanttView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:ConnectionSettingsViewModel}">
             <view:ConnectionSettingsView />
         </DataTemplate>
@@ -105,6 +108,12 @@
                 <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+
+                <TabItem Header="Диаграма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                    <ContentControl Content="{Binding GanttViewModel, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
             </mah:MetroAnimatedTabControl>

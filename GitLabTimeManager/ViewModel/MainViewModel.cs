@@ -42,6 +42,13 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData IsDefaultTabProperty = RegisterProperty<MainViewModel, bool>(x => x.IsDefaultTab);
         [UsedImplicitly] public static readonly PropertyData ConnectionSettingsVmProperty = RegisterProperty<MainViewModel, ConnectionSettingsViewModel>(x => x.ConnectionSettingsVm);
         [UsedImplicitly] public static readonly PropertyData LabelSettingsVmProperty = RegisterProperty<MainViewModel, LabelSettingsViewModel>(x => x.LabelSettingsVm);
+        [UsedImplicitly] public static readonly PropertyData GanttViewModelProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttViewModel);
+
+        public GanttViewModel GanttViewModel
+        {
+            get => GetValue<GanttViewModel>(GanttViewModelProperty);
+            set => SetValue(GanttViewModelProperty, value);
+        }
 
         public LabelSettingsViewModel LabelSettingsVm
         {
@@ -159,6 +166,7 @@ namespace GitLabTimeManager.ViewModel
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
+            GanttViewModel = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             SwitchSettingsCommand = new Command(SwitchSettings);
         }

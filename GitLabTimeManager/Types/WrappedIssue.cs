@@ -14,6 +14,7 @@ namespace GitLabTimeManager.Services
     {
         private Issue _issue;
         private IReadOnlyList<Label> _labels;
+        private IReadOnlyList<LabelEvent> _events;
 
         public WrappedIssue([NotNull] Issue issue)
         {
@@ -56,6 +57,17 @@ namespace GitLabTimeManager.Services
             {
                 if (Equals(value, _labels)) return;
                 _labels = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public IReadOnlyList<LabelEvent> Events
+        {
+            get => _events;
+            set
+            {
+                if (Equals(value, _events)) return;
+                _events = value;
                 OnPropertyChanged();
             }
         }
