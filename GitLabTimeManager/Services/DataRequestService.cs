@@ -46,6 +46,7 @@ namespace GitLabTimeManager.Services
     public interface IDataRequestService
     {
         IDataSubscription CreateSubscription();
+        void Restart();
     }
 
     public class DataRequestService : IDataRequestService, IDisposable
@@ -62,15 +63,19 @@ namespace GitLabTimeManager.Services
             return subscription;
         }
 
-        public DataRequestService()
+        public void Restart()
         {
+            _cancellation?.Cancel();
+            _cancellation?.Dispose();
+            _cancellation = new CancellationTokenSource();
+
             var sourceControl = InitializeSource();
             if (sourceControl == null)
                 return;
-            
+
             RunAsync(sourceControl).ConfigureAwait(true);
         }
-
+        
         private ISourceControl InitializeSource()
         {
             try
@@ -79,7 +84,7 @@ namespace GitLabTimeManager.Services
             }
             catch (Exception e)
             {
-                foreach (var subscription in _dataSubscriptions) 
+                foreach (var subscription in _dataSubscriptions)
                     subscription.OnException(e);
 
                 Console.WriteLine(e);
@@ -90,12 +95,6 @@ namespace GitLabTimeManager.Services
 
         private async Task RunAsync([NotNull] ISourceControl sourceControl)
         {
-            //var newestData = await sourceControl.RequestNewestDataAsync().ConfigureAwait(true);
-            //foreach (var subscription in _dataSubscriptions)
-            //{
-            //    subscription.OnNewData(newestData);
-            //}
-
             while (true)
             {
                 if (_cancellation.IsCancellationRequested)

@@ -164,13 +164,18 @@
                                     Binding="{Binding Title, Mode=OneWay}"
                                     ElementStyle="{StaticResource TitleTextStyle}"/>
 
+                <DataGridTextColumn Header="Активность, ч"
+                                    Width="100"
+                                    Binding="{Binding Activity, Mode=OneWay, StringFormat={}{0:F1}}"
+                                    ElementStyle="{StaticResource TimeStatTextStyle}"/>
+
                 <DataGridTextColumn Header="Затрачено"
                                     Width="80"
                                     Binding="{Binding SpendForPeriod, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
-                <DataGridTextColumn Header="Оценка"
-                                    Width="80"
+                <DataGridTextColumn Header="Оценка, ч"
+                                    Width="100"
                                     Binding="{Binding Estimate, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 

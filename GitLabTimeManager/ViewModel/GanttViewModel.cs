@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using Catel.Data;
 using Catel.MVVM;
+using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
+using GitLabTimeManager.View;
 using JetBrains.Annotations;
 using LiveCharts;
+using LiveCharts.Configurations;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 
@@ -36,7 +40,7 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(WrappedIssuesProperty, value);
         }
 
-        private ChartValues<GanttPoint> _values;
+        private ChartValues<IssuePointDescription> _values;
         public Func<double, string> Formatter { get; set; }
         public string[] Labels { get; set; }
         public SeriesCollection Series { get; set; }
@@ -59,34 +63,59 @@ namespace GitLabTimeManager.ViewModel
 
         private void UpdateData(GitResponse data)
         {
-            WrappedIssues = data.WrappedIssues;
+            var mapper = Mappers.Gantt<IssuePointDescription>()
+                .XStart(x => x.Start.Ticks)
+                .X(x => x.End.Ticks);
 
-            _values = new ChartValues<GanttPoint>();
+            Charting.For<IssuePointDescription>(mapper);
+
+            WrappedIssues = new ObservableCollection<WrappedIssue>(
+                data.WrappedIssues
+                    .Where(x => x.EndTime > TimeHelper.MonthAgo)
+                    .Where(x => x.StartTime < TimeHelper.Today));
+
+            if (Series != null)
+            {
+                if (Series.Chart != null)
+                    Series.Clear();
+                Series = null;
+            }
+
+            if (_values != null)
+            {
+                _values.Clear();
+                _values = null;
+            }
+
+            _values = new ChartValues<IssuePointDescription>();
 
             var labels = new List<string>();
 
-            var minDate = WrappedIssues.SelectMany(x => x.Events).Min(x => x.CreatedAt);
-            var maxDate = WrappedIssues.SelectMany(x => x.Events).Max(x => x.CreatedAt);
-
             foreach (var issue in WrappedIssues)
             {
-                if (issue.StartTime != null)
-                {
-                    //TimeSpan timeSpanStart = issue.StartTime.Value.Subtract(minDate);
-                    //TimeSpan timeSpanEnd = issue.EndTime.Value.Subtract(minDate);
-                    if (!issue.EndTime.HasValue)
-                        continue;
+                var start = issue.StartTime;
+                var end = issue.EndTime;
+                if (end - start < TimeSpan.FromHours(8))
+                    end = end.AddHours(8);
 
-                    _values.Add(new GanttPoint(issue.StartTime.Value.Ticks, (issue.EndTime ?? maxDate).Ticks));
-                    labels.Add(issue.Issue.Title);
-                }
+                var point = new IssuePointDescription
+                {
+                    Name = issue.Issue.Title,
+                    WebUrl = issue.Issue.WebUrl,
+                    Iid = issue.Issue.Iid,
+                    Start = start,
+                    End = end,
+                };
+
+                _values.Add(point);
+                labels.Add(issue.Issue.Title);
             }
 
             if (_values.Count == 0)
                 return;
 
-            From = _values.Min(x => x.StartPoint);
-            To = _values.Max(x => x.EndPoint);
+            From = _values.Min(x => x.Start.Ticks);
+            To = _values.Max(x => x.End.Ticks);
 
             if (From > To)
                 return;
@@ -96,11 +125,27 @@ namespace GitLabTimeManager.ViewModel
                 new RowSeries
                 {
                     Values = _values,
-                    DataLabels = true
+                    DataLabels = true,
                 }
             };
             Formatter = value => new DateTime((long)value).ToString("dd MMM yyyy");
             Labels = labels.ToArray();
+            RaisePropertyChanged(nameof(Labels));
+            RaisePropertyChanged(nameof(Series));
+            RaisePropertyChanged(nameof(_values));
         }
+    }
+
+    public class IssuePointDescription
+    {
+        public int Iid { get; set; }
+
+        public string Name { get; set; }
+
+        public DateTime Start { get; set; }
+
+        public DateTime End { get; set; }
+
+        public string WebUrl { get; set; }
     }
 }

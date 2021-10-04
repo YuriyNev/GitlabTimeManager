@@ -21,12 +21,6 @@ namespace GitLabTimeManager.Services
             Issue = issue ?? throw new ArgumentNullException(nameof(issue));
         }
 
-        public WrappedIssue([NotNull] Issue issue, [NotNull] IReadOnlyList<Label> labels)
-        {
-            Issue = issue ?? throw new ArgumentNullException(nameof(issue));
-            Labels = labels ?? throw new ArgumentNullException(nameof(labels));
-        }
-
         public Issue Issue
         {
             get => _issue;
@@ -40,9 +34,9 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public DateTime? StartTime { get; set; }
+        public DateTime StartTime { get; set; }
 
-        public DateTime? EndTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         public double Spend => TimeHelper.SecondsToHours(Issue.TimeStats.TotalTimeSpent);
 
@@ -86,15 +80,10 @@ namespace GitLabTimeManager.Services
                    Issue.Labels == otherIssue.Labels && 
                    Issue.State == otherIssue.State;
         }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
+        
         public WrappedIssue Clone()
         {
-            return new WrappedIssue(Issue)
+            return new(Issue)
             {
                 StartTime = StartTime,
                 EndTime = EndTime,
@@ -111,8 +100,10 @@ namespace GitLabTimeManager.Services
         public string Title { get; set; }
 
         public double SpendForPeriod { get; set; }
-        
+
         public double Estimate { get; set; }
+
+        public double Activity { get; set; }
         
         public DateTime? StartTime { get; set; }
     }

@@ -119,8 +119,7 @@ namespace GitLabTimeManager.ViewModel
             }
             catch
             {
-                MessageService.OnMessage(this, "Не удалось сохранить документ!");
-                OnSavingFinished();
+                OnSavingFailed();
             }
         }
 
@@ -131,6 +130,15 @@ namespace GitLabTimeManager.ViewModel
             IsProgress = false;
 
             MessageService.OnMessage(this, "Документ сохранен");
+        }
+
+        private void OnSavingFailed()
+        {
+            _canSave = true;
+            ExportCsvCommand?.RaiseCanExecuteChanged();
+            IsProgress = false;
+
+            MessageService.OnMessage(this, "Не удалось сохранить документ");
         }
 
         private ObservableCollection<DateTime> AddLastMonths()
@@ -169,28 +177,31 @@ namespace GitLabTimeManager.ViewModel
         private static ObservableCollection<TimeStatsProperty> ExtractSums(GitStatistics statistics, TimeSpan workingHours) 
             => new ObservableCollection<TimeStatsProperty>
             {
-                new TimeStatsProperty("Выполнено задач", statistics.ClosedEstimatesStartedInPeriod, "ч"),
+                new("Выполнено задач", statistics.ClosedEstimatesStartedInPeriod, "ч"),
                 //new TimeStatsProperty("Оценка по открытым задачам", statistics.OpenEstimatesStartedInPeriod, "ч"),
-                new TimeStatsProperty("из", statistics.AllEstimatesStartedInPeriod, "ч"),
+                new("из", statistics.AllEstimatesStartedInPeriod, "ч"),
 
-                new TimeStatsProperty("Временные затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
-                new TimeStatsProperty("из", statistics.AllSpendsForPeriod, "ч"),
+                new("Временные затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
+                new("из", statistics.AllSpendsForPeriod, "ч"),
 
-                new TimeStatsProperty("В этом месяце рабочих часов", workingHours.TotalHours, "ч"),
-                new TimeStatsProperty("не заполнено", workingHours.TotalHours - statistics.AllSpendsForPeriod, "ч"),
+                new("В этом месяце рабочих часов", workingHours.TotalHours, "ч"),
+                new("не заполнено", workingHours.TotalHours - statistics.AllSpendsForPeriod, "ч"),
             };
 
         private static ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>
-            new ObservableCollection<ReportIssue>(
-                wrappedIssues.Select(x => new ReportIssue
-                {
-                    Iid = x.Issue.Iid,
-                    Title = x.Issue.Title,
-                    Estimate = TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate),
-                    SpendForPeriod = StatisticsExtractor.SpendsSum(x, startDate, endDate),
-                    StartTime = x.StartTime,
-                }).Where(x => x.SpendForPeriod > 0));
-
+            new(
+                wrappedIssues
+                    .Where(x => x.EndTime > startDate)
+                    .Where(x => x.StartTime < endDate)
+                    .Select(x => new ReportIssue
+                    {
+                        Iid = x.Issue.Iid,
+                        Title = x.Issue.Title,
+                        Estimate = TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate),
+                        SpendForPeriod = StatisticsExtractor.SpendsSum(x, startDate, endDate),
+                        Activity = StatisticsExtractor.SpendsSumForPeriod(x, startDate, endDate),
+                        StartTime = x.StartTime,
+                    }));
 
         protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {

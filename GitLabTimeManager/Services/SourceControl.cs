@@ -14,6 +14,7 @@ using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
 using GitLabApiClient.Models.Notes.Responses;
 using GitLabApiClient.Models.Projects.Responses;
+using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Helpers;
 using JetBrains.Annotations;
 
@@ -21,6 +22,8 @@ namespace GitLabTimeManager.Services
 {
     public interface ISourceControl
     {
+        [UsedImplicitly] public User CurrentUser { get; set; }
+
         [PublicAPI] Task<GitResponse> RequestDataAsync();
         [PublicAPI] Task<GitResponse> RequestNewestDataAsync();
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
@@ -37,6 +40,8 @@ namespace GitLabTimeManager.Services
         [PublicAPI] IReadOnlyList<ProjectId> GetActiveProjects();
 
         [PublicAPI] Task<IReadOnlyList<LabelEvent>> GetLabelsEventsAsync(int projectId, int issueIid);
+
+        [PublicAPI] Task<IList<User>> GetAllUsersAsync();
     }
 
     internal class SourceControl : ISourceControl
@@ -46,13 +51,10 @@ namespace GitLabTimeManager.Services
         [NotNull] private IHttpService HttpService { get; }
         [NotNull] private GitLabClient GitLabClient { get; }
 
-        private DateTime _lastRequest = DateTime.MinValue;
-        private readonly TimeSpan _requestInterval = TimeSpan.FromMinutes(10);
-
-        private static DateTime Now => DateTime.Now;
-
         private IReadOnlyList<Label> CachedLabels { get; set; } 
-        private IReadOnlyList<ProjectId> CachedProjects { get; set; } 
+        private IReadOnlyList<ProjectId> CachedProjects { get; set; }
+
+        public User CurrentUser { get; set; }
 
         public SourceControl(
             [NotNull] IUserProfile userProfile,
@@ -300,7 +302,8 @@ namespace GitLabTimeManager.Services
 
                 var wrappedIssue = CreateIssue(issue, labels, note, labelEvents);
 
-                issues.Add(wrappedIssue);
+                if (wrappedIssue != null)
+                    issues.Add(wrappedIssue);
             }
 
             return issues;
@@ -308,29 +311,30 @@ namespace GitLabTimeManager.Services
 
         private WrappedIssue CreateIssue(Issue issue, IReadOnlyList<Label> labels, IReadOnlyList<Note> note, IReadOnlyList<LabelEvent> events)
         {
-            DateTime? startDate = null;
+            var startDate = DateTime.MaxValue;
+            var endDate = DateTime.MinValue;
 
             double totalSpend = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent);
             double totalYieldSpend = 0.0;
             var spendDictionary = new Dictionary<DateRange, double>();
 
-            if (note != null && note.Count > 0)
+            var hasUserEvents = events.Any(x => x.User.UserName == CurrentUser.Username);
+
+            // if not exist some activity
+            if (!note.Any() && !hasUserEvents)
+                return null;
+
+            if (note.Any())
             {
                 // if more 0 notes then getting data from notes
                 var timeNotes = note.Where(x => x.Body.ParseSpent() > 0 || x.Body.ParseEstimate() > 0).ToList();
 
                 //if (timeNotes.Count > 0)
                 //    startDate = timeNotes.Min(x => x.CreatedAt);
-                if (events.Count > 0)
-                    startDate = events
-                        .OrderBy(x => x.CreatedAt)
-                        .Where(x => x.Label != null)
-                        .FirstOrDefault(x => LabelService.IsStarted(new List<string> {x.Label.Name}))?.CreatedAt;
-
+                
                 var currentDate = TimeHelper.StartPastDate;
-                var endDate = TimeHelper.EndDate;
 
-                while (currentDate < endDate)
+                while (currentDate < TimeHelper.EndDate)
                 {
                     var endPeriodDate = currentDate.AddDays(1).AddTicks(-1);
 
@@ -341,21 +345,39 @@ namespace GitLabTimeManager.Services
                 }
             }
 
-            // spend is set when issue was created
-            var startSpend = totalSpend - totalYieldSpend;
-            if (startSpend > 0 && spendDictionary.Count > 0)
+            if (hasUserEvents)
             {
-                var minDate = spendDictionary.Keys.Min(x => x.StartDate);
-                var minKey = spendDictionary.Keys.First(x => x.StartDate == minDate);
-                spendDictionary[minKey] += startSpend;
+                var eventsStartDate = events
+                    .Where(x => x.User.UserName == CurrentUser.Username)
+                    .Select(x => x.CreatedAt)
+                    .OrderBy(x => x)
+                    .First();
+
+                if (startDate > eventsStartDate)
+                    startDate = eventsStartDate;
+
+                DateTime eventsEndDate = events
+                    .Where(x => x.User.UserName == CurrentUser.Username)
+                    .Select(x => x.CreatedAt)
+                    .OrderBy(x => x)
+                    .Last();
+
+                if (startDate > eventsStartDate)
+                    startDate = eventsStartDate;
+                
+                if (endDate < eventsEndDate)
+                    endDate = eventsEndDate;
             }
+
+            if (endDate < UpdatedAfter)
+                return null;
 
             var issueLabels = LabelService.FilterLabels(labels, issue.Labels);
 
             var wrappedIssue = new WrappedIssue(issue)
             {
                 StartTime = startDate,
-                EndTime = FinishTime(issue),
+                EndTime = endDate,
                 Spends = spendDictionary,
                 Labels = issueLabels,
                 Events = events,
@@ -384,7 +406,7 @@ namespace GitLabTimeManager.Services
             return allIssues;
         }
 
-        private void ActualDataOptions(IssuesQueryOptions options)
+        private static void ActualDataOptions(IssuesQueryOptions options)
         {
             options.Scope = Scope.AssignedToMe;
 
@@ -393,22 +415,12 @@ namespace GitLabTimeManager.Services
             options.State = IssueState.All;
         }
 
-        private void RawDataOptions(IssuesQueryOptions options)
-        {
-            options.Scope = Scope.AssignedToMe;
-
-            options.CreatedAfter = TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
-            options.CreatedBefore = TimeHelper.Today.AddMonths(-2);
-
-            options.State = IssueState.All;
-        }
+        private DateTime UpdatedAfter => TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
 
         private void AllDataOptions(IssuesQueryOptions options)
         {
-            options.Scope = Scope.AssignedToMe;
-
-            options.UpdatedAfter = TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
-
+            options.AssigneeUsername = new List<string> { CurrentUser.Username };
+            options.UpdatedAfter = UpdatedAfter;
             options.State = IssueState.All;
         }
 
@@ -428,7 +440,8 @@ namespace GitLabTimeManager.Services
         private async Task<IReadOnlyList<Note>> GetNotesAsync(int projectId, int issueId)
         {
             var notes = await GitLabClient.Issues.GetNotesAsync(projectId, issueId).ConfigureAwait(false);
-            return notes.ToList();
+            
+            return notes.Where(x => x.Author.Username == CurrentUser.Username).ToList();
         }
         
         public IReadOnlyList<Label> GetLabels()
@@ -467,6 +480,11 @@ namespace GitLabTimeManager.Services
             }
 
             return dictionary;
+        }
+
+        public async Task<IList<User>> GetAllUsersAsync()
+        {
+            return await GitLabClient.Users.GetAsync();
         }
     }
 

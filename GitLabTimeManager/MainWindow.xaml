@@ -9,12 +9,11 @@
                  xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
                  xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
                  xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-                 xmlns:settings="clr-namespace:GitLabTimeManager.ViewModel.Settings"
-                 xmlns:settings1="clr-namespace:GitLabTimeManager.View.Settings"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
+                 Title="GLTimeManager"
                  ShowInTaskbar="{Binding ShowOnTaskBar, Mode=OneWay}"
-                 Style="{StaticResource BrandedMainWindowStyle}"
+                 Style="{StaticResource BrandedMainWindowStyle}" 
                  d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
     <mah:MetroWindow.Resources>
         <DataTemplate DataType="{x:Type viewModel:IssueListViewModel}">
@@ -22,9 +21,6 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:SummaryViewModel}">
             <view:SummaryView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type viewModel:TodayViewModel}">
-            <view:TodayView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:ReportViewModel}">
             <view:ReportView />
@@ -34,9 +30,6 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:ConnectionSettingsViewModel}">
             <view:ConnectionSettingsView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type settings:LabelSettingsViewModel}">
-            <settings1:LabelSettingsView />
         </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
@@ -48,7 +41,7 @@
     <b:Interaction.Behaviors>
         <behavior:CancelClosingWindowBehavior CanCloseWindow="False" 
                                               ShowOnTaskbar="{Binding ShowOnTaskBar, Mode=TwoWay}"/>
-        <behavior:TopmostBindingBehavior IsTopmost="True"/>
+        <behavior:TopmostBindingBehavior IsTopmost="False"/>
     </b:Interaction.Behaviors>
 
     <Grid>
@@ -56,11 +49,6 @@
             <Grid.Style>
                 <Style TargetType="{x:Type Grid}">
                     <Setter Property="Margin" Value="4 -26 4 8"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsFullscreen, Mode=OneWay}" Value="True">
-                            <Setter Property="Margin" Value="0 0 0 0"/>
-                        </DataTrigger>
-                    </Style.Triggers>
                 </Style>
             </Grid.Style>
             <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems"
@@ -90,29 +78,20 @@
                     </Style>
                 </mah:MetroAnimatedTabControl.Style>
 
-                <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}" 
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                    <ContentControl Content="{Binding TodayVm, Mode=OneWay}"
-                                    Margin="0 4 0 0"/>
-                </TabItem>
-                <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <!--<TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
                                     Margin="0 4 0 0"/>
-                </TabItem>
-                <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                </TabItem>-->
+                <!--<TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
-                </TabItem>
-                <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                </TabItem>-->
+                <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
 
-                <TabItem Header="Диаграма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
+                <TabItem Header="Диаграма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding GanttViewModel, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
@@ -149,14 +128,9 @@
                     <ContentControl Content="{Binding ConnectionSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
-
-                <TabItem Header="Метки" HeaderTemplate="{StaticResource TabHeaderTemplate}">
-                    <ContentControl Content="{Binding LabelSettingsVm, Mode=OneWay}"
-                                    Margin="0 4 0 0"/>
-                </TabItem>
             </mah:MetroAnimatedTabControl>
 
-            <mah:ProgressRing Visibility="{Binding LaunchIsFinished, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"/>
+            <mah:ProgressRing Visibility="{Binding InProgress, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}}"/>
             
             <!--Error Message On Loading-->
             <TextBlock Text="{Binding Error, Mode=OneWay}"

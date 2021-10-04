@@ -124,7 +124,8 @@
 
                 <Grid Grid.Row="2" HorizontalAlignment="Center"
                       Margin="0 8"
-                      IsEnabled="{Binding IsEditMode, Mode=OneWay, Converter={x:Static converters:Converter.Inverse}}">
+                      IsEnabled="{Binding IsEditMode, Mode=OneWay, Converter={x:Static converters:Converter.Inverse}}"
+                      Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="40" />
                         <ColumnDefinition Width="Auto" />
@@ -347,6 +348,7 @@
 
         <!--Edit Issue-->
         <Button Grid.Row="0"
+                Visibility="Collapsed"
                 VerticalAlignment="Top"
                 HorizontalAlignment="Right"
                 Margin="0 -4 -4 0"

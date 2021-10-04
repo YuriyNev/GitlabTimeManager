@@ -4,6 +4,7 @@ using System.Linq;
 using Catel.IoC;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Helpers;
+using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
@@ -71,22 +72,22 @@ namespace GitLabTimeManager.Services
             statistics.OpenSpendBefore = withoutExcludes.
                 Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).
                 Where(x => !StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSum(x, startDate, endTime));
+                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
 
             statistics.ClosedSpendBefore = withoutExcludes.
                 Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
                 Where(x => !StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSum(x, startDate, endTime));
+                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
 
             statistics.OpenSpendInPeriod = withoutExcludes.
                 Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).
                 Where(x => StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSum(x, startDate, endTime));
+                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
             
             statistics.ClosedSpendInPeriod = withoutExcludes.
                 Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
                 Where(x => StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSum(x, startDate, endTime));
+                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
 
             statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;
             statistics.AllSpendsStartedBefore = statistics.OpenSpendBefore + statistics.ClosedSpendBefore;
@@ -95,29 +96,51 @@ namespace GitLabTimeManager.Services
             return statistics;
         }
 
+        public static double SpendsSumForPeriod(WrappedIssue issue, DateTime startDate, DateTime endDate)
+        {
+            if (issue.Issue.Iid == 3403)
+            {
+
+            }
+            var calendar = IoCConfiguration.DefaultDependencyResolver.Resolve<ICalendar>();
+
+            if (issue.EndTime < startDate)
+                return 0;
+
+            if (issue.StartTime > endDate)
+                return 0;
+
+            var start = startDate > issue.StartTime ? startDate : issue.StartTime;
+            var end = endDate < issue.EndTime ? endDate : issue.EndTime;
+
+            var spend = end - start;
+
+            var workTime = calendar.GetWorkingTime(start.Date, end.Date.AddDays(1).AddTicks(-1));
+
+            var days = TimeHelper.HoursToDays(workTime.TotalHours) - 1;
+
+            var freeTimeInDay = TimeSpan.FromDays(1) - TimeSpan.FromHours(TimeHelper.DaysToHours(1));
+
+            var totalFreeTime = TimeSpan.FromHours(freeTimeInDay.TotalHours * days);
+
+            spend -= totalFreeTime;
+
+            if (spend < TimeSpan.Zero)
+                spend = TimeSpan.Zero;
+
+            return spend.TotalHours;
+        }
+
         public static double SpendsSum(WrappedIssue issue, DateTime startDate, DateTime endDate)
         {
             return issue.Spends.Keys.
                 Where(x => x.StartDate >= startDate && x.EndDate <= endDate).
                 Sum(key => issue.Spends[key]);
         }
-        
+
         private static bool StartedIn(WrappedIssue issue, DateTime startTime, DateTime endTime)
         {
-            var spends = issue.Spends;
-            // if no spends
-            if (!spends.Any())
-                return issue.Issue.CreatedAt > startTime && issue.Issue.CreatedAt < endTime &&
-                       issue.Issue.TimeStats.TimeEstimate > 0;
-
-            // search min date with not zero time
-            var noZeroSpends = spends.Where(x => x.Value > 0);
-
-            var pairs = noZeroSpends.ToList();
-            if (!pairs.Any()) return false;
-            
-            var date = pairs.Select(x => x.Key).Min(x => x.StartDate);
-            return date >= startTime && date <= endTime;
+            return SpendsSumForPeriod(issue, startTime, endTime) > 0;
         }
 
         private static bool FinishedInPeriod(Issue issue, DateTime startTime, DateTime endTime)
@@ -148,8 +171,6 @@ namespace GitLabTimeManager.Services
     
     public class GitStatistics
     {
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
         /// <summary> Most need properties  </summary>
         /// 
         /// <summary> Оценочное время открытых задач, начатых в этом месяце </summary>

@@ -4,6 +4,7 @@
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:gitLabTimeManager="clr-namespace:GitLabTimeManager"
+             xmlns:responses="clr-namespace:GitLabApiClient.Models.Users.Responses;assembly=GitLabApiClient"
              StartupUri="MainWindow.xaml"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
@@ -105,7 +106,25 @@
                     <Setter.Value>
                         <DataTemplate>
                             <Grid>
-                                <Button Command="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.SwitchSettingsCommand}"
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0"
+                                          Margin="0 0 4 0"
+                                          BorderThickness="0"
+                                          mah:TextBoxHelper.Watermark="Пользователь не выбран"
+                                          ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.AllUsers}"
+                                          SelectedItem="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.CurrentUser}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type responses:User}">
+                                            <TextBlock Text="{Binding Name, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+
+                                <Button Grid.Column="1" 
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.SwitchSettingsCommand}"
                                         BorderThickness="0 0 1 0"
                                         Margin="0 0 3 0"
                                         Width="46">
@@ -120,7 +139,8 @@
                                         </Style>
                                     </Button.Style>
                                 </Button>
-                                <Border BorderBrush="{StaticResource MahApps.Brushes.Gray5}"
+                                <Border Grid.Column="1"
+                                        BorderBrush="{StaticResource MahApps.Brushes.Gray5}"
                                         BorderThickness="0 0 1 0"
                                         Margin="0 5 1 5"/>
                             </Grid>

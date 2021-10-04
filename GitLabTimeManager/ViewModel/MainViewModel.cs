@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Catel.Data;
 using Catel.IoC;
+using Catel.Linq;
 using Catel.MVVM;
+using Catel.Threading;
+using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Services;
 using GitLabTimeManager.Types;
 using GitLabTimeManager.ViewModel.Settings;
@@ -30,9 +35,7 @@ namespace GitLabTimeManager.ViewModel
 
         [UsedImplicitly] public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
         [UsedImplicitly] public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
-        [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsFullscreen);
         [UsedImplicitly] public static readonly PropertyData ShowOnTaskBarProperty = RegisterProperty<MainViewModel, bool>(x => x.ShowOnTaskBar, true);
-        [UsedImplicitly] public static readonly PropertyData TodayVmProperty = RegisterProperty<MainViewModel, TodayViewModel>(x => x.TodayVm);
         [UsedImplicitly] public static readonly PropertyData ReportVmProperty = RegisterProperty<MainViewModel, ReportViewModel>(x => x.ReportVm);
         [UsedImplicitly] public static readonly PropertyData ErrorProperty = RegisterProperty<MainViewModel, string>(x => x.Error);
         [UsedImplicitly] public static readonly PropertyData LaunchIsSuccessProperty = RegisterProperty<MainViewModel, bool>(x => x.LaunchIsFinished);
@@ -41,19 +44,27 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData IsSettingsOpenProperty = RegisterProperty<MainViewModel, bool>(x => x.IsSettingsOpen);
         [UsedImplicitly] public static readonly PropertyData IsDefaultTabProperty = RegisterProperty<MainViewModel, bool>(x => x.IsDefaultTab);
         [UsedImplicitly] public static readonly PropertyData ConnectionSettingsVmProperty = RegisterProperty<MainViewModel, ConnectionSettingsViewModel>(x => x.ConnectionSettingsVm);
-        [UsedImplicitly] public static readonly PropertyData LabelSettingsVmProperty = RegisterProperty<MainViewModel, LabelSettingsViewModel>(x => x.LabelSettingsVm);
         [UsedImplicitly] public static readonly PropertyData GanttViewModelProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttViewModel);
+        [UsedImplicitly] public static readonly PropertyData CurrentUserProperty = RegisterProperty<MainViewModel, User>(x => x.CurrentUser);
+        [UsedImplicitly] public static readonly PropertyData AllUsersProperty = RegisterProperty<MainViewModel, IList<User>>(x => x.AllUsers);
+        [UsedImplicitly] public static readonly PropertyData InProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.InProgress);
+
+        public bool InProgress
+        {
+            get => GetValue<bool>(InProgressProperty);
+            set => SetValue(InProgressProperty, value);
+        }
+
+        public IList<User> AllUsers
+        {
+            get => GetValue<IList<User>>(AllUsersProperty);
+            set => SetValue(AllUsersProperty, value);
+        }
 
         public GanttViewModel GanttViewModel
         {
             get => GetValue<GanttViewModel>(GanttViewModelProperty);
             set => SetValue(GanttViewModelProperty, value);
-        }
-
-        public LabelSettingsViewModel LabelSettingsVm
-        {
-            get => GetValue<LabelSettingsViewModel>(LabelSettingsVmProperty);
-            private set => SetValue(LabelSettingsVmProperty, value);
         }
 
         public bool IsDefaultTab
@@ -98,43 +109,36 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(ShowOnTaskBarProperty, value);
         }
         
-        [ViewModelToModel][UsedImplicitly]
-        public bool IsFullscreen
-        {
-            get => GetValue<bool>(IsFullscreenProperty);
-            set => SetValue(IsFullscreenProperty, value);
-        }
-
         public SummaryViewModel SummaryVm
         {
             get => GetValue<SummaryViewModel>(SummaryVmProperty);
             private set => SetValue(SummaryVmProperty, value);
         }
 
-        public TodayViewModel TodayVm
-        {
-            get => GetValue<TodayViewModel>(TodayVmProperty);
-            private set => SetValue(TodayVmProperty, value);
-        }
-        
         public ReportViewModel ReportVm
         {
             get => GetValue<ReportViewModel>(ReportVmProperty);
             private set => SetValue(ReportVmProperty, value);
         }
 
-        [Model(SupportIEditableObject = false)][NotNull]
+        [Model(SupportIEditableObject = false)]
+        [NotNull]
         [UsedImplicitly]
         public IssueListViewModel IssueListVm
         {
             get => GetValue<IssueListViewModel>(IssueListVmProperty);
             set => SetValue(IssueListVmProperty, value);
         }
-
         public bool LaunchIsFinished
         {
             get => GetValue<bool>(LaunchIsSuccessProperty);
             private set => SetValue(LaunchIsSuccessProperty, value);
+        }
+
+        public User CurrentUser
+        {
+            get => GetValue<User>(CurrentUserProperty);
+            set => SetValue(CurrentUserProperty, value);
         }
 
         [UsedImplicitly]
@@ -164,13 +168,18 @@ namespace GitLabTimeManager.ViewModel
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
-            TodayVm = ViewModelFactory.CreateViewModel<TodayViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
             GanttViewModel = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             SwitchSettingsCommand = new Command(SwitchSettings);
-        }
 
+            Task.Run(async () =>
+            {
+                var users = await SourceControl.GetAllUsersAsync().ConfigureAwait(true);
+                AllUsers = users.Where(x => x.State != "blocked").ToList();
+            });
+        }
+        
         private void SwitchSettings()
         {
             IsSettingsOpen = !IsSettingsOpen;
@@ -214,7 +223,6 @@ namespace GitLabTimeManager.ViewModel
                 _ => "Ошибочка вышла ;("
             };
 
-            IsFullscreen = true;
             IsSettingsOpen = true;
         }
 
@@ -226,6 +234,7 @@ namespace GitLabTimeManager.ViewModel
         private void LoadingFinished()
         {
             LaunchIsFinished = true;
+            InProgress = false;
         }
 
         private void Current_Exit(object sender, ExitEventArgs e) => CloseViewModelAsync(false);
@@ -244,43 +253,35 @@ namespace GitLabTimeManager.ViewModel
             IssueListVm.CancelAndCloseViewModelAsync();
             return base.OnClosingAsync();
         }
-
         protected override async void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
             if (e.PropertyName == nameof(IsSettingsOpen))
             {
                 // Was Settings then close
-                if (e.OldValue is bool closed && closed)
+                if (e.OldValue is true)
                 {
                     if (ConnectionSettingsVm != null)
                     {
                         await ConnectionSettingsVm?.CloseViewModelAsync(false);
                         ConnectionSettingsVm = null;
                     }
-                    
-                    if (LabelSettingsVm != null)
-                    {
-                        await LabelSettingsVm?.CloseViewModelAsync(false);
-                        LabelSettingsVm = null;
-                    }
                 }
 
-                if (e.NewValue is bool open && open)
+                if (e.NewValue is true)
                 {
-                    var labels = SourceControl?.GetLabels();
                     ConnectionSettingsVm = ViewModelFactory.CreateViewModel<ConnectionSettingsViewModel>(null);
                     ConnectionSettingsVm.SetOnClose(() =>
                     {
                         IsSettingsOpen = false;
                     });
-
-                    LabelSettingsVm = ViewModelFactory.CreateViewModel<LabelSettingsViewModel>(new SettingsArgument {Labels = labels});
-                    LabelSettingsVm.SetOnClose(() =>
-                    {
-                        IsSettingsOpen = false;
-                    });
                 }
+            }
+            else if (e.PropertyName == nameof(CurrentUser))
+            {
+                SourceControl.CurrentUser = CurrentUser;
+                DataRequestService.Restart();
+                InProgress = true;
             }
         }
     }

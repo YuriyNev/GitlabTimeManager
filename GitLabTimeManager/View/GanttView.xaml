@@ -5,31 +5,74 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-             mc:Ignorable="d" 
+             xmlns:liveCharts="clr-namespace:LiveCharts;assembly=LiveCharts"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance viewModel:GanttViewModel}">
     <Grid>
-        <!--<ScrollViewer HorizontalScrollBarVisibility="Auto">-->
-            <wpf:CartesianChart Series="{Binding Series}" Zoom="X" Margin="80" 
-                                Padding="-10"
-                                Pan="X" 
-                                DisableAnimations="False" 
-                                ScrollMode="X">
-                <wpf:CartesianChart.AxisX>
-                    <wpf:Axis LabelFormatter="{Binding Formatter}" 
-                              MinValue="{Binding From, Mode=TwoWay}" 
-                              MaxValue="{Binding To, Mode=TwoWay}"
-                              ShowLabels="True" 
-                              Unit="1"
-                              DisableAnimations="False" />
-                </wpf:CartesianChart.AxisX>
-                <wpf:CartesianChart.AxisY>
-                    <wpf:Axis Labels="{Binding Labels}" 
-                              IsMerged="True"
-                              ShowLabels="False"
-                              DisableAnimations="False" LabelsRotation="180"/>
-                </wpf:CartesianChart.AxisY>
-            </wpf:CartesianChart>
-        <!--</ScrollViewer>-->
+        <wpf:CartesianChart Series="{Binding Series, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True, NotifyOnTargetUpdated=True}"
+                            UseLayoutRounding="True"
+                            DisableAnimations="True">
+            <wpf:CartesianChart.Resources>
+                <Style TargetType="wpf:RowSeries">
+                    <Setter Property="DataLabelsTemplate">
+                        <Setter.Value>
+                            <DataTemplate DataType="liveCharts:DataLabelViewModel">
+                                <Grid HorizontalAlignment="Left"
+                                      VerticalAlignment="Top"
+                                      MaxWidth="400">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Top">
+                                        <Hyperlink NavigateUri="{Binding Point.Instance.(viewModel:IssuePointDescription.WebUrl)}">
+                                            <b:Interaction.Behaviors>
+                                                <behavior:HyperLinkBehavior />
+                                            </b:Interaction.Behaviors>
+
+                                            <TextBlock Text="{Binding Point.Instance.(viewModel:IssuePointDescription.Iid), StringFormat={}#{0}}"
+                                                       FontSize="16"/>
+                                        </Hyperlink>
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Column="1" 
+                                               Text="{Binding Point.Instance.(viewModel:IssuePointDescription.Name)}" 
+                                               VerticalAlignment="Top"
+                                               Foreground="{StaticResource MahApps.Brushes.Gray1}"
+                                               TextWrapping="Wrap"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxHeight="30"
+                                               Margin="4 0 0 0"
+                                               LineStackingStrategy="MaxHeight"
+                                               FontWeight="Normal"/>
+                                </Grid>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </wpf:CartesianChart.Resources>
+            <wpf:CartesianChart.AxisX>
+                <wpf:Axis LabelFormatter="{Binding Formatter, Mode=OneWay}"  
+                          MinValue="{Binding From, Mode=TwoWay}" 
+                          MaxValue="{Binding To, Mode=TwoWay}"
+                          ShowLabels="True" 
+                          FontSize="16"
+                          Unit="1"
+                          DisableAnimations="True" />
+            </wpf:CartesianChart.AxisX>
+            <wpf:CartesianChart.AxisY>
+                <wpf:Axis Labels="{Binding Labels, Mode=OneWay}" 
+                          DisableAnimations="True"
+                          ShowLabels="False"
+                          Visibility="Collapsed">
+                </wpf:Axis>
+            </wpf:CartesianChart.AxisY>
+        </wpf:CartesianChart>
     </Grid>
 </UserControl>
