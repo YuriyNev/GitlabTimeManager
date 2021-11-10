@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
+using System.Windows.Media;
 using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
-using GitLabTimeManager.View;
 using JetBrains.Annotations;
 using LiveCharts;
 using LiveCharts.Configurations;
-using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 
 namespace GitLabTimeManager.ViewModel
@@ -40,10 +38,14 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(WrappedIssuesProperty, value);
         }
 
-        private ChartValues<IssuePointDescription> _values;
+        private ChartValues<IssuePointDescription> _activityValues;
+        private ChartValues<IntervalPointDescription> _estimateValues;
+        private ChartValues<IntervalPointDescription> _spendValues;
         public Func<double, string> Formatter { get; set; }
+        public SeriesCollection ActivitySeries { get; set; }
+        public SeriesCollection EstimatesSeries { get; set; }
         public string[] Labels { get; set; }
-        public SeriesCollection Series { get; set; }
+
 
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
@@ -69,83 +71,129 @@ namespace GitLabTimeManager.ViewModel
 
             Charting.For<IssuePointDescription>(mapper);
 
+            var estimateMapper = Mappers.Gantt<IntervalPointDescription>()
+                .XStart(x => x.StartTime.Ticks)
+                .X(x => x.EndTime.Ticks);
+
+            Charting.For<IntervalPointDescription>(estimateMapper);
+
             WrappedIssues = new ObservableCollection<WrappedIssue>(
                 data.WrappedIssues
                     .Where(x => x.EndTime > TimeHelper.MonthAgo)
                     .Where(x => x.StartTime < TimeHelper.Today));
 
-            if (Series != null)
+            if (ActivitySeries != null)
             {
-                if (Series.Chart != null)
-                    Series.Clear();
-                Series = null;
+                if (ActivitySeries.Chart != null)
+                    ActivitySeries.Clear();
+                ActivitySeries = null;
             }
 
-            if (_values != null)
+            if (_activityValues != null)
             {
-                _values.Clear();
-                _values = null;
+                _activityValues.Clear();
+                _activityValues = null;
             }
 
-            _values = new ChartValues<IssuePointDescription>();
+            if (_estimateValues != null)
+            {
+                _estimateValues.Clear();
+                _estimateValues = null;
+            }
+
+            if (_spendValues != null)
+            {
+                _spendValues.Clear();
+                _spendValues = null;
+            }
 
             var labels = new List<string>();
+
+            _activityValues = new ChartValues<IssuePointDescription>();
+            _estimateValues = new ChartValues<IntervalPointDescription>();
+            _spendValues = new ChartValues<IntervalPointDescription>();
 
             foreach (var issue in WrappedIssues)
             {
                 var start = issue.StartTime;
-                var end = issue.EndTime;
-                if (end - start < TimeSpan.FromHours(8))
-                    end = end.AddHours(8);
+                if (start == null)
+                    continue;
+                
+                var end = issue.EndTime ?? DateTime.Today;
 
                 var point = new IssuePointDescription
                 {
                     Name = issue.Issue.Title,
                     WebUrl = issue.Issue.WebUrl,
                     Iid = issue.Issue.Iid,
-                    Start = start,
+                    Start = start.Value,
                     End = end,
                 };
-
-                _values.Add(point);
                 labels.Add(issue.Issue.Title);
+
+                var estimatePoint = new IntervalPointDescription
+                {
+                    StartTime = start.Value,
+                    EndTime = start.Value.Add(TimeSpan.FromHours(issue.Estimate)),
+                };
+
+                var spendPoint = new IntervalPointDescription
+                {
+                    StartTime = start.Value,
+                    EndTime = start.Value.Add(TimeSpan.FromHours(issue.Estimate)),
+                };
+
+                _activityValues.Add(point);
+                _estimateValues.Add(estimatePoint);
+                _spendValues.Add(estimatePoint);
             }
 
-            if (_values.Count == 0)
+            if (_activityValues.Count == 0)
                 return;
 
-            From = _values.Min(x => x.Start.Ticks);
-            To = _values.Max(x => x.End.Ticks);
+            From = _activityValues.Min(x => x.Start.Ticks);
+            To = _activityValues.Max(x => x.End.Ticks);
 
             if (From > To)
                 return;
 
-            Series = new SeriesCollection
+            ActivitySeries = new SeriesCollection
             {
                 new RowSeries
                 {
-                    Values = _values,
+                    Values = _estimateValues,
                     DataLabels = true,
+                    Fill = new SolidColorBrush(Colors.DarkSalmon)
+                },
+                new RowSeries
+                {
+                    Values = _activityValues,
+                    DataLabels = true,
+                    LabelsPosition = BarLabelPosition.Top,
+                    Fill = new SolidColorBrush(Colors.CornflowerBlue)
                 }
             };
-            Formatter = value => new DateTime((long)value).ToString("dd MMM yyyy");
             Labels = labels.ToArray();
+
+            Formatter = value => new DateTime((long)value).ToString("dd MMM yyyy");
+            RaisePropertyChanged(nameof(ActivitySeries));
+            RaisePropertyChanged(nameof(_activityValues));
             RaisePropertyChanged(nameof(Labels));
-            RaisePropertyChanged(nameof(Series));
-            RaisePropertyChanged(nameof(_values));
         }
     }
 
     public class IssuePointDescription
     {
         public int Iid { get; set; }
-
         public string Name { get; set; }
-
         public DateTime Start { get; set; }
-
         public DateTime End { get; set; }
-
         public string WebUrl { get; set; }
+    }
+
+    public class IntervalPointDescription
+    {
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
     }
 }

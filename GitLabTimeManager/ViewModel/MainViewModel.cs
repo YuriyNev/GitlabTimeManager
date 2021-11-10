@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using Catel.Data;
 using Catel.IoC;
-using Catel.Linq;
 using Catel.MVVM;
-using Catel.Threading;
+using GitLabApiClient.Models.Groups.Responses;
+using GitLabApiClient.Models.Projects.Responses;
 using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Services;
 using GitLabTimeManager.Types;
@@ -21,7 +21,7 @@ namespace GitLabTimeManager.ViewModel
     {
         public static MainViewModel CreateInstance()
         {
-            return new MainViewModel();
+            return new();
         }
 
         private IViewModelFactory ViewModelFactory { get; }
@@ -31,7 +31,7 @@ namespace GitLabTimeManager.ViewModel
         private IMessageSubscription MessageSubscription { get; }
         private ISourceControl SourceControl { get; }
 
-        private CancellationTokenSource LifeTime { get; } = new CancellationTokenSource();
+        private CancellationTokenSource LifeTime { get; } = new();
 
         [UsedImplicitly] public static readonly PropertyData IssueListVmProperty = RegisterProperty<MainViewModel, IssueListViewModel>(x => x.IssueListVm);
         [UsedImplicitly] public static readonly PropertyData SummaryVmProperty = RegisterProperty<MainViewModel, SummaryViewModel>(x => x.SummaryVm);
@@ -45,22 +45,15 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData IsDefaultTabProperty = RegisterProperty<MainViewModel, bool>(x => x.IsDefaultTab);
         [UsedImplicitly] public static readonly PropertyData ConnectionSettingsVmProperty = RegisterProperty<MainViewModel, ConnectionSettingsViewModel>(x => x.ConnectionSettingsVm);
         [UsedImplicitly] public static readonly PropertyData GanttViewModelProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttViewModel);
-        [UsedImplicitly] public static readonly PropertyData CurrentUserProperty = RegisterProperty<MainViewModel, User>(x => x.CurrentUser);
-        [UsedImplicitly] public static readonly PropertyData AllUsersProperty = RegisterProperty<MainViewModel, IList<User>>(x => x.AllUsers);
         [UsedImplicitly] public static readonly PropertyData InProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.InProgress);
+        [UsedImplicitly] public static readonly PropertyData LabelSettingsVmProperty = RegisterProperty<MainViewModel, LabelSettingsViewModel>(x => x.LabelSettingsVm);
 
         public bool InProgress
         {
             get => GetValue<bool>(InProgressProperty);
             set => SetValue(InProgressProperty, value);
         }
-
-        public IList<User> AllUsers
-        {
-            get => GetValue<IList<User>>(AllUsersProperty);
-            set => SetValue(AllUsersProperty, value);
-        }
-
+        
         public GanttViewModel GanttViewModel
         {
             get => GetValue<GanttViewModel>(GanttViewModelProperty);
@@ -135,10 +128,10 @@ namespace GitLabTimeManager.ViewModel
             private set => SetValue(LaunchIsSuccessProperty, value);
         }
 
-        public User CurrentUser
+        public LabelSettingsViewModel LabelSettingsVm
         {
-            get => GetValue<User>(CurrentUserProperty);
-            set => SetValue(CurrentUserProperty, value);
+            get => GetValue<LabelSettingsViewModel>(LabelSettingsVmProperty);
+            private set => SetValue(LabelSettingsVmProperty, value);
         }
 
         [UsedImplicitly]
@@ -165,6 +158,7 @@ namespace GitLabTimeManager.ViewModel
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
+            DataSubscription.Requested += DataSubscription_Requested;
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
@@ -172,14 +166,13 @@ namespace GitLabTimeManager.ViewModel
             GanttViewModel = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             SwitchSettingsCommand = new Command(SwitchSettings);
-
-            Task.Run(async () =>
-            {
-                var users = await SourceControl.GetAllUsersAsync().ConfigureAwait(true);
-                AllUsers = users.Where(x => x.State != "blocked").ToList();
-            });
         }
-        
+
+        private void DataSubscription_Requested(object sender, EventArgs e)
+        {
+            OnProgress();
+        }
+
         private void SwitchSettings()
         {
             IsSettingsOpen = !IsSettingsOpen;
@@ -237,6 +230,12 @@ namespace GitLabTimeManager.ViewModel
             InProgress = false;
         }
 
+        private void OnProgress()
+        {
+            LaunchIsFinished = false;
+            InProgress = true;
+        }
+
         private void Current_Exit(object sender, ExitEventArgs e) => CloseViewModelAsync(false);
 
         protected override Task CloseAsync()
@@ -266,6 +265,11 @@ namespace GitLabTimeManager.ViewModel
                         await ConnectionSettingsVm?.CloseViewModelAsync(false);
                         ConnectionSettingsVm = null;
                     }
+                    if (LabelSettingsVm != null)
+                    {
+                        await LabelSettingsVm?.CloseViewModelAsync(false);
+                        LabelSettingsVm = null;
+                    }
                 }
 
                 if (e.NewValue is true)
@@ -275,14 +279,31 @@ namespace GitLabTimeManager.ViewModel
                     {
                         IsSettingsOpen = false;
                     });
+
+                    var labels = await SourceControl.FetchGroupLabelsAsync().ConfigureAwait(false);
+                    LabelSettingsVm = ViewModelFactory.CreateViewModel<LabelSettingsViewModel>(ConvertLabel(labels));
+                    LabelSettingsVm.SetOnClose(() =>
+                    {
+                        IsSettingsOpen = false;
+                    });
                 }
             }
-            else if (e.PropertyName == nameof(CurrentUser))
+        }
+
+        private static SettingsArgument ConvertLabel(IReadOnlyList<GroupLabel> labels)
+        {
+            return new()
             {
-                SourceControl.CurrentUser = CurrentUser;
-                DataRequestService.Restart();
-                InProgress = true;
-            }
+                Labels = labels
+                    .Select(x => new Label
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Color = x.Color,
+                        Description = x.Description,
+                    })
+                    .ToList()
+            };
         }
     }
 }

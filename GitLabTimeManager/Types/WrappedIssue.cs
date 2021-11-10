@@ -34,9 +34,30 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public DateTime StartTime { get; set; }
+        public DateTime? StartTime { get; set; }
 
-        public DateTime EndTime { get; set; }
+        public DateTime? PassTime { get; set; }
+
+        public DateTime? EndTime { get; set; }
+
+        public DateTime? DueTime
+        {
+            get
+            {
+
+                if (DateTime.TryParse(Issue.DueDate, out var date))
+                {
+                    return date;
+                }
+
+                if (Issue.DueDate != null) 
+                    Debug.Assert(false, "DueTime not null!");
+
+                return null;
+            }
+        }
+
+        public TaskStatus Status { get; set; }
 
         public double Spend => TimeHelper.SecondsToHours(Issue.TimeStats.TotalTimeSpent);
 
@@ -66,6 +87,8 @@ namespace GitLabTimeManager.Services
             }
         }
 
+        public int Commits { get; set; }
+
         public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{Estimate:F1}\t";
 
         public override bool Equals(object obj)
@@ -93,6 +116,14 @@ namespace GitLabTimeManager.Services
         }
     }
 
+    public enum TaskStatus
+    {
+        None,
+        ToDo,
+        Doing,
+        Ready,
+    }
+
     public class ReportIssue : NotifyObject
     {
         public int Iid { get; set; }
@@ -101,10 +132,41 @@ namespace GitLabTimeManager.Services
 
         public double SpendForPeriod { get; set; }
 
+        public double SpendForPeriodByStage { get; set; }
+
         public double Estimate { get; set; }
 
         public double Activity { get; set; }
         
         public DateTime? StartTime { get; set; }
+
+        public DateTime? EndTime { get; set; }
+
+        public DateTime? DueTime { get; set; }
+
+        public int Iterations { get; set; }
+
+        public int Commits { get; set; }
+
+        public string User { get; set; }
+        
+        public string Epic { get; set; }
+
+        public string WebUri { get; set; }
+
+        public TaskStatus TaskState { get; set; }
+
+        public string Priority { get; set; }
+    }
+
+
+    public class UserInfo
+    {
+        public string Name { get; }
+
+        public UserInfo([NotNull] string name)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+        }
     }
 }

@@ -12,9 +12,10 @@
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance viewModel:GanttViewModel}">
     <Grid>
-        <wpf:CartesianChart Series="{Binding Series, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True, NotifyOnTargetUpdated=True}"
-                            UseLayoutRounding="True"
-                            DisableAnimations="True">
+        <!--Activity-->
+        <wpf:CartesianChart Series="{Binding ActivitySeries, Mode=OneWay}"
+                            DisableAnimations="True"
+                            Hoverable="False">
             <wpf:CartesianChart.Resources>
                 <Style TargetType="wpf:RowSeries">
                     <Setter Property="DataLabelsTemplate">
@@ -22,6 +23,7 @@
                             <DataTemplate DataType="liveCharts:DataLabelViewModel">
                                 <Grid HorizontalAlignment="Left"
                                       VerticalAlignment="Top"
+                                      Margin="0 -60 0 0"
                                       MaxWidth="400">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -37,7 +39,7 @@
                                             </b:Interaction.Behaviors>
 
                                             <TextBlock Text="{Binding Point.Instance.(viewModel:IssuePointDescription.Iid), StringFormat={}#{0}}"
-                                                       FontSize="16"/>
+                                                       FontWeight="Normal"/>
                                         </Hyperlink>
                                     </TextBlock>
 
@@ -47,7 +49,7 @@
                                                Foreground="{StaticResource MahApps.Brushes.Gray1}"
                                                TextWrapping="Wrap"
                                                TextTrimming="CharacterEllipsis"
-                                               MaxHeight="30"
+                                               MaxHeight="40"
                                                Margin="4 0 0 0"
                                                LineStackingStrategy="MaxHeight"
                                                FontWeight="Normal"/>

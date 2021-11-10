@@ -9,6 +9,7 @@ using Catel.Collections;
 using GitLabApiClient;
 using GitLabApiClient.Internal.Paths;
 using GitLabApiClient.Models;
+using GitLabApiClient.Models.Groups.Responses;
 using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Notes.Requests;
@@ -22,9 +23,11 @@ namespace GitLabTimeManager.Services
 {
     public interface ISourceControl
     {
-        [UsedImplicitly] public User CurrentUser { get; set; }
+        IReadOnlyList<string> CurrentUsers { get; }
+        DateTime StartTime { get; }
+        DateTime EndTime { get; }
 
-        [PublicAPI] Task<GitResponse> RequestDataAsync();
+        [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users);
         [PublicAPI] Task<GitResponse> RequestNewestDataAsync();
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
@@ -33,10 +36,13 @@ namespace GitLabTimeManager.Services
         [PublicAPI] Task<WrappedIssue> FinishIssueAsync(WrappedIssue issue);
         [PublicAPI] Task<Issue> UpdateIssueAsync(Issue issue, UpdateIssueRequest request);
         
-        [PublicAPI] Task<IReadOnlyList<Label>> SetLabelsAsync(IReadOnlyList<ProjectId> projects);
+        [PublicAPI] Task<IReadOnlyList<Label>> FetchLabelsAsync([CanBeNull] IReadOnlyList<ProjectId> projects = null);
         [PublicAPI] IReadOnlyList<Label> GetLabels();
+        
+        [PublicAPI] Task<IReadOnlyList<GroupLabel>> FetchGroupLabelsAsync([CanBeNull] IReadOnlyList<GroupId> groups = null);
+        [PublicAPI] IReadOnlyList<GroupLabel> GetGroupLabels();
 
-        [PublicAPI] IReadOnlyList<ProjectId> SetActiveProjects(IReadOnlyList<Issue> issues);
+        [PublicAPI] IReadOnlyList<ProjectId> FetchActiveProjects(IReadOnlyList<Issue> issues);
         [PublicAPI] IReadOnlyList<ProjectId> GetActiveProjects();
 
         [PublicAPI] Task<IReadOnlyList<LabelEvent>> GetLabelsEventsAsync(int projectId, int issueIid);
@@ -51,10 +57,15 @@ namespace GitLabTimeManager.Services
         [NotNull] private IHttpService HttpService { get; }
         [NotNull] private GitLabClient GitLabClient { get; }
 
-        private IReadOnlyList<Label> CachedLabels { get; set; } 
+        private IReadOnlyList<Label> CachedLabels { get; set; }
+        private IReadOnlyList<GroupLabel> CachedGroupLabels { get; set; }
         private IReadOnlyList<ProjectId> CachedProjects { get; set; }
 
-        public User CurrentUser { get; set; }
+        public IReadOnlyList<string> CurrentUsers { get; private set; }
+        public DateTime StartTime { get; private set; }
+        public DateTime EndTime { get; private set; }
+
+        private bool IsSingleUser => CurrentUsers.Count == 1;
 
         public SourceControl(
             [NotNull] IUserProfile userProfile,
@@ -67,10 +78,10 @@ namespace GitLabTimeManager.Services
 
             GitLabClient = new GitLabClient(UserProfile.Url, UserProfile.Token);
         }
-
-        public async Task<GitResponse> RequestDataAsync()
+        
+        public async Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users)
         {
-            var wrappedIssues = await GetRawDataAsync().ConfigureAwait(false);
+            var wrappedIssues = await GetRawDataAsync(start, end, users).ConfigureAwait(false);
 
             return new GitResponse
             {
@@ -78,6 +89,7 @@ namespace GitLabTimeManager.Services
             };
         }
 
+        /// <summary> Unused </summary>
         public async Task<GitResponse> RequestNewestDataAsync()
         {
             var wrappedIssues = await GetActualDataAsync().ConfigureAwait(false);
@@ -109,7 +121,7 @@ namespace GitLabTimeManager.Services
 
         public async Task<WrappedIssue> StartIssueAsync(WrappedIssue issue)
         {
-            if (LabelService.IsStarted(issue.Issue.Labels)) 
+            if (LabelService.InWork(issue.Issue.Labels)) 
                 return issue;
 
             var newLabels = LabelService.StartIssue(issue.Issue.Labels).ToList();
@@ -134,24 +146,21 @@ namespace GitLabTimeManager.Services
             return await UpdateIssueLabelsAsync(issue, newLabels).ConfigureAwait(false);
         }
 
-        private async Task<IReadOnlyList<Label>> GetLabelsCoreAsync(IReadOnlyList<ProjectId> projects)
+        private async Task<IReadOnlyList<Label>> GetLabelsCoreAsync([CanBeNull] IReadOnlyList<ProjectId> projects)
         {
-            //IList<ProjectId> activeProjects = 
-            //    (await GitLabClient.Projects.GetAsync(options =>
-            //    {
-            //        options.Simple = true;
-            //        options.IsMemberOf = true;
-            //        if (GitLabClient.HostUrl.Contains("gitlab.com"))
-            //        {
-            //            options.Owned = true;
-            //        }
-            //    }).ConfigureAwait(false))
-            //    .Select(x => (ProjectId) x.Id.ToString())
-            //    .ToList();
-
             var all = new Collection<Label>();
+            IReadOnlyList<ProjectId> allProjects;
+            if (projects != null)
+            {
+                allProjects = projects;
+            }
+            else
+            {
+                var projectList = await GitLabClient.Projects.GetAsync().ConfigureAwait(false);
+                allProjects = projectList.Select(x => (ProjectId)x.Id).ToList();
+            }
 
-            foreach (var project in projects)
+            foreach (var project in allProjects)
             {
                 var labels = await GitLabClient.Projects.GetLabelsAsync(project).ConfigureAwait(false);
                 all.AddRange(labels);
@@ -165,11 +174,11 @@ namespace GitLabTimeManager.Services
             return GitLabClient.Issues.UpdateAsync(issue.ProjectId, issue.Iid, request);
         }
 
-        public async Task<IReadOnlyList<Label>> SetLabelsAsync(IReadOnlyList<ProjectId> projects)
+        public async Task<IReadOnlyList<Label>> FetchLabelsAsync(IReadOnlyList<ProjectId> projects)
         {
             var labels = await GetLabelsCoreAsync(projects);
 
-            CachedLabels ??= labels;
+            CachedLabels = labels;
 
             return labels;
         }
@@ -201,8 +210,18 @@ namespace GitLabTimeManager.Services
 
         private bool _isAction;
 
-        private async Task<IReadOnlyList<WrappedIssue>> GetRawDataAsync()
+        private async Task<IReadOnlyList<WrappedIssue>> GetRawDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users)
         {
+            void AllDataOptions(IssuesQueryOptions options)
+            {
+                if (IsSingleUser)
+                    options.AssigneeUsername = new List<string> { CurrentUsers.FirstOrDefault() };
+
+                options.UpdatedAfter = StartTime;
+                options.UpdatedBefore = EndTime;
+                options.State = IssueState.All;
+            }
+
             if (_isAction)
                 return null;
 
@@ -210,13 +229,19 @@ namespace GitLabTimeManager.Services
             {
                 _isAction = true;
 
+                StartTime = start;
+                EndTime = end;
+                CurrentUsers = users;
+
                 var allIssues = await RequestAllIssuesAsync(AllDataOptions).ConfigureAwait(false);
 
-                var projects = SetActiveProjects(allIssues);
+                var projects = FetchActiveProjects(allIssues);
 
-                var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
+                var allLabels = await FetchLabelsAsync(projects).ConfigureAwait(false);
 
-                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+                var allNotes = IsSingleUser
+                    ? await GetNotesAsync(allIssues).ConfigureAwait(false)
+                    : new Dictionary<Issue, IReadOnlyList<Note>>();
 
                 var allEvents = await GetAllLabelActionsAsync(allIssues).ConfigureAwait(false);
 
@@ -244,11 +269,13 @@ namespace GitLabTimeManager.Services
 
                 var allIssues = await RequestAllIssuesAsync(ActualDataOptions).ConfigureAwait(false);
 
-                var projects = SetActiveProjects(allIssues);
+                var projects = FetchActiveProjects(allIssues);
 
-                var allLabels = await SetLabelsAsync(projects).ConfigureAwait(false);
+                var allLabels = await FetchLabelsAsync(projects).ConfigureAwait(false);
 
-                var allNotes = await GetNotesAsync(allIssues).ConfigureAwait(false);
+                var allNotes = IsSingleUser 
+                    ? await GetNotesAsync(allIssues).ConfigureAwait(false)
+                    : new Dictionary<Issue, IReadOnlyList<Note>>();
 
                 var allEvents = await GetAllLabelActionsAsync(allIssues).ConfigureAwait(false);
 
@@ -260,7 +287,7 @@ namespace GitLabTimeManager.Services
                 return Array.Empty<WrappedIssue>();
             }
             finally
-            { 
+            {
                 _isAction = false;
             }
         }
@@ -289,10 +316,10 @@ namespace GitLabTimeManager.Services
         private static DateTime? FinishTime(Issue issue) => issue.ClosedAt;
 
         private IReadOnlyList<WrappedIssue> ExtentIssues(
-            IReadOnlyList<Issue> sourceIssues, 
-            IReadOnlyDictionary<Issue, IReadOnlyList<Note>> notes,
-            IReadOnlyList<Label> labels,
-            IReadOnlyDictionary<Issue, IReadOnlyList<LabelEvent>> events)
+            [NotNull] IReadOnlyList<Issue> sourceIssues,
+            [NotNull] IReadOnlyDictionary<Issue, IReadOnlyList<Note>> notes,
+            [NotNull] IReadOnlyList<Label> labels,
+            [NotNull] IReadOnlyDictionary<Issue, IReadOnlyList<LabelEvent>> events)
         {
             var issues = new ObservableCollection<WrappedIssue>();
             foreach (var issue in sourceIssues)
@@ -309,25 +336,27 @@ namespace GitLabTimeManager.Services
             return issues;
         }
 
-        private WrappedIssue CreateIssue(Issue issue, IReadOnlyList<Label> labels, IReadOnlyList<Note> note, IReadOnlyList<LabelEvent> events)
+        private WrappedIssue CreateIssue(Issue issue, IReadOnlyList<Label> labels, IReadOnlyList<Note> notes, IReadOnlyList<LabelEvent> events)
         {
-            var startDate = DateTime.MaxValue;
-            var endDate = DateTime.MinValue;
+            DateTime? startDate = null;
+            DateTime? passedDate = null;
+            DateTime? endDate = null;
 
-            double totalSpend = TimeHelper.SecondsToHours(issue.TimeStats.TotalTimeSpent);
             double totalYieldSpend = 0.0;
             var spendDictionary = new Dictionary<DateRange, double>();
 
-            var hasUserEvents = events.Any(x => x.User.UserName == CurrentUser.Username);
+            var hasUserEvents = events.Any(x => CurrentUsers.Any(y => y == x.User.UserName));
+            var hasNotes = notes != null && notes.Any();
 
             // if not exist some activity
-            if (!note.Any() && !hasUserEvents)
+            if (!hasNotes && !hasUserEvents)
                 return null;
 
-            if (note.Any())
+            int commits = 0;
+            if (hasNotes)
             {
                 // if more 0 notes then getting data from notes
-                var timeNotes = note.Where(x => x.Body.ParseSpent() > 0 || x.Body.ParseEstimate() > 0).ToList();
+                var timeNotes = notes.Where(x => x.Body.ParseSpent() > 0 || x.Body.ParseEstimate() > 0).ToList();
 
                 //if (timeNotes.Count > 0)
                 //    startDate = timeNotes.Min(x => x.CreatedAt);
@@ -343,46 +372,43 @@ namespace GitLabTimeManager.Services
                     totalYieldSpend += spend;
                     currentDate = currentDate.AddDays(1);
                 }
+
+                commits = notes.Count(x => x.Body.IsCommit());
             }
 
             if (hasUserEvents)
             {
-                var eventsStartDate = events
-                    .Where(x => x.User.UserName == CurrentUser.Username)
-                    .Select(x => x.CreatedAt)
-                    .OrderBy(x => x)
-                    .First();
-
-                if (startDate > eventsStartDate)
-                    startDate = eventsStartDate;
-
-                DateTime eventsEndDate = events
-                    .Where(x => x.User.UserName == CurrentUser.Username)
-                    .Select(x => x.CreatedAt)
-                    .OrderBy(x => x)
-                    .Last();
-
-                if (startDate > eventsStartDate)
-                    startDate = eventsStartDate;
-                
-                if (endDate < eventsEndDate)
-                    endDate = eventsEndDate;
+                startDate = LabelService.GetStartTime(events);
+                passedDate = LabelService.GetPassedTime(events);
+                endDate = issue.ClosedAt;
             }
 
-            if (endDate < UpdatedAfter)
-                return null;
+            // todo ???
+            //if (endDate < UpdatedAfter)
+            //    return null;
 
             var issueLabels = LabelService.FilterLabels(labels, issue.Labels);
 
             var wrappedIssue = new WrappedIssue(issue)
             {
                 StartTime = startDate,
+                PassTime = passedDate,
                 EndTime = endDate,
                 Spends = spendDictionary,
                 Labels = issueLabels,
                 Events = events,
+                Status = GetTaskState(issue, issueLabels),
+                Commits = commits,
             };
             return wrappedIssue;
+        }
+
+        private TaskStatus GetTaskState(Issue issue, IReadOnlyList<Label> issueLabels)
+        {
+            if (issue.State == IssueState.Closed)
+                return TaskStatus.Ready;
+
+            return LabelService.GetTaskState(issueLabels.Select(x => x.Name).ToList());
         }
 
         private async Task<Dictionary<Issue, IReadOnlyList<Note>>> GetNotesAsync(IReadOnlyList<Issue> issues)
@@ -415,15 +441,6 @@ namespace GitLabTimeManager.Services
             options.State = IssueState.All;
         }
 
-        private DateTime UpdatedAfter => TimeHelper.Today.AddMonths(-UserProfile.RequestMonths);
-
-        private void AllDataOptions(IssuesQueryOptions options)
-        {
-            options.AssigneeUsername = new List<string> { CurrentUser.Username };
-            options.UpdatedAfter = UpdatedAfter;
-            options.State = IssueState.All;
-        }
-
         private static TimeSpan CollectSpendTime(IEnumerable<Note> notes, DateTime? startTime = null, DateTime? endTime = null)
         {
             var start = startTime ?? DateTime.MinValue;
@@ -440,8 +457,8 @@ namespace GitLabTimeManager.Services
         private async Task<IReadOnlyList<Note>> GetNotesAsync(int projectId, int issueId)
         {
             var notes = await GitLabClient.Issues.GetNotesAsync(projectId, issueId).ConfigureAwait(false);
-            
-            return notes.Where(x => x.Author.Username == CurrentUser.Username).ToList();
+
+            return notes.Where(x => CurrentUsers.Any(y => y == x.Author.Username)).ToList();
         }
         
         public IReadOnlyList<Label> GetLabels()
@@ -449,7 +466,31 @@ namespace GitLabTimeManager.Services
             return CachedLabels;
         }
 
-        public IReadOnlyList<ProjectId> SetActiveProjects(IReadOnlyList<Issue> issues)
+        public async Task<IReadOnlyList<GroupLabel>> FetchGroupLabelsAsync(IReadOnlyList<GroupId> groups = null)
+        {
+            if (groups != null)
+                throw new NotImplementedException();
+
+            var allGroups = await GitLabClient.Groups.GetAsync();
+
+            var allLabels = new List<GroupLabel>();
+            foreach (var group in allGroups)
+            {
+                var labels = await GitLabClient.Groups.GetLabelsAsync(group.Id);
+                allLabels.AddRange(labels);
+            }
+
+            CachedGroupLabels = allLabels;
+
+            return allLabels;
+        }
+
+        public IReadOnlyList<GroupLabel> GetGroupLabels()
+        {
+            return CachedGroupLabels;
+        }
+
+        public IReadOnlyList<ProjectId> FetchActiveProjects(IReadOnlyList<Issue> issues)
         {
             var projects = issues.Select(x => x.ProjectId).Distinct().Select(x => (ProjectId)x).ToList();
 

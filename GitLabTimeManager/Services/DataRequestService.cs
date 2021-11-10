@@ -9,6 +9,7 @@ namespace GitLabTimeManager.Services
 {
     public interface IDataSubscription : IDisposable
     {
+        event EventHandler Requested;
         event EventHandler<GitResponse> NewData;
         event EventHandler<Exception> NewException;
     }
@@ -37,7 +38,13 @@ namespace GitLabTimeManager.Services
         {
             NewException?.Invoke(this, exception);
         }
+        
+        public void OnRequested()
+        {
+            Requested?.Invoke(this, EventArgs.Empty);
+        }
 
+        public event EventHandler Requested;
         public event EventHandler<GitResponse> NewData;
         public event EventHandler<Exception> NewException;
     }
@@ -46,7 +53,8 @@ namespace GitLabTimeManager.Services
     public interface IDataRequestService
     {
         IDataSubscription CreateSubscription();
-        void Restart();
+
+        void Restart(DateTime start, DateTime end, IReadOnlyList<string> users);
     }
 
     public class DataRequestService : IDataRequestService, IDisposable
@@ -62,8 +70,8 @@ namespace GitLabTimeManager.Services
 
             return subscription;
         }
-
-        public void Restart()
+        
+        public void Restart(DateTime start, DateTime end, IReadOnlyList<string> users)
         {
             _cancellation?.Cancel();
             _cancellation?.Dispose();
@@ -73,9 +81,14 @@ namespace GitLabTimeManager.Services
             if (sourceControl == null)
                 return;
 
-            RunAsync(sourceControl).ConfigureAwait(true);
+            foreach (var dataSubscription in _dataSubscriptions)
+            {
+                dataSubscription.OnRequested();
+            }
+
+            RunAsync(sourceControl, start, end, users).ConfigureAwait(true);
         }
-        
+
         private ISourceControl InitializeSource()
         {
             try
@@ -92,25 +105,14 @@ namespace GitLabTimeManager.Services
 
             return null;
         }
-
-        private async Task RunAsync([NotNull] ISourceControl sourceControl)
+        
+        private async Task RunAsync([NotNull] ISourceControl sourceControl, DateTime start, DateTime end, IReadOnlyList<string> users)
         {
-            while (true)
+            var data = await sourceControl.RequestDataAsync(start, end, users).ConfigureAwait(true);
+
+            foreach (var subscription in _dataSubscriptions)
             {
-                if (_cancellation.IsCancellationRequested)
-                    return;
-
-                var data = await sourceControl.RequestDataAsync().ConfigureAwait(true);
-
-                foreach (var subscription in _dataSubscriptions)
-                {
-                    subscription.OnNewData(data);
-                }
-#if DEBUG
-                await Task.Delay(1_60_000, _cancellation.Token).ConfigureAwait(true);
-#else
-                await Task.Delay(2_60_000, _cancellation.Token).ConfigureAwait(true);
-#endif
+                subscription.OnNewData(data);
             }
         }
 

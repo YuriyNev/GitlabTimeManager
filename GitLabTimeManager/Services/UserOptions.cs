@@ -63,7 +63,7 @@ namespace GitLabTimeManager.Services
     {
         [NotNull] IUserProfile Deserialize();
 
-        [NotNull] void Serialize(IUserProfile profile);
+        void Serialize(IUserProfile profile);
 
         event EventHandler<IUserProfile> Serialized;
     }
@@ -89,6 +89,8 @@ namespace GitLabTimeManager.Services
         public IReadOnlyList<string> AllBoardLabels { get; set; }
 
         public IReadOnlyList<string> ExcludeLabels { get; set; }
+
+        public IReadOnlyList<string> PassedLabels { get; set; }
     }
 
     public class BoardStateLabels
@@ -112,11 +114,12 @@ namespace GitLabTimeManager.Services
         public int RequestMonths { get; set; } = 2;
 #endif
 
-        public LabelSettings LabelSettings { get; set; } = new LabelSettings
+        public LabelSettings LabelSettings { get; set; } = new()
         {
             BoardStateLabels = new BoardStateLabels(),
             OtherBoardLabels = Array.Empty<string>(),
             ExcludeLabels = Array.Empty<string>(),
+            PassedLabels = Array.Empty<string>(),
         };
 
         /// <summary> Constructor for Json Deserializer</summary>
@@ -132,6 +135,8 @@ namespace GitLabTimeManager.Services
             Token = userProfile.Token;
             RequestMonths = userProfile.RequestMonths;
             LabelSettings = userProfile.LabelSettings;
+            if (LabelSettings.PassedLabels == null)
+                LabelSettings.PassedLabels = Array.Empty<string>();
 
             LabelSettings.AllBoardLabels = new List<string>(LabelSettings.OtherBoardLabels)
             {

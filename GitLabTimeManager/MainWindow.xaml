@@ -9,6 +9,8 @@
                  xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
                  xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
                  xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+                 xmlns:gitLabTimeManager="clr-namespace:GitLabTimeManager"
+                 xmlns:settings="clr-namespace:GitLabTimeManager.ViewModel.Settings"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
                  Title="GLTimeManager"
@@ -30,6 +32,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:ConnectionSettingsViewModel}">
             <view:ConnectionSettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:LabelSettingsViewModel}">
+            <view:LabelSettingsView />
         </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
@@ -60,7 +65,7 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True"/>
+                                    <!--<Condition Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True"/>-->
                                     <Condition Binding="{Binding IsSettingsOpen, Mode=OneWay}" Value="False"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -106,7 +111,7 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True"/>
+                                    <!--<Condition Binding="{Binding LaunchIsFinished, Mode=OneWay}" Value="True"/>-->
                                     <Condition Binding="{Binding IsSettingsOpen, Mode=OneWay}" Value="True"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -126,6 +131,11 @@
 
                 <TabItem Header="Подключение" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding ConnectionSettingsVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
+
+                <TabItem Header="Метки" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                    <ContentControl Content="{Binding LabelSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
             </mah:MetroAnimatedTabControl>

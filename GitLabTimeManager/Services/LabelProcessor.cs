@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Projects.Responses;
@@ -15,9 +16,15 @@ namespace GitLabTimeManager.Services
 
         IReadOnlyList<string> PauseIssue(IReadOnlyList<string> labels);
 
-        bool IsStarted(List<string> labels);
+        bool InWork(List<string> labels);
 
         bool IsPaused(List<string> labels);
+
+        bool IsPassed(List<string> labels);
+
+        bool IsReadyForWork(List<string> labels);
+        
+        TaskStatus GetTaskState(List<string> labels);
 
         IReadOnlyList<Label> FilterLabels(IReadOnlyList<Label> all, IList<string> source);
 
@@ -25,6 +32,9 @@ namespace GitLabTimeManager.Services
 
         bool ContainsBoardLabels(IReadOnlyList<Label> labels);
 
+        DateTime? GetStartTime([NotNull] IReadOnlyList<LabelEvent> labelEvents);
+
+        DateTime? GetPassedTime([NotNull] IReadOnlyList<LabelEvent> labelEvents);
     }
 
     public class LabelProcessor : ILabelService, IDisposable
@@ -38,6 +48,7 @@ namespace GitLabTimeManager.Services
 
         private IReadOnlyList<string> AllBoardLabels { get; set; }
         private IReadOnlyList<string> ExcludeLabels { get; set; }
+        private IReadOnlyList<string> PassedLabels { get; set; }
         private BoardStateLabels BoardStateLabels { get; set; }
 
         public LabelProcessor(
@@ -60,6 +71,7 @@ namespace GitLabTimeManager.Services
         private void Update(LabelSettings settings)
         {
             AllBoardLabels = settings.AllBoardLabels;
+            PassedLabels = settings.PassedLabels;
             ExcludeLabels = settings.ExcludeLabels;
             BoardStateLabels = settings.BoardStateLabels;
 
@@ -100,9 +112,44 @@ namespace GitLabTimeManager.Services
             return newLabels;
         }
 
-        public bool IsStarted(List<string> labels) => labels.Contains(DoingLabel) || labels.Contains(DoneLabel);
+        public TaskStatus GetTaskState(List<string> labels)
+        {
+            var isPassed = IsPassed(labels);
+            var inWork = InWork(labels);
+            var waitWork = IsReadyForWork(labels);
 
+            var checkCount = 0;
+            if (isPassed)
+                checkCount++;
+
+            if (inWork)
+                checkCount++;
+
+            if (waitWork)
+                checkCount++;
+
+            if (checkCount > 1)
+                Debug.Assert(false, "Incorrect state!");
+
+            if (isPassed)
+                return TaskStatus.Ready;
+
+            if (inWork)
+                return TaskStatus.Doing;
+
+            if (waitWork)
+                return TaskStatus.ToDo;
+
+            return TaskStatus.None;
+        }
+
+        public bool InWork(List<string> labels) => labels.Contains(DoingLabel);
+        
         public bool IsPaused(List<string> labels) => !labels.Contains(DoingLabel);
+
+        public bool IsPassed(List<string> labels) => labels.Intersect(PassedLabels).Any();
+
+        public bool IsReadyForWork(List<string> labels) => labels.Contains(ToDoLabel);
 
         public IReadOnlyList<Label> FilterLabels(IReadOnlyList<Label> all, IList<string> source) => all.Where(x => source.Contains(x.Name)).ToList();
 
@@ -116,15 +163,97 @@ namespace GitLabTimeManager.Services
             return labels.Any(l => AllBoardLabels.Contains(l.Name));
         }
 
+        public DateTime? GetStartTime(IReadOnlyList<LabelEvent> labelEvents)
+        {
+            if (labelEvents == null) throw new ArgumentNullException(nameof(labelEvents));
+
+            var date = labelEvents
+                .Where(x => x.Label != null)
+                .Where(x => x.Label.Name == DoingLabel || x.Label.Name == DoneLabel)
+                .Where(x => x.Action == EventAction.Add)
+                .OrderBy(x => x.CreatedAt)
+                .Select(x => x.CreatedAt)
+                .FirstOrDefault();
+
+            if (date == default)
+                return null;
+
+            return date;
+        }
+
+        public DateTime? GetPassedTime(IReadOnlyList<LabelEvent> labelEvents)
+        {
+            if (labelEvents == null) throw new ArgumentNullException(nameof(labelEvents));
+
+            var date = labelEvents
+                .Where(x => x.Label != null)
+                .Where(x => PassedLabels.Contains(x.Label.Name))
+                .Where(x => x.Action == EventAction.Add)
+                .OrderBy(x => x.CreatedAt)
+                .Select(x => x.CreatedAt)
+                .FirstOrDefault();
+
+            if (date == default)
+                return null;
+
+            return date;
+        }
+
         public void Dispose()
         {
             ProfileService.Serialized -= ProfileService_Serialized;
         }
     }
 
-    public static class LabelHelper
+    public static class LabelStageCalculator
     {
-        public static bool IsStarted(this Issue issue, ILabelService labelService) => labelService.IsStarted(issue.Labels);
-        public static bool IsPaused(this Issue issue, ILabelService labelService) => labelService.IsPaused(issue.Labels);
+        public static LabelStageMetric GetMetric([NotNull] this WrappedIssue issue, [NotNull] ILabelService labelService)
+        {
+            if (issue == null) throw new ArgumentNullException(nameof(issue));
+            if (labelService == null) throw new ArgumentNullException(nameof(labelService));
+
+            var labelEvents = issue.Events;
+
+            var events = labelEvents
+                .Where(ev => ev.Label != null)
+                .Where(ev => labelService.InWork(new List<string> {ev.Label.Name}));
+
+            var eventList = events.ToList();
+
+            var count = eventList.Count;
+            var stageTime = TimeSpan.Zero;
+
+            for (int i = 0; i < count - 1; i++)
+            {
+                var currentEvent = eventList[i];
+                var nextEvent = eventList[i + 1];
+
+                if (currentEvent.Action != EventAction.Add)
+                    continue;
+
+                var start = currentEvent.CreatedAt;
+                var end = nextEvent.CreatedAt;
+
+                var spend = StatisticsExtractor.GetAnyDaysSpend(start, end);
+
+                stageTime += spend;
+            }
+
+            var iterations = eventList
+                .Where(x => x.Action == EventAction.Add)
+                .Count(x => labelService.InWork(new List<string> { x.Label.Name }));
+            return new LabelStageMetric
+            {
+                Iterations = iterations,
+                Duration = stageTime,
+            };
+        }
+    }
+
+    public class LabelStageMetric
+    {
+        public int Iterations { get; set; }
+
+        public TimeSpan Duration { get; set; }
     }
 }

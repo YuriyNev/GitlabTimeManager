@@ -10,7 +10,7 @@ namespace GitLabTimeManager.Services
 {
     public static class StatisticsExtractor
     {
-        public static GitStatistics Process(IReadOnlyList<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endTime)
+        public static GitStatistics Process(IReadOnlyList<WrappedIssue> wrappedIssues, DateTime startTime, DateTime endTime)
         {
             var statistics = new GitStatistics();
             // Most need issues
@@ -20,32 +20,32 @@ namespace GitLabTimeManager.Services
             var closedIssues = issues.Where(x => IsClosed(x.Issue)).ToList();
 
             statistics.OpenEstimatesStartedInPeriod = openIssues
-                .Where(issue => StartedIn(issue, startDate, endTime))
+                .Where(issue => StartedIn(issue, startTime, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.ClosedEstimatesStartedInPeriod = closedIssues
-                .Where(issue => StartedIn(issue, startDate, endTime) &&
-                                FinishedInPeriod(issue.Issue, startDate, endTime))
+                .Where(issue => StartedIn(issue, startTime, endTime) &&
+                                FinishedInPeriod(issue.Issue, startTime, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.AllEstimatesStartedInPeriod = statistics.OpenEstimatesStartedInPeriod + statistics.ClosedEstimatesStartedInPeriod;
 
             statistics.OpenSpendsStartedInPeriod = openIssues
-                .Where(issue => StartedIn(issue, startDate, endTime))
+                .Where(issue => StartedIn(issue, startTime, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             statistics.ClosedSpendsStartedInPeriod = closedIssues
-                .Where(issue => StartedIn(issue, startDate, endTime) &&
-                                FinishedInPeriod(issue.Issue, startDate, endTime))
+                .Where(issue => StartedIn(issue, startTime, endTime) &&
+                                FinishedInPeriod(issue.Issue, startTime, endTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             // started before this month
             statistics.OpenEstimatesStartedBefore = openIssues
-                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.ClosedEstimatesStartedBefore = closedIssues
-                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
 
             statistics.AllEstimatesStartedBefore = statistics.OpenEstimatesStartedBefore + statistics.ClosedEstimatesStartedBefore;
@@ -55,11 +55,11 @@ namespace GitLabTimeManager.Services
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate));
             
             statistics.OpenSpendsStartedBefore = openIssues
-                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             statistics.ClosedSpendsStartedBefore = closedIssues
-                .Where(issue => StartedIn(issue, DateTime.MinValue, startDate))
+                .Where(issue => StartedIn(issue, DateTime.MinValue, startTime))
                 .Sum(x => TimeHelper.SecondsToHours(x.Issue.TimeStats.TotalTimeSpent));
 
             var labelProcessor = IoCConfiguration.DefaultDependencyResolver.Resolve<ILabelService>();
@@ -70,40 +70,40 @@ namespace GitLabTimeManager.Services
                 Where(x => !labelProcessor.ContainsExcludeLabels(x.Labels)).ToList();
 
             statistics.OpenSpendBefore = withoutExcludes.
-                Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).
-                Where(x => !StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
+                Where(x => IsOpenAtMoment(x.Issue, startTime, endTime)).
+                Where(x => !StartedIn(x, startTime, endTime)).
+                Sum(x => SpendsSumForPeriod(x, startTime, endTime));
 
             statistics.ClosedSpendBefore = withoutExcludes.
-                Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
-                Where(x => !StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
+                Where(x => IsCloseAtMoment(x.Issue, startTime, endTime)).
+                Where(x => !StartedIn(x, startTime, endTime)).
+                Sum(x => SpendsSumForPeriod(x, startTime, endTime));
 
             statistics.OpenSpendInPeriod = withoutExcludes.
-                Where(x => IsOpenAtMoment(x.Issue, startDate, endTime)).
-                Where(x => StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
+                Where(x => IsOpenAtMoment(x.Issue, startTime, endTime)).
+                Where(x => StartedIn(x, startTime, endTime)).
+                Sum(x => SpendsSumForPeriod(x, startTime, endTime));
             
             statistics.ClosedSpendInPeriod = withoutExcludes.
-                Where(x => IsCloseAtMoment(x.Issue, startDate, endTime)).
-                Where(x => StartedIn(x, startDate, endTime)).
-                Sum(x => SpendsSumForPeriod(x, startDate, endTime));
+                Where(x => IsCloseAtMoment(x.Issue, startTime, endTime)).
+                Where(x => StartedIn(x, startTime, endTime)).
+                Sum(x => SpendsSumForPeriod(x, startTime, endTime));
+
+            statistics.AllSpendsByWorkForPeriod = issues
+                .Sum(x => x.GetMetric(labelProcessor).Duration.TotalHours);
+            statistics.AllSpendsByWorkForPeriod = Math.Max(statistics.AllSpendsByWorkForPeriod, 0);
 
             statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;
             statistics.AllSpendsStartedBefore = statistics.OpenSpendBefore + statistics.ClosedSpendBefore;
             statistics.AllSpendsForPeriod = statistics.AllSpendsStartedInPeriod + statistics.AllSpendsStartedBefore;
+
+            statistics.Productivity = statistics.AllEstimatesStartedInPeriod / 100 * 100;
 
             return statistics;
         }
 
         public static double SpendsSumForPeriod(WrappedIssue issue, DateTime startDate, DateTime endDate)
         {
-            if (issue.Issue.Iid == 3403)
-            {
-
-            }
-            var calendar = IoCConfiguration.DefaultDependencyResolver.Resolve<ICalendar>();
-
             if (issue.EndTime < startDate)
                 return 0;
 
@@ -113,9 +113,24 @@ namespace GitLabTimeManager.Services
             var start = startDate > issue.StartTime ? startDate : issue.StartTime;
             var end = endDate < issue.EndTime ? endDate : issue.EndTime;
 
-            var spend = end - start;
+            var spend = GetAnyDaysSpend(start, end);
+            
+            return spend.TotalHours;
+        }
 
-            var workTime = calendar.GetWorkingTime(start.Date, end.Date.AddDays(1).AddTicks(-1));
+        public static TimeSpan GetAnyDaysSpend(DateTime? start, DateTime? end)
+        {
+            if (start == null)
+                return TimeSpan.Zero;
+
+            if (end == null)
+                return TimeSpan.Zero;
+            
+            var calendar = IoCConfiguration.DefaultDependencyResolver.Resolve<ICalendar>() ?? throw new ArgumentNullException("IoCConfiguration.DefaultDependencyResolver.Resolve<ICalendar>()");
+
+            var spend = end.Value - start.Value;
+
+            var workTime = calendar.GetWorkingTime(start.Value.Date, end.Value.Date.AddDays(1).AddTicks(-1));
 
             var days = TimeHelper.HoursToDays(workTime.TotalHours) - 1;
 
@@ -128,7 +143,7 @@ namespace GitLabTimeManager.Services
             if (spend < TimeSpan.Zero)
                 spend = TimeSpan.Zero;
 
-            return spend.TotalHours;
+            return spend;
         }
 
         public static double SpendsSum(WrappedIssue issue, DateTime startDate, DateTime endDate)
@@ -226,5 +241,11 @@ namespace GitLabTimeManager.Services
 
         /// <summary> Фактическое время ПОТРАЧЕННОЕ на все задачи в этом месяце </summary>
         public double AllSpendsForPeriod { get; set; }
+
+        /// <summary> Время в работе в этом месяце </summary>
+        public double AllSpendsByWorkForPeriod { get; set; }
+
+        /// <summary> Производительность </summary>
+        public double Productivity { get; set; }
     }
 }

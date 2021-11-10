@@ -14,6 +14,8 @@ namespace GitLabTimeManager.Services
         public Label Label { get; set; }
         [JsonProperty("user")]
         public EventUser User { get; set; }
+        [JsonProperty("action")]
+        public EventAction Action { get; set; }
     }
 
     /*    "user": {
@@ -24,6 +26,14 @@ namespace GitLabTimeManager.Services
       "avatar_url": "https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80&d=identicon",
       "web_url": "http://gitlab.example.com/root"
     }*/
+
+    public enum EventAction
+    {
+        [JsonProperty("add")]
+        Add,
+        [JsonProperty("remove")]
+        Remove
+    }
 
     public class EventUser
     {

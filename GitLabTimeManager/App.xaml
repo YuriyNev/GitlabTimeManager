@@ -14,7 +14,6 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Controls/TinyScrollBarStyle.xaml" />
 
                 <ResourceDictionary Source="Resources/BaseStyles.xaml"/>
 
@@ -98,7 +97,7 @@
 
                 <Setter Property="ShowMinButton" Value="True"/>
                 <Setter Property="WindowState" Value="Normal"/>
-                <Setter Property="Topmost" Value="True"/>
+                <Setter Property="Topmost" Value="False"/>
                 <Setter Property="TitleBarHeight" Value="30"/>
                 <Setter Property="SaveWindowPosition" Value="True"/>
                 <Setter Property="ShowMaxRestoreButton" Value="False"/>
@@ -110,18 +109,6 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0"
-                                          Margin="0 0 4 0"
-                                          BorderThickness="0"
-                                          mah:TextBoxHelper.Watermark="Пользователь не выбран"
-                                          ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.AllUsers}"
-                                          SelectedItem="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.CurrentUser}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate DataType="{x:Type responses:User}">
-                                            <TextBlock Text="{Binding Name, Mode=OneWay}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
 
                                 <Button Grid.Column="1" 
                                         Command="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.SwitchSettingsCommand}"
