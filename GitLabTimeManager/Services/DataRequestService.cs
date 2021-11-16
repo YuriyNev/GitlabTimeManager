@@ -12,6 +12,7 @@ namespace GitLabTimeManager.Services
         event EventHandler Requested;
         event EventHandler<GitResponse> NewData;
         event EventHandler<Exception> NewException;
+        event EventHandler<string> LoadingStatus;
     }
 
     public class DataSubscription : IDataSubscription
@@ -44,9 +45,15 @@ namespace GitLabTimeManager.Services
             Requested?.Invoke(this, EventArgs.Empty);
         }
 
+        public void OnNewLoadingMessage(string message)
+        {
+            LoadingStatus?.Invoke(this, message);
+        }
+
         public event EventHandler Requested;
         public event EventHandler<GitResponse> NewData;
         public event EventHandler<Exception> NewException;
+        public event EventHandler<string> LoadingStatus;
     }
 
 
@@ -105,10 +112,16 @@ namespace GitLabTimeManager.Services
 
             return null;
         }
+
+        private void RequestStatusChanged(string message)
+        {
+            foreach (var subscription in _dataSubscriptions)
+                subscription.OnNewLoadingMessage(message);
+        }
         
         private async Task RunAsync([NotNull] ISourceControl sourceControl, DateTime start, DateTime end, IReadOnlyList<string> users)
         {
-            var data = await sourceControl.RequestDataAsync(start, end, users).ConfigureAwait(true);
+            var data = await sourceControl.RequestDataAsync(start, end, users, RequestStatusChanged).ConfigureAwait(true);
 
             foreach (var subscription in _dataSubscriptions)
             {

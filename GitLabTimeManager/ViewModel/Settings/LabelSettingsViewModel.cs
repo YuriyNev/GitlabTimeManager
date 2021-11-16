@@ -62,11 +62,11 @@ namespace GitLabTimeManager.ViewModel
 
         [CanBeNull] public IReadOnlyList<Label> Labels { get; }
 
-        public LabelDropHandler LabelDropHandler { get; } = new LabelDropHandler();
-        public LabelCopyHandler LabelDropCopyHandler { get; } = new LabelCopyHandler();
-        public SingleDropHandler StartLabelDropHandler { get; } = new SingleDropHandler();
-        public SingleDropHandler PauseLabelDropHandler { get; } = new SingleDropHandler();
-        public SingleDropHandler FinishLabelDropHandler { get; } = new SingleDropHandler();
+        public LabelDropHandler LabelDropHandler { get; } = new();
+        public LabelCopyHandler LabelDropCopyHandler { get; } = new();
+        public SingleDropHandler StartLabelDropHandler { get; } = new();
+        public SingleDropHandler PauseLabelDropHandler { get; } = new();
+        public SingleDropHandler FinishLabelDropHandler { get; } = new();
 
         public Command ResetStartLabelCommand { get; }
         public Command ResetPauseLabelCommand { get; }
@@ -83,7 +83,6 @@ namespace GitLabTimeManager.ViewModel
             : base(profileService, userProfile, messageService)
         {
             LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
-
             Labels = settingsArgument?.Labels;
 
             ResetStartLabelCommand = new Command(ResetStartLabel);
@@ -103,7 +102,7 @@ namespace GitLabTimeManager.ViewModel
 
         private void ResetStartLabel() => StartLabel = null;
 
-        private void ApplyOptions(IUserProfile userProfile)
+        protected override void ApplyOptions(IUserProfile userProfile)
         {
             var labelSetting = userProfile.LabelSettings;
 
@@ -126,13 +125,12 @@ namespace GitLabTimeManager.ViewModel
             PassedLabels = new ObservableCollection<Label>(passedLabels);
         }
 
-        protected override void SaveOptions()
-        {
-            try
+        public override Action<IUserProfile> SaveAction =>
+            profile =>
             {
                 if (Labels != null)
                 {
-                    var boardLabels = UserProfile.LabelSettings.BoardStateLabels;
+                    var boardLabels = profile.LabelSettings.BoardStateLabels;
 
                     boardLabels.ToDoLabel = PauseLabel?.Name;
                     boardLabels.DoingLabel = StartLabel?.Name;
@@ -150,20 +148,7 @@ namespace GitLabTimeManager.ViewModel
                         .Select(x => x.Name)
                         .ToList();
                 }
-
-                ProfileService.Serialize(UserProfile);
-
-                MessageService.OnMessage(this, "Настройки сохранены");
-            }
-            catch
-            {
-                MessageService.OnMessage(this, "Не удалось сохранить настройки!");
-            }
-            finally
-            {
-                OnClose?.Invoke();
-            }
-        }
+            };
 
         private void FinishLabel_Dropped(object sender, Label e) => FinishLabel = e;
 

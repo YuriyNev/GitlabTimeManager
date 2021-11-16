@@ -132,15 +132,15 @@ namespace GitLabTimeManager.Services
                 Debug.Assert(false, "Incorrect state!");
 
             if (isPassed)
-                return TaskStatus.Ready;
+                return TaskFactory.DoneStatus;
 
             if (inWork)
-                return TaskStatus.Doing;
+                return TaskFactory.DoingStatus;
 
             if (waitWork)
-                return TaskStatus.ToDo;
+                return TaskFactory.ToDo;
 
-            return TaskStatus.None;
+            return null;
         }
 
         public bool InWork(List<string> labels) => labels.Contains(DoingLabel);

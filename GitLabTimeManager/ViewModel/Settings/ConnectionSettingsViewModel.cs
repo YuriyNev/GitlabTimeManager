@@ -25,40 +25,26 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(TokenProperty, value);
         }
 
+        public override Action<IUserProfile> SaveAction =>
+            profile =>
+            {
+                profile.Token = Token;
+                profile.Url = Uri;
+            };
+
         public ConnectionSettingsViewModel(
             [NotNull] IProfileService profileService,
-            [NotNull] IUserProfile userProfile, 
+            [NotNull] IUserProfile userProfile,
             [NotNull] INotificationMessageService messageService)
             : base(profileService, userProfile, messageService)
         {
             ApplyOptions(UserProfile);
         }
 
-        private void ApplyOptions(IUserProfile userProfile)
+        protected sealed override void ApplyOptions(IUserProfile userProfile)
         {
             Token = userProfile.Token;
             Uri = userProfile.Url;
-        }
-
-        protected override void SaveOptions()
-        {
-            try
-            {
-                UserProfile.Token = Token;
-                UserProfile.Url = Uri;
-
-                ProfileService.Serialize(UserProfile);
-
-                MessageService.OnMessage(this, "Настройки сохранены. Требуется перезапуск приложения.");
-            }
-            catch
-            {
-                MessageService.OnMessage(this, "Не удалось сохранить настройки!");
-            }
-            finally
-            {
-                OnClose?.Invoke();
-            }
         }
     }
 }

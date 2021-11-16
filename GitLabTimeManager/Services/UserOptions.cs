@@ -25,13 +25,10 @@ namespace GitLabTimeManager.Services
             {
                 Serialize(profile);
             }
-            catch 
+            catch
             {
                 throw new IncorrectProfileException();
             }
-
-            //if (!Verify(profile))
-            //    throw new IncorrectProfileException();
 
             return profile;
         }
@@ -46,17 +43,6 @@ namespace GitLabTimeManager.Services
         }
 
         public event EventHandler<IUserProfile> Serialized;
-
-        private static bool Verify(IUserProfile profile)
-        {
-            if (string.IsNullOrEmpty(profile.Token))
-                return false;
-            
-            if (string.IsNullOrEmpty(profile.Url))
-                return false;
-            
-            return true;
-        }
     }
 
     public interface IProfileService
@@ -74,9 +60,9 @@ namespace GitLabTimeManager.Services
 
         string Url { get; set; }
 
-        int RequestMonths { get; set; }
-
         LabelSettings LabelSettings { get; set; }
+
+        Dictionary<string, IList<string>> UserGroups { get; set; }
     }
 
     public class LabelSettings
@@ -108,12 +94,8 @@ namespace GitLabTimeManager.Services
 
         public string Url { get; set; }
 
-#if DEBUG
-        public int RequestMonths { get; set; } = 2;
-#else
-        public int RequestMonths { get; set; } = 2;
-#endif
-
+        public Dictionary<string, IList<string>> UserGroups { get; set; }
+        
         public LabelSettings LabelSettings { get; set; } = new()
         {
             BoardStateLabels = new BoardStateLabels(),
@@ -133,10 +115,8 @@ namespace GitLabTimeManager.Services
 
             Url = userProfile.Url;
             Token = userProfile.Token;
-            RequestMonths = userProfile.RequestMonths;
             LabelSettings = userProfile.LabelSettings;
-            if (LabelSettings.PassedLabels == null)
-                LabelSettings.PassedLabels = Array.Empty<string>();
+            LabelSettings.PassedLabels ??= Array.Empty<string>();
 
             LabelSettings.AllBoardLabels = new List<string>(LabelSettings.OtherBoardLabels)
             {
@@ -144,6 +124,8 @@ namespace GitLabTimeManager.Services
                 LabelSettings.BoardStateLabels.DoingLabel, 
                 LabelSettings.BoardStateLabels.DoneLabel, 
             };
+
+            UserGroups = userProfile.UserGroups ?? new Dictionary<string, IList<string>>();
         }
     }
 }

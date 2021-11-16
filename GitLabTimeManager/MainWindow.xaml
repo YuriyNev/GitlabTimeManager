@@ -9,8 +9,6 @@
                  xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
                  xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
                  xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-                 xmlns:gitLabTimeManager="clr-namespace:GitLabTimeManager"
-                 xmlns:settings="clr-namespace:GitLabTimeManager.ViewModel.Settings"
                  mc:Ignorable="d"
                  Height="450" Width="800" 
                  Title="GLTimeManager"
@@ -35,6 +33,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:LabelSettingsViewModel}">
             <view:LabelSettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:UserGroupsSettingsViewModel}">
+            <view:UserGroupsSettingsView />
         </DataTemplate>
         <DataTemplate x:Key="TabHeaderTemplate">
             <Grid>
@@ -138,9 +139,22 @@
                     <ContentControl Content="{Binding LabelSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
+
+                <TabItem Header="Группы пользователей" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                    <ContentControl Content="{Binding UserGroupsVm, Mode=OneWay}"
+                                    Margin="0 4 0 0"/>
+                </TabItem>
             </mah:MetroAnimatedTabControl>
 
-            <mah:ProgressRing Visibility="{Binding InProgress, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}}"/>
+            <Grid Visibility="{Binding InProgress, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}}"
+                  Background="#99FFFFFF">
+                <mah:ProgressRing />
+                <TextBlock Text="{Binding LoadingStatus, Mode=OneWay}"
+                           FontSize="14"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Background="#AAFFFFFF"/>
+            </Grid>
             
             <!--Error Message On Loading-->
             <TextBlock Text="{Binding Error, Mode=OneWay}"

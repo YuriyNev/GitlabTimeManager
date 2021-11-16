@@ -117,7 +117,7 @@ namespace GitLabTimeManager.ViewModel
 
         protected override Task OnClosingAsync()
         {
-            IssueTimerVm.CancelAndCloseViewModelAsync();
+            IssueTimerVm?.CancelAndCloseViewModelAsync();
             return base.OnClosingAsync();
         }
     }

@@ -27,7 +27,7 @@
         <DataTemplate x:Key="IssueIdTemplate" DataType="{x:Type services:ReportIssue}">
             <TextBlock HorizontalAlignment="Center"
                        VerticalAlignment="Top"
-                       Margin="0 4 0 0">
+                       Margin="0 0 0 0">
                 <Hyperlink NavigateUri="{Binding WebUri}">
                     <b:Interaction.Behaviors>
                         <behavior:HyperLinkBehavior />
@@ -40,57 +40,42 @@
         </DataTemplate>
 
         <DataTemplate x:Key="TaskTemplate" DataType="{x:Type services:ReportIssue}">
-            <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Top"
-                  Margin="0 4 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Rectangle Grid.Column="0"
-                           RadiusX="4" RadiusY="4">
-                    <Rectangle.Style>
-                        <Style TargetType="{x:Type Rectangle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding TaskState, Mode=OneWay}" Value="{x:Static services:TaskStatus.ToDo}">
-                                    <Setter Property="Fill" Value="#428bca"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding TaskState, Mode=OneWay}" Value="{x:Static services:TaskStatus.Doing}">
-                                    <Setter Property="Fill" Value="#0033cc"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding TaskState, Mode=OneWay}" Value="{x:Static services:TaskStatus.Ready}">
-                                    <Setter Property="Fill" Value="#44ad8e"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Rectangle.Style>
-                </Rectangle>
-                <TextBlock Grid.Column="0">
-                    <TextBlock.Style>
-                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
-                            <Setter Property="Margin" Value="4"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding TaskState, Mode=OneWay}" Value="{x:Static services:TaskStatus.ToDo}">
-                                    <Setter Property="Text" Value="Можно выполнять"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding TaskState, Mode=OneWay}" Value="{x:Static services:TaskStatus.Doing}">
-                                    <Setter Property="Text" Value="В работе"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding TaskState, Mode=OneWay}" Value="{x:Static services:TaskStatus.Ready}">
-                                    <Setter Property="Text" Value="Сделано"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
+            <ContentControl Content="{Binding TaskState}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate DataType="services:TaskStatus">
+                        <Grid HorizontalAlignment="Center"
+                              VerticalAlignment="Top" 
+                              Margin="8 2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Rectangle Grid.Column="0"
+                                       RadiusX="4" RadiusY="4"
+                                       Fill="{Binding Brush, Mode=OneWay}"/>
+                            <TextBlock Grid.Column="0"
+                                       Margin="4"
+                                       Foreground="White"
+                                       Text="{Binding Name, Mode=OneWay}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
+
         </DataTemplate>
 
-        <Style x:Key="TitleTextStyle" BasedOn="{StaticResource TextBlockStyle}" TargetType="{x:Type TextBlock}">
+        <Style x:Key="LeftTextStyle" BasedOn="{StaticResource TextBlockStyle}" TargetType="{x:Type TextBlock}">
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
             <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+            <Setter Property="Margin" Value="4 0"/>
+        </Style>
+
+        <Style x:Key="CenterTextStyle" BasedOn="{StaticResource TextBlockStyle}" TargetType="{x:Type TextBlock}">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+            <Setter Property="Margin" Value="4 0"/>
         </Style>
 
         <Style x:Key="TimeStatTextStyle" BasedOn="{StaticResource TextBlockStyle}" TargetType="{x:Type TextBlock}">
@@ -181,7 +166,7 @@
                       IsEditable="True"
                       TextSearch.TextPath="Name"
                       ItemsSource="{Binding AllUsers, Mode=OneWay}"
-                      SelectedItem="{Binding CurrentUser, Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
+                      SelectedItem="{Binding CurrentUser, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type responses:User}">
                         <TextBlock Text="{Binding Name, Mode=OneWay}"/>
@@ -216,9 +201,9 @@
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
                   CanUserDeleteRows="False"
-                  CanUserSortColumns="False"
+                  CanUserSortColumns="True"
                   CanUserReorderColumns="True"
-                  CanUserResizeColumns="False"
+                  CanUserResizeColumns="True"
                   IsSynchronizedWithCurrentItem="True"
                   CanUserResizeRows="True"
                   CanUserAddRows="False"
@@ -252,11 +237,11 @@
 
             <DataGrid.Columns>
 
-                <DataGridTextColumn Header="Пользователь"
+                <!--<DataGridTextColumn Header="Пользователь"
                                     Width="150"
                                     Binding="{Binding User, Mode=OneWay}"
                                     Visibility="{Binding Path=DataContext.IsSingleUser, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}, Source={helpers:RootObject}}"
-                                    ElementStyle="{StaticResource TimeStatTextStyle}"/>
+                                    ElementStyle="{StaticResource TimeStatTextStyle}"/>-->
 
                 <DataGridTemplateColumn Header="#"
                                         Width="45" 
@@ -267,12 +252,13 @@
                                     Width="*"
                                     MinWidth="100"
                                     Binding="{Binding Title, Mode=OneWay}"
-                                    ElementStyle="{StaticResource TitleTextStyle}"/>
+                                    ElementStyle="{StaticResource LeftTextStyle}"/>
 
                 <DataGridTextColumn Header="Цель"
                                     Width="SizeToCells"
+                                    CanUserSort="True"
                                     Binding="{Binding Epic, Mode=OneWay}"
-                                    ElementStyle="{StaticResource TitleTextStyle}"/>
+                                    ElementStyle="{StaticResource CenterTextStyle}"/>
 
                 <DataGridTemplateColumn Header="Состояние"
                                         Width="SizeToCells"
@@ -280,50 +266,59 @@
                                         CellTemplate="{StaticResource TaskTemplate}"/>
 
                 <DataGridTextColumn Header="Итерации"
+                                    CanUserSort="True"
                                     Width="80"
                                     Binding="{Binding Iterations, Mode=OneWay, StringFormat={}{0:D}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Коммиты"
+                                    CanUserSort="True"
                                     Width="80"
                                     Visibility="{Binding Path=DataContext.IsSingleUser, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}, Source={helpers:RootObject}}"
                                     Binding="{Binding Commits, Mode=OneWay, StringFormat={}{0:D}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Активность, ч"
+                                    CanUserSort="True"
                                     Width="100"
                                     Visibility="Collapsed"
                                     Binding="{Binding Activity, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Затрачено"
+                                    CanUserSort="True"
                                     Width="80"
                                     Visibility="Collapsed"
                                     Binding="{Binding SpendForPeriod, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Разработка, ч"
+                                    CanUserSort="True"
                                     Width="100"
                                     Visibility="{Binding Path=DataContext.IsSingleUser, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfTrue}, Source={helpers:RootObject}}"
                                     Binding="{Binding SpendForPeriodByStage, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Оценка, ч"
+                                    CanUserSort="True"
                                     Width="100"
                                     Binding="{Binding Estimate, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Запланировано"
+                                    CanUserSort="True"
                                     Width="100"
                                     Binding="{Binding DueTime, Mode=OneWay, StringFormat='{}{0:dd.MM.yy}', ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Начало"
+                                    CanUserSort="True"
                                     Width="100"
                                     Binding="{Binding StartTime, Mode=OneWay, StringFormat='{}{0:dd.MM.yy}', ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
                 <DataGridTextColumn Header="Закрыта"
+                                    CanUserSort="True"
                                     Width="100"
                                     Binding="{Binding EndTime, Mode=OneWay, StringFormat='{}{0:dd.MM.yy}', ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
@@ -339,6 +334,42 @@
                     </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander IsExpanded="True" Focusable="False"
+                                                  HorizontalAlignment="Stretch"
+                                                  HorizontalContentAlignment="Stretch" 
+                                                  BorderThickness="0"
+                                                  Margin="0 8 0 0"
+                                                  mah:HeaderedControlHelper.HeaderBackground="{StaticResource MahApps.Brushes.Accent4}"
+                                                  mah:HeaderedControlHelper.HeaderForeground="{StaticResource MahApps.Brushes.Gray3}">
+                                            <Expander.Content>
+                                                <ItemsPresenter />
+                                            </Expander.Content>
+                                            <Expander.Header>
+                                                <TextBlock Margin="8 0">
+                                                    <TextBlock.Text>
+                                                        <MultiBinding Mode="OneWay" StringFormat="{}{0}">
+                                                            <Binding Path="Name" Mode="OneWay"/>
+                                                            <Binding Path="ItemCount" Mode="OneWay"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </Expander.Header>
+
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
         </DataGrid>
 
         <!-- Summary -->

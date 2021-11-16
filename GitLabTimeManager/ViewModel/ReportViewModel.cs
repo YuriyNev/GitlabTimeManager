@@ -108,12 +108,14 @@ namespace GitLabTimeManager.ViewModel
 
         private GitStatistics Statistics { get; set; }
         private TimeSpan WorkingTime { get; set; }
+        private DateTime FullEndTime => EndTime.AddDays(1).AddTicks(-1);
 
         public Command ExportCsvCommand { get; }
 
         private bool _canSave = true;
 
         private bool CanSave() => _canSave;
+        private ChangeNotificationWrapper _changeNotificationWrapper;
 
         public ReportViewModel(
             [NotNull] IDataRequestService dataRequestService,
@@ -129,7 +131,10 @@ namespace GitLabTimeManager.ViewModel
             MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
-            
+
+            _changeNotificationWrapper = new ChangeNotificationWrapper(UserProfile);
+            _changeNotificationWrapper.PropertyChanged += UserProfile_PropertyChanged;
+
             DataSubscription = DataRequestService.CreateSubscription();
             DataSubscription.NewData += DataSubscriptionOnNewData;
 
@@ -138,17 +143,33 @@ namespace GitLabTimeManager.ViewModel
             StartTime = DateTime.Today.AddDays(-7);
             EndTime = DateTime.Today;
 
-            _ = Task.Run(async () =>
-            {
-                var users = await SourceControl.GetAllUsersAsync().ConfigureAwait(true);
-                users = users
-                    .OrderBy(x => x.Name)
-                    .Where(x => x.State != "blocked")
-                    .ToList();
+            _ = Task.Run(async () => { await RequestUsersAsync(); });
+        }
 
-                users.Insert(0, SpecialUser.AllUsers);
-                AllUsers = users.ToList();
-            });
+        private async Task RequestUsersAsync()
+        {
+            var users = await SourceControl.FetchAllUsersAsync().ConfigureAwait(true);
+            users = users
+                .OrderBy(x => x.Name)
+                .Where(x => x.State != "blocked")
+                .ToList();
+
+            int position = 0;
+            foreach (var group in UserProfile.UserGroups)
+            {
+                users.Insert(position, new User {Name = group.Key, Organization = "group"});
+                position++;
+            }
+
+            AllUsers = users.ToList();
+        }
+
+        private void UserProfile_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IUserProfile.UserGroups))
+            {
+                RequestUsersAsync();
+            }
         }
 
         private async Task ExportCsv()
@@ -206,16 +227,16 @@ namespace GitLabTimeManager.ViewModel
         private void FillReport(GitResponse response)
         {
             var startTime = StartTime;
-            var endTime = EndTime;
+            var endTime = FullEndTime;
 
             WorkingTime = Calendar.GetWorkingTime(startTime, endTime);
 
             ReportIssues = CreateCollection(response.WrappedIssues, startTime, endTime);
             IssuesCollection = (CollectionView)CollectionViewSource.GetDefaultView(ReportIssues);
-            if (IssuesCollection.GroupDescriptions != null)
-                IssuesCollection.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ReportIssue.User)));
             IssuesCollection.SortDescriptions.Add(new SortDescription(nameof(ReportIssue.User), ListSortDirection.Ascending));
             IssuesCollection.SortDescriptions.Add(new SortDescription(nameof(ReportIssue.TaskState), ListSortDirection.Ascending));
+            if (SourceControl.CurrentUsers.Count > 1) 
+                IssuesCollection.GroupDescriptions?.Add(new PropertyGroupDescription(nameof(ReportIssue.User)));
 
             EpicShowing = ReportIssues.Any(x => !string.IsNullOrEmpty(x.Epic));
             Statistics = StatisticsExtractor.Process(response.WrappedIssues, startTime, endTime);
@@ -262,7 +283,6 @@ namespace GitLabTimeManager.ViewModel
                             Epic = x.Issue.Epic?.Title,
                             WebUri = x.Issue.WebUrl,
                             TaskState = x.Status,
-                            Priority = ((int)x.Status).ToString(),
                         };
                     }));
 
@@ -292,18 +312,34 @@ namespace GitLabTimeManager.ViewModel
             if (CurrentUser == null)
                 return;
             
+            var users = CurrentUser.IsGroup()
+                ? ExtractUsersFromGroup(UserProfile.UserGroups, CurrentUser.Name) 
+                : new List<string> { CurrentUser.Username };
+
+            IsSingleUser = !CurrentUser.IsGroup();
+
+            DataRequestService.Restart(StartTime, FullEndTime, users);
+        }
+
+        private List<string> ExtractUsersFromGroup([NotNull] Dictionary<string, IList<string>> userProfileUserGroups, [NotNull] string group)
+        {
+            if (userProfileUserGroups == null) throw new ArgumentNullException(nameof(userProfileUserGroups));
+            if (group == null) throw new ArgumentNullException(nameof(group));
+
             List<string> users;
-            if (CurrentUser == SpecialUser.AllUsers)
+            if (userProfileUserGroups.TryGetValue(group, out var u))
+            {
                 users = AllUsers
-                    .Except(new[] { SpecialUser.AllUsers })
+                    .Where(x => u.Contains(x.Name))
                     .Select(x => x.Username)
                     .ToList();
+            }
             else
-                users = new List<string> { CurrentUser.Username };
+            {
+                users = Array.Empty<string>().ToList();
+            }
 
-            IsSingleUser = CurrentUser != SpecialUser.AllUsers;
-
-            DataRequestService.Restart(StartTime, EndTime, users);
+            return users;
         }
 
         private void UpdatePropertiesAsync()
@@ -316,6 +352,9 @@ namespace GitLabTimeManager.ViewModel
         
         protected override Task CloseAsync()
         {
+            _changeNotificationWrapper.UnsubscribeFromAllEvents();
+            _changeNotificationWrapper = null;
+
             DataSubscription.NewData -= DataSubscriptionOnNewData;
             DataSubscription.Dispose();
 
@@ -325,6 +364,18 @@ namespace GitLabTimeManager.ViewModel
 
     public static class SpecialUser
     {
-        public static User AllUsers { get; } = new User { Name = "Все пользователи" };
+        public static bool IsGroup(this User user) => user.Organization == "group";
+    }
+
+    public class ByUserGroupDescription : GroupDescription
+    {
+        public static readonly ByUserGroupDescription Instance = new ByUserGroupDescription();
+
+        private ByUserGroupDescription() { }
+
+        public override object GroupNameFromItem(object item, int level, CultureInfo culture)
+        {
+            return (item as ReportIssue)?.User;
+        }
     }
 }

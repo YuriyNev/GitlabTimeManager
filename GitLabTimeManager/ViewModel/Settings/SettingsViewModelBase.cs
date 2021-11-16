@@ -12,6 +12,8 @@ namespace GitLabTimeManager.ViewModel.Settings
         [NotNull] protected IUserProfile UserProfile { get; }
 
         public Command ApplyCommand { get; }
+        public abstract Action<IUserProfile> SaveAction { get; }
+        protected abstract void ApplyOptions([NotNull] IUserProfile userProfile);
 
         protected SettingsViewModelBase(
             [NotNull] IProfileService profileService,
@@ -25,7 +27,25 @@ namespace GitLabTimeManager.ViewModel.Settings
             ApplyCommand = new Command(SaveOptions);
         }
 
-        protected abstract void SaveOptions();
+        private void SaveOptions()
+        {
+            try
+            {
+                SaveAction(UserProfile);
+
+                ProfileService.Serialize(UserProfile);
+
+                MessageService.OnMessage(this, "Настройки сохранены");
+            }
+            catch
+            {
+                MessageService.OnMessage(this, "Не удалось сохранить настройки!");
+            }
+            finally
+            {
+                OnClose?.Invoke();
+            }
+        }
 
         protected Action OnClose { get; private set; }
 

@@ -224,6 +224,7 @@
     <Compile Include="Behavior\TopMostBehavior.cs" />
     <Compile Include="Controls\PopupButton.cs" />
     <Compile Include="Converters\LamdaConverters.cs" />
+    <Compile Include="Helpers\MahAppsDialog.cs" />
     <Compile Include="Helpers\RootObject.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
@@ -267,6 +268,7 @@
     <Compile Include="ViewModel\Settings\ConnectionSettingsViewModel.cs" />
     <Compile Include="ViewModel\Settings\LabelSettingsViewModel.cs" />
     <Compile Include="ViewModel\Settings\SettingsViewModelBase.cs" />
+    <Compile Include="ViewModel\Settings\UserGroupsSettingsViewModel.cs" />
     <Compile Include="ViewModel\SummaryViewModel.cs" />
     <Compile Include="ViewModel\TrayViewModel.cs" />
     <Compile Include="View\ReportView.xaml.cs">
@@ -286,6 +288,9 @@
     </Compile>
     <Compile Include="View\Settings\LabelSettingsView.xaml.cs">
       <DependentUpon>LabelSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Settings\UserGroupsSettingsView.xaml.cs">
+      <DependentUpon>UserGroupsSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SummaryView.xaml.cs">
       <DependentUpon>SummaryView.xaml</DependentUpon>
@@ -343,6 +348,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Settings\LabelSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Settings\UserGroupsSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

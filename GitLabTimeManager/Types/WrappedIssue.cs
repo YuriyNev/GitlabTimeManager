@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Media;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Projects.Responses;
 using GitLabTimeManager.Helpers;
@@ -116,13 +117,13 @@ namespace GitLabTimeManager.Services
         }
     }
 
-    public enum TaskStatus
-    {
-        None,
-        ToDo,
-        Doing,
-        Ready,
-    }
+    //public enum TaskStatus
+    //{
+    //    None,
+    //    ToDo,
+    //    Doing,
+    //    Ready,
+    //}
 
     public class ReportIssue : NotifyObject
     {
@@ -155,10 +156,7 @@ namespace GitLabTimeManager.Services
         public string WebUri { get; set; }
 
         public TaskStatus TaskState { get; set; }
-
-        public string Priority { get; set; }
     }
-
 
     public class UserInfo
     {
@@ -167,6 +165,64 @@ namespace GitLabTimeManager.Services
         public UserInfo([NotNull] string name)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+        }
+    }
+
+    public abstract class TaskStatus : IComparable
+    {
+        public string Name { get; }
+
+        public Brush Brush { get; }
+
+        public int Index { get; }
+
+        protected TaskStatus([NotNull] string name, [NotNull] Brush brush, int index)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Brush = brush ?? throw new ArgumentNullException(nameof(brush));
+            Brush.Freeze();
+
+            Index = index;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is TaskStatus otherTask)
+            {
+                if (Index == otherTask.Index) return 0;
+                if (Index > otherTask.Index) return 1;
+                if (Index < otherTask.Index) return -1;
+            }
+
+            return 0;
+        }
+    }
+
+    public static class TaskFactory
+    {
+        public static TaskStatus ToDo => new ToDoStatus("Можно выполнять", new SolidColorBrush(new Color { A = 0xFF, R = 0x42, G = 0x8B, B = 0xCA, }), 0);
+        public static TaskStatus DoingStatus => new DoingStatus("В работе", new SolidColorBrush(new Color { A = 0xFF, R = 0x00, G = 0x33, B = 0xCC, }), 1);
+        public static TaskStatus DoneStatus => new DoneStatus("Сделано",   new SolidColorBrush(new Color { A = 0xFF, R = 0x44, G = 0xAD, B = 0x8E, }), 2);
+    }
+
+    public class ToDoStatus : TaskStatus
+    {
+        public ToDoStatus([NotNull] string name, [NotNull] Brush brush, int index) : base(name, brush, index)
+        {
+        }
+    }
+
+    public class DoingStatus : TaskStatus
+    {
+        public DoingStatus([NotNull] string name, [NotNull] Brush brush, int index) : base(name, brush, index)
+        {
+        }
+    }
+
+    public class DoneStatus : TaskStatus
+    {
+        public DoneStatus([NotNull] string name, [NotNull] Brush brush, int index) : base(name, brush, index)
+        {
         }
     }
 }

@@ -47,6 +47,20 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData GanttViewModelProperty = RegisterProperty<MainViewModel, GanttViewModel>(x => x.GanttViewModel);
         [UsedImplicitly] public static readonly PropertyData InProgressProperty = RegisterProperty<MainViewModel, bool>(x => x.InProgress);
         [UsedImplicitly] public static readonly PropertyData LabelSettingsVmProperty = RegisterProperty<MainViewModel, LabelSettingsViewModel>(x => x.LabelSettingsVm);
+        [UsedImplicitly] public static readonly PropertyData UserGroupsVmProperty = RegisterProperty<MainViewModel, UserGroupsSettingsViewModel>(x => x.UserGroupsVm);
+        [UsedImplicitly] public static readonly PropertyData LoadingStatusProperty = RegisterProperty<MainViewModel, string>(x => x.LoadingStatus);
+
+        public string LoadingStatus
+        {
+            get => GetValue<string>(LoadingStatusProperty);
+            set => SetValue(LoadingStatusProperty, value);
+        }
+
+        public UserGroupsSettingsViewModel UserGroupsVm
+        {
+            get => GetValue<UserGroupsSettingsViewModel>(UserGroupsVmProperty);
+            set => SetValue(UserGroupsVmProperty, value);
+        }
 
         public bool InProgress
         {
@@ -159,6 +173,7 @@ namespace GitLabTimeManager.ViewModel
             DataSubscription.NewData += DataSubscription_NewData;
             DataSubscription.NewException += DataSubscription_NewException;
             DataSubscription.Requested += DataSubscription_Requested;
+            DataSubscription.LoadingStatus += DataSubscription_LoadingStatus;
 
             IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
             SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
@@ -166,6 +181,11 @@ namespace GitLabTimeManager.ViewModel
             GanttViewModel = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 
             SwitchSettingsCommand = new Command(SwitchSettings);
+        }
+
+        private void DataSubscription_LoadingStatus(object sender, string e)
+        {
+            LoadingStatus = e;
         }
 
         private void DataSubscription_Requested(object sender, EventArgs e)
@@ -283,6 +303,14 @@ namespace GitLabTimeManager.ViewModel
                     var labels = await SourceControl.FetchGroupLabelsAsync().ConfigureAwait(false);
                     LabelSettingsVm = ViewModelFactory.CreateViewModel<LabelSettingsViewModel>(ConvertLabel(labels));
                     LabelSettingsVm.SetOnClose(() =>
+                    {
+                        IsSettingsOpen = false;
+                    });
+
+                    var users = await SourceControl.FetchAllUsersAsync().ConfigureAwait(false);
+                    var usersArgument = new UsersArgument(users.Select(x => x.Name).ToList());
+                    UserGroupsVm = ViewModelFactory.CreateViewModel<UserGroupsSettingsViewModel>(usersArgument);
+                    UserGroupsVm.SetOnClose(() =>
                     {
                         IsSettingsOpen = false;
                     });
