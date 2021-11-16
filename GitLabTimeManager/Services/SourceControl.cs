@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Catel.Collections;
 using GitLabApiClient;
 using GitLabApiClient.Internal.Paths;
-using GitLabApiClient.Models;
 using GitLabApiClient.Models.Groups.Responses;
 using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
@@ -24,11 +23,8 @@ namespace GitLabTimeManager.Services
     public interface ISourceControl
     {
         IReadOnlyList<string> CurrentUsers { get; }
-        DateTime StartTime { get; }
-        DateTime EndTime { get; }
 
         [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, Action<string> requestStatusAction = null);
-        [PublicAPI] Task<GitResponse> RequestNewestDataAsync();
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
@@ -83,17 +79,6 @@ namespace GitLabTimeManager.Services
         public async Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, Action<string> requestStatusAction)
         {
             var wrappedIssues = await GetRawDataAsync(start, end, users, requestStatusAction).ConfigureAwait(false);
-
-            return new GitResponse
-            {
-                WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues),
-            };
-        }
-
-        /// <summary> Unused </summary>
-        public async Task<GitResponse> RequestNewestDataAsync()
-        {
-            var wrappedIssues = await GetActualDataAsync().ConfigureAwait(false);
 
             return new GitResponse
             {
@@ -240,7 +225,7 @@ namespace GitLabTimeManager.Services
                     var issuesByUser = await RequestAllIssuesAsync(AllDataOptions).ConfigureAwait(false);
                     allIssues.AddRange(issuesByUser);
                 }
-
+                
                 requestStatusAction?.Invoke($"Получение проектов");
                 var projects = FetchActiveProjects(allIssues);
 
@@ -268,40 +253,6 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        private async Task<IReadOnlyList<WrappedIssue>> GetActualDataAsync()
-        {
-            if (_isAction)
-                return null;
-
-            try
-            {
-                _isAction = true;
-
-                var allIssues = await RequestAllIssuesAsync(ActualDataOptions).ConfigureAwait(false);
-
-                var projects = FetchActiveProjects(allIssues);
-
-                var allLabels = await FetchLabelsAsync(projects).ConfigureAwait(false);
-
-                var allNotes = IsSingleUser 
-                    ? await GetNotesAsync(allIssues).ConfigureAwait(false)
-                    : new Dictionary<Issue, IReadOnlyList<Note>>();
-
-                var allEvents = await GetAllLabelActionsAsync(allIssues).ConfigureAwait(false);
-
-                return ExtentIssues(allIssues, allNotes, allLabels, allEvents);
-            }
-            catch (Exception ex)
-            {
-                Debug.Assert(false, ex.Message);
-                return Array.Empty<WrappedIssue>();
-            }
-            finally
-            {
-                _isAction = false;
-            }
-        }
-
         private async Task<WrappedIssue> UpdateIssueLabelsAsync(WrappedIssue issue, IList<string> newLabels)
         {
             var internalIssue = issue.Issue;
@@ -322,8 +273,6 @@ namespace GitLabTimeManager.Services
 
             return newWrapIssue;
         }
-
-        private static DateTime? FinishTime(Issue issue) => issue.ClosedAt;
 
         private IReadOnlyList<WrappedIssue> ExtentIssues(
             [NotNull] IReadOnlyList<Issue> sourceIssues,
@@ -442,15 +391,6 @@ namespace GitLabTimeManager.Services
             return allIssues;
         }
 
-        private static void ActualDataOptions(IssuesQueryOptions options)
-        {
-            options.Scope = Scope.AssignedToMe;
-
-            options.CreatedAfter = TimeHelper.Today.AddMonths(-2);
-
-            options.State = IssueState.All;
-        }
-
         private static TimeSpan CollectSpendTime(IEnumerable<Note> notes, DateTime? startTime = null, DateTime? endTime = null)
         {
             var start = startTime ?? DateTime.MinValue;
@@ -544,7 +484,9 @@ namespace GitLabTimeManager.Services
             if (CachedUsers == null)
             {
                 var allUsers = await GitLabClient.Users.GetAsync();
-                CachedUsers = allUsers.ToList();
+                CachedUsers = allUsers
+                    .Where(x => x.State != "blocked")
+                    .ToList();
             }
             return CachedUsers.ToList();
         }

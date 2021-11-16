@@ -151,13 +151,12 @@ namespace GitLabTimeManager.ViewModel
             var users = await SourceControl.FetchAllUsersAsync().ConfigureAwait(true);
             users = users
                 .OrderBy(x => x.Name)
-                .Where(x => x.State != "blocked")
                 .ToList();
 
             int position = 0;
             foreach (var group in UserProfile.UserGroups)
             {
-                users.Insert(position, new User {Name = group.Key, Organization = "group"});
+                users.Insert(position, UserGroupEx.CreateUserAsGroup(group.Key));
                 position++;
             }
 
@@ -168,7 +167,7 @@ namespace GitLabTimeManager.ViewModel
         {
             if (e.PropertyName == nameof(IUserProfile.UserGroups))
             {
-                RequestUsersAsync();
+                RequestUsersAsync().WaitAndUnwrapException();
             }
         }
 
@@ -362,20 +361,12 @@ namespace GitLabTimeManager.ViewModel
         }
     }
 
-    public static class SpecialUser
+    public static class UserGroupEx
     {
-        public static bool IsGroup(this User user) => user.Organization == "group";
-    }
+        private static string GroupMarker => "group";
 
-    public class ByUserGroupDescription : GroupDescription
-    {
-        public static readonly ByUserGroupDescription Instance = new ByUserGroupDescription();
+        public static bool IsGroup(this User user) => user.Organization == GroupMarker;
 
-        private ByUserGroupDescription() { }
-
-        public override object GroupNameFromItem(object item, int level, CultureInfo culture)
-        {
-            return (item as ReportIssue)?.User;
-        }
+        public static User CreateUserAsGroup(string name) => new() { Name = name, Organization = GroupMarker };
     }
 }
