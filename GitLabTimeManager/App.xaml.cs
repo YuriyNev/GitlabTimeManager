@@ -4,9 +4,15 @@ using Catel.IoC;
 using Catel.Logging;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
-using GitLabTimeManager.View;
 using GitLabTimeManager.ViewModel;
 using Hardcodet.Wpf.TaskbarNotification;
+using System.ComponentModel;
+
+namespace System.Runtime.CompilerServices
+{
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class IsExternalInit { }
+}
 
 namespace GitLabTimeManager
 {

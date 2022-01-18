@@ -117,64 +117,46 @@ namespace GitLabTimeManager.Services
         }
     }
 
-    //public enum TaskStatus
-    //{
-    //    None,
-    //    ToDo,
-    //    Doing,
-    //    Ready,
-    //}
-
     public class ReportIssue : NotifyObject
     {
-        public int Iid { get; set; }
+        public int Iid { get; init; }
 
-        public string Title { get; set; }
+        public string Title { get; init; }
 
-        public double SpendForPeriod { get; set; }
+        public double SpendForPeriod { get; init; }
 
-        public double SpendForPeriodByStage { get; set; }
+        public double SpendForPeriodByStage { get; init; }
 
-        public double Estimate { get; set; }
+        public double Estimate { get; init; }
 
-        public double Activity { get; set; }
+        public double Activity { get; init; }
         
-        public DateTime? StartTime { get; set; }
+        public DateTime? StartTime { get; init; }
 
-        public DateTime? EndTime { get; set; }
+        public DateTime? EndTime { get; init; }
 
-        public DateTime? DueTime { get; set; }
+        public DateTime? DueTime { get; init; }
 
-        public int Iterations { get; set; }
+        public int Iterations { get; init; }
 
-        public int Commits { get; set; }
+        public int Commits { get; init; }
 
-        public string User { get; set; }
+        public string User { get; init; }
         
-        public string Epic { get; set; }
+        public string Epic { get; init; }
 
-        public string WebUri { get; set; }
+        public string WebUri { get; init; }
 
-        public TaskStatus TaskState { get; set; }
+        public TaskStatus TaskState { get; init; }
     }
-
-    public class UserInfo
-    {
-        public string Name { get; }
-
-        public UserInfo([NotNull] string name)
-        {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-        }
-    }
-
+    
     public abstract class TaskStatus : IComparable
     {
         public string Name { get; }
 
         public Brush Brush { get; }
 
-        public int Index { get; }
+        private int Index { get; }
 
         protected TaskStatus([NotNull] string name, [NotNull] Brush brush, int index)
         {
@@ -202,7 +184,7 @@ namespace GitLabTimeManager.Services
     {
         public static TaskStatus ToDo => new ToDoStatus("Можно выполнять", new SolidColorBrush(new Color { A = 0xFF, R = 0x42, G = 0x8B, B = 0xCA, }), 0);
         public static TaskStatus DoingStatus => new DoingStatus("В работе", new SolidColorBrush(new Color { A = 0xFF, R = 0x00, G = 0x33, B = 0xCC, }), 1);
-        public static TaskStatus DoneStatus => new DoneStatus("Сделано",   new SolidColorBrush(new Color { A = 0xFF, R = 0x44, G = 0xAD, B = 0x8E, }), 2);
+        public static TaskStatus DoneStatus => new DoneStatus("Сделано",  new SolidColorBrush(new Color { A = 0xFF, R = 0x44, G = 0xAD, B = 0x8E, }), 2);
     }
 
     public class ToDoStatus : TaskStatus

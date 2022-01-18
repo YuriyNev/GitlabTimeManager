@@ -345,16 +345,16 @@
                                                   HorizontalAlignment="Stretch"
                                                   HorizontalContentAlignment="Stretch" 
                                                   BorderThickness="0"
-                                                  Margin="0 8 0 0"
+                                                  Margin="0 8 0 4"
                                                   mah:HeaderedControlHelper.HeaderBackground="{StaticResource MahApps.Brushes.Accent4}"
                                                   mah:HeaderedControlHelper.HeaderForeground="{StaticResource MahApps.Brushes.Gray3}">
                                             <Expander.Content>
                                                 <ItemsPresenter />
                                             </Expander.Content>
                                             <Expander.Header>
-                                                <TextBlock Margin="8 0">
+                                                <TextBlock Margin="8 8">
                                                     <TextBlock.Text>
-                                                        <MultiBinding Mode="OneWay" StringFormat="{}{0}">
+                                                        <MultiBinding Mode="OneWay" StringFormat="{}{0} / {1}">
                                                             <Binding Path="Name" Mode="OneWay"/>
                                                             <Binding Path="ItemCount" Mode="OneWay"/>
                                                         </MultiBinding>

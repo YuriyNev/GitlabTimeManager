@@ -20,7 +20,6 @@ namespace GitLabTimeManager.ViewModel
     [UsedImplicitly]
     public class ReportViewModel : ViewModelBase
     {
-        [UsedImplicitly] public static readonly PropertyData ReportIssuesProperty = RegisterProperty<ReportViewModel, ObservableCollection<ReportIssue>>(x => x.ReportIssues);
         [UsedImplicitly] public static readonly PropertyData DataProperty = RegisterProperty<ReportViewModel, GitResponse>(x => x.Data);
         [UsedImplicitly] public static readonly PropertyData ValuesForPeriodProperty = RegisterProperty<ReportViewModel, ObservableCollection<TimeStatsProperty>>(x => x.ValuesForPeriod);
         [UsedImplicitly] public static readonly PropertyData IsProgressProperty = RegisterProperty<ReportViewModel, bool>(x => x.IsProgress);
@@ -41,13 +40,13 @@ namespace GitLabTimeManager.ViewModel
         public CollectionView IssuesCollection
         {
             get => GetValue<CollectionView>(CollectionViewProperty);
-            set => SetValue(CollectionViewProperty, value);
+            private set => SetValue(CollectionViewProperty, value);
         }
 
         public bool IsSingleUser
         {
             get => GetValue<bool>(IsSingleUserProperty);
-            set => SetValue(IsSingleUserProperty, value);
+            private set => SetValue(IsSingleUserProperty, value);
         }
 
         public DateTime EndTime
@@ -71,7 +70,7 @@ namespace GitLabTimeManager.ViewModel
         public IReadOnlyList<User> AllUsers
         {
             get => GetValue<IReadOnlyList<User>>(AllUsersProperty);
-            set => SetValue(AllUsersProperty, value);
+            private set => SetValue(AllUsersProperty, value);
         }
 
         public bool IsProgress
@@ -84,12 +83,6 @@ namespace GitLabTimeManager.ViewModel
         {
             get => GetValue<GitResponse>(DataProperty);
             set => SetValue(DataProperty, value);
-        }
-        
-        public ObservableCollection<ReportIssue> ReportIssues
-        {
-            get => GetValue<ObservableCollection<ReportIssue>>(ReportIssuesProperty);
-            private set => SetValue(ReportIssuesProperty, value);
         }
 
         public ObservableCollection<TimeStatsProperty> ValuesForPeriod
@@ -109,6 +102,7 @@ namespace GitLabTimeManager.ViewModel
         private GitStatistics Statistics { get; set; }
         private TimeSpan WorkingTime { get; set; }
         private DateTime FullEndTime => EndTime.AddDays(1).AddTicks(-1);
+        private ObservableCollection<ReportIssue> ReportIssues { get; set; }
 
         public Command ExportCsvCommand { get; }
 
