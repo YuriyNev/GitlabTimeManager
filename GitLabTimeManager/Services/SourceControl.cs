@@ -311,7 +311,8 @@ namespace GitLabTimeManager.Services
             if (!hasNotes && !hasUserEvents)
                 return null;
 
-            int commits = 0;
+            var commits = new List<DateTime>();
+            
             if (hasNotes)
             {
                 // if more 0 notes then getting data from notes
@@ -332,7 +333,10 @@ namespace GitLabTimeManager.Services
                     currentDate = currentDate.AddDays(1);
                 }
 
-                commits = notes.Count(x => x.Body.IsCommit());
+                commits = notes
+                    .Where(x => x.Body.IsCommit())
+                    .Select(x => x.CreatedAt)
+                    .ToList();
             }
 
             if (hasUserEvents)

@@ -258,7 +258,7 @@ namespace GitLabTimeManager.ViewModel
                     .Where(x => x.Issue.Assignee != null)
                     .Select(x =>
                     {
-                        var metrics = x.GetMetric(LabelService);
+                        var metrics = x.GetMetric(LabelService,startDate,endDate);
                         return new ReportIssue
                         {
                             Iid = x.Issue.Iid,
@@ -271,7 +271,7 @@ namespace GitLabTimeManager.ViewModel
                             StartTime = x.StartTime == DateTime.MaxValue ? null : x.StartTime,
                             EndTime = x.EndTime == DateTime.MinValue ? null : x.EndTime,
                             DueTime = x.DueTime,
-                            Commits = x.Commits,
+                            Commits = x.Commits.Count(d => d >= startDate && d <= endDate),
                             User = x.Issue.Assignee.Name,
                             Epic = x.Issue.Epic?.Title,
                             WebUri = x.Issue.WebUrl,

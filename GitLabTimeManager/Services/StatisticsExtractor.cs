@@ -90,7 +90,7 @@ namespace GitLabTimeManager.Services
                 Sum(x => SpendsSumForPeriod(x, startTime, endTime));
 
             statistics.AllSpendsByWorkForPeriod = issues
-                .Sum(x => x.GetMetric(labelProcessor).Duration.TotalHours);
+                .Sum(x => x.GetMetric(labelProcessor, startTime, endTime).Duration.TotalHours);
             statistics.AllSpendsByWorkForPeriod = Math.Max(statistics.AllSpendsByWorkForPeriod, 0);
 
             statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;

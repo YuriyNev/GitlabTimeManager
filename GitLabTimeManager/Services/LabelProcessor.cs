@@ -207,7 +207,7 @@ namespace GitLabTimeManager.Services
 
     public static class LabelStageCalculator
     {
-        public static LabelStageMetric GetMetric([NotNull] this WrappedIssue issue, [NotNull] ILabelService labelService)
+        public static LabelStageMetric GetMetric([NotNull] this WrappedIssue issue, [NotNull] ILabelService labelService, DateTime start, DateTime end)
         {
             if (issue == null) throw new ArgumentNullException(nameof(issue));
             if (labelService == null) throw new ArgumentNullException(nameof(labelService));
@@ -231,15 +231,16 @@ namespace GitLabTimeManager.Services
                 if (currentEvent.Action != EventAction.Add)
                     continue;
 
-                var start = currentEvent.CreatedAt;
-                var end = nextEvent.CreatedAt;
+                var s = currentEvent.CreatedAt;
+                var e = nextEvent.CreatedAt;
 
-                var spend = StatisticsExtractor.GetAnyDaysSpend(start, end);
+                var spend = StatisticsExtractor.GetAnyDaysSpend(s, e);
 
                 stageTime += spend;
             }
 
             var iterations = eventList
+                .Where(x => x.CreatedAt >= start && x.CreatedAt <= end)
                 .Where(x => x.Action == EventAction.Add)
                 .Count(x => labelService.InWork(new List<string> { x.Label.Name }));
             return new LabelStageMetric

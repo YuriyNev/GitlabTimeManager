@@ -88,7 +88,7 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public int Commits { get; set; }
+        public IReadOnlyList<DateTime> Commits { get; set; }
 
         public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{Estimate:F1}\t";
 
