@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using GitLabApiClient.Models.Issues.Responses;
+using GitLabApiClient.Models.Groups.Responses;
 using GitLabApiClient.Models.Projects.Responses;
 using JetBrains.Annotations;
 
@@ -256,5 +256,17 @@ namespace GitLabTimeManager.Services
         public int Iterations { get; set; }
 
         public TimeSpan Duration { get; set; }
+    }
+
+    public static class LabelHelper
+    {
+        public static Label ConvertToLabel(this GroupLabel groupLabel) =>
+            new()
+            {
+                Id = groupLabel.Id,
+                Name = groupLabel.Name,
+                Color = groupLabel.Color,
+                Description = groupLabel.Description,
+            };
     }
 }

@@ -61,7 +61,7 @@ namespace GitLabTimeManager.Services
     {
         IDataSubscription CreateSubscription();
 
-        void Restart(DateTime start, DateTime end, IReadOnlyList<string> users);
+        void Restart(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels);
     }
 
     public class DataRequestService : IDataRequestService, IDisposable
@@ -78,7 +78,7 @@ namespace GitLabTimeManager.Services
             return subscription;
         }
         
-        public void Restart(DateTime start, DateTime end, IReadOnlyList<string> users)
+        public void Restart(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels)
         {
             _cancellation?.Cancel();
             _cancellation?.Dispose();
@@ -93,7 +93,7 @@ namespace GitLabTimeManager.Services
                 dataSubscription.OnRequested();
             }
 
-            RunAsync(sourceControl, start, end, users).ConfigureAwait(true);
+            RunAsync(sourceControl, start, end, users,labels).ConfigureAwait(true);
         }
 
         private ISourceControl InitializeSource()
@@ -119,9 +119,9 @@ namespace GitLabTimeManager.Services
                 subscription.OnNewLoadingMessage(message);
         }
         
-        private async Task RunAsync([NotNull] ISourceControl sourceControl, DateTime start, DateTime end, IReadOnlyList<string> users)
+        private async Task RunAsync([NotNull] ISourceControl sourceControl, DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels)
         {
-            var data = await sourceControl.RequestDataAsync(start, end, users, RequestStatusChanged).ConfigureAwait(true);
+            var data = await sourceControl.RequestDataAsync(start, end, users, labels ,RequestStatusChanged).ConfigureAwait(true);
 
             foreach (var subscription in _dataSubscriptions)
             {

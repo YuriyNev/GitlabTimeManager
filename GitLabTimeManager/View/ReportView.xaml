@@ -11,7 +11,8 @@
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:converters="clr-namespace:GitLabTimeManager.Converters"
              xmlns:helpers="clr-namespace:GitLabTimeManager.Helpers"
-             xmlns:responses="clr-namespace:GitLabApiClient.Models.Users.Responses;assembly=GitLabApiClient"
+             xmlns:users="clr-namespace:GitLabApiClient.Models.Users.Responses;assembly=GitLabApiClient"
+             xmlns:labels="clr-namespace:GitLabApiClient.Models.Projects.Responses;assembly=GitLabApiClient"
              xmlns:services="clr-namespace:GitLabTimeManager.Services"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
@@ -142,21 +143,47 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <DatePicker Grid.Column="0"
+            <ComboBox Grid.Column="0"
+                      Margin="4"
+                      Width="100"
+                      mah:TextBoxHelper.Watermark="Метка"
+                      mah:TextBoxHelper.ClearTextButton="True"
+                      ItemsSource="{Binding AllLabels, Mode=OneWay}"
+                      SelectedItem="{Binding SelectedLabel, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type labels:Label}">
+                        <Grid Background="Transparent">
+                            <Rectangle RadiusX="8" RadiusY="8">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{Binding Color, Mode=OneWay}"/>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <TextBlock Text="{Binding Name, Mode=OneWay}"
+                                       Foreground="{StaticResource WhiteBrush}"
+                                       Margin="8 2">
+                            </TextBlock>
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <DatePicker Grid.Column="1"
                         Margin="4"
                         SelectedDate="{Binding StartTime, Mode=TwoWay}"
                         VerticalContentAlignment="Center"
                         HorizontalContentAlignment="Center"/>
 
-            <DatePicker Grid.Column="1"
+            <DatePicker Grid.Column="2"
                         Margin="4"
                         SelectedDate="{Binding EndTime, Mode=TwoWay}"
                         VerticalContentAlignment="Center"
                         HorizontalContentAlignment="Center"/>
 
-            <ComboBox Grid.Column="2"
+            <ComboBox Grid.Column="3"
                       Margin="4"
                       BorderThickness="0"
                       Width="175"
@@ -168,7 +195,7 @@
                       ItemsSource="{Binding AllUsers, Mode=OneWay}"
                       SelectedItem="{Binding CurrentUser, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type responses:User}">
+                    <DataTemplate DataType="{x:Type users:User}">
                         <TextBlock Text="{Binding Name, Mode=OneWay}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>

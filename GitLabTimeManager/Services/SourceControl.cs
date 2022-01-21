@@ -24,7 +24,7 @@ namespace GitLabTimeManager.Services
     {
         IReadOnlyList<string> CurrentUsers { get; }
 
-        [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, Action<string> requestStatusAction = null);
+        [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction = null);
         [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
         [PublicAPI] Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
@@ -58,9 +58,11 @@ namespace GitLabTimeManager.Services
         private IReadOnlyList<ProjectId> CachedProjects { get; set; }
         private IReadOnlyList<User> CachedUsers { get; set; }
 
+        public IReadOnlyList<string> CurrentLabels { get; private set; }
         public IReadOnlyList<string> CurrentUsers { get; private set; }
         public DateTime StartTime { get; private set; }
         public DateTime EndTime { get; private set; }
+        public IReadOnlyList<string> Labels { get; private set; }
 
         private bool IsSingleUser => CurrentUsers.Count == 1;
 
@@ -76,9 +78,9 @@ namespace GitLabTimeManager.Services
             GitLabClient = new GitLabClient(UserProfile.Url, UserProfile.Token);
         }
         
-        public async Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, Action<string> requestStatusAction)
+        public async Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction)
         {
-            var wrappedIssues = await GetRawDataAsync(start, end, users, requestStatusAction).ConfigureAwait(false);
+            var wrappedIssues = await GetRawDataAsync(start, end, users, labels, requestStatusAction).ConfigureAwait(false);
 
             return new GitResponse
             {
@@ -196,7 +198,7 @@ namespace GitLabTimeManager.Services
 
         private bool _isAction;
 
-        private async Task<IReadOnlyList<WrappedIssue>> GetRawDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, Action<string> requestStatusAction = null)
+        private async Task<IReadOnlyList<WrappedIssue>> GetRawDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction = null)
         {
             if (_isAction)
                 return null;
@@ -207,9 +209,10 @@ namespace GitLabTimeManager.Services
 
                 StartTime = start;
                 EndTime = end;
+                Labels = labels ?? Array.Empty<string>();
                 CurrentUsers = users;
-
                 var allIssues = new List<Issue>();
+                
                 foreach (var user in users)
                 {
                     void AllDataOptions(IssuesQueryOptions options)
@@ -219,6 +222,7 @@ namespace GitLabTimeManager.Services
                         options.UpdatedAfter = StartTime;
                         options.UpdatedBefore = EndTime;
                         options.State = IssueState.All;
+                        options.Labels = Labels.ToList();
                     }
                     requestStatusAction?.Invoke($"Получение задач для пользователя {user}");
 

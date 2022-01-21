@@ -4,11 +4,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using Catel.Data;
 using Catel.MVVM;
 using Catel.Threading;
+using GitLabApiClient.Models.Projects.Responses;
 using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Models;
@@ -24,13 +26,15 @@ namespace GitLabTimeManager.ViewModel
         [UsedImplicitly] public static readonly PropertyData ValuesForPeriodProperty = RegisterProperty<ReportViewModel, ObservableCollection<TimeStatsProperty>>(x => x.ValuesForPeriod);
         [UsedImplicitly] public static readonly PropertyData IsProgressProperty = RegisterProperty<ReportViewModel, bool>(x => x.IsProgress);
         [UsedImplicitly] public static readonly PropertyData AllUsersProperty = RegisterProperty<ReportViewModel, IReadOnlyList<User>>(x => x.AllUsers);
+        [UsedImplicitly] public static readonly PropertyData AllLabelsProperty = RegisterProperty<ReportViewModel, IReadOnlyList<Label>>(x => x.AllLabels);
         [UsedImplicitly] public static readonly PropertyData CurrentUserProperty = RegisterProperty<ReportViewModel, User>(x => x.CurrentUser);
+        [UsedImplicitly] public static readonly PropertyData CurrentLabelProperty = RegisterProperty<ReportViewModel, Label>(x => x.CurrentLabel);
         [UsedImplicitly] public static readonly PropertyData StartTimeProperty = RegisterProperty<ReportViewModel, DateTime>(x => x.StartTime);
         [UsedImplicitly] public static readonly PropertyData EndTimeProperty = RegisterProperty<ReportViewModel, DateTime>(x => x.EndTime);
         [UsedImplicitly] public static readonly PropertyData IsSingleUserProperty = RegisterProperty<ReportViewModel, bool>(x => x.IsSingleUser);
         [UsedImplicitly] public static readonly PropertyData CollectionViewProperty = RegisterProperty<ReportViewModel, CollectionView>(x => x.IssuesCollection);
         [UsedImplicitly] public static readonly PropertyData EpicShowingProperty = RegisterProperty<ReportViewModel, bool>(x => x.EpicShowing);
-
+        
         public bool EpicShowing
         {
             get => GetValue<bool>(EpicShowingProperty);
@@ -67,10 +71,22 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(CurrentUserProperty, value);
         }
 
+        public Label CurrentLabel
+        {
+            get => GetValue<Label>(CurrentLabelProperty);
+            set => SetValue(CurrentLabelProperty, value);
+        }
+
         public IReadOnlyList<User> AllUsers
         {
             get => GetValue<IReadOnlyList<User>>(AllUsersProperty);
             private set => SetValue(AllUsersProperty, value);
+        }
+
+        public IReadOnlyList<Label> AllLabels
+        {
+            get => GetValue<IReadOnlyList<Label>>(AllLabelsProperty);
+            private set => SetValue(AllLabelsProperty, value);
         }
 
         public bool IsProgress
@@ -111,6 +127,8 @@ namespace GitLabTimeManager.ViewModel
         private bool CanSave() => _canSave;
         private ChangeNotificationWrapper _changeNotificationWrapper;
 
+        private readonly CancellationTokenSource _lifeTime = new();
+
         public ReportViewModel(
             [NotNull] IDataRequestService dataRequestService,
             [NotNull] ICalendar calendar,
@@ -137,10 +155,25 @@ namespace GitLabTimeManager.ViewModel
             StartTime = DateTime.Today.AddDays(-7);
             EndTime = DateTime.Today;
 
-            _ = Task.Run(async () => { await RequestUsersAsync(); });
+            _ = Task.Run(async () => { await RequestDataAsync(_lifeTime.Token); });
         }
 
-        private async Task RequestUsersAsync()
+        private async Task RequestDataAsync(CancellationToken cancellationToken)
+        {
+            await FetchGroupLabelsAsync(cancellationToken).ConfigureAwait(true);
+
+            await FetchUsersAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        private async Task FetchGroupLabelsAsync(CancellationToken cancellationToken)
+        {
+            var labels = await SourceControl.FetchGroupLabelsAsync();
+            AllLabels = labels
+                .Select(groupLabel => groupLabel.ConvertToLabel())
+                .ToList();
+        }
+
+        private async Task FetchUsersAsync(CancellationToken cancellationToken)
         {
             var users = await SourceControl.FetchAllUsersAsync().ConfigureAwait(true);
             users = users
@@ -150,7 +183,7 @@ namespace GitLabTimeManager.ViewModel
             int position = 0;
             foreach (var group in UserProfile.UserGroups)
             {
-                users.Insert(position, UserGroupEx.CreateUserAsGroup(group.Key));
+                users.Insert(position, UserGroupEx.CreateUserAsGroup(@group.Key));
                 position++;
             }
 
@@ -161,7 +194,7 @@ namespace GitLabTimeManager.ViewModel
         {
             if (e.PropertyName == nameof(IUserProfile.UserGroups))
             {
-                RequestUsersAsync().WaitAndUnwrapException();
+                RequestDataAsync(_lifeTime.Token).WaitAndUnwrapException();
             }
         }
 
@@ -282,6 +315,10 @@ namespace GitLabTimeManager.ViewModel
         protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
+            if (e.PropertyName == nameof(CurrentLabel))
+            {
+                RequestNewData();
+            }
             if (e.PropertyName == nameof(StartTime))
             {
                 RequestNewData();
@@ -302,6 +339,11 @@ namespace GitLabTimeManager.ViewModel
 
         private void RequestNewData()
         {
+            List<string> selectedLabel = null;
+
+            if (CurrentLabel != null)
+                selectedLabel = new List<string> { CurrentLabel.Name };
+
             if (CurrentUser == null)
                 return;
             
@@ -311,7 +353,7 @@ namespace GitLabTimeManager.ViewModel
 
             IsSingleUser = !CurrentUser.IsGroup();
 
-            DataRequestService.Restart(StartTime, FullEndTime, users);
+            DataRequestService.Restart(StartTime, FullEndTime, users, selectedLabel);
         }
 
         private List<string> ExtractUsersFromGroup([NotNull] Dictionary<string, IList<string>> userProfileUserGroups, [NotNull] string group)
@@ -350,6 +392,9 @@ namespace GitLabTimeManager.ViewModel
 
             DataSubscription.NewData -= DataSubscriptionOnNewData;
             DataSubscription.Dispose();
+
+            _lifeTime.Cancel();
+            _lifeTime.Dispose();
 
             return base.CloseAsync();
         }

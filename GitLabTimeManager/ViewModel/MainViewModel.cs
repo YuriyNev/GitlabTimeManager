@@ -323,13 +323,7 @@ namespace GitLabTimeManager.ViewModel
             return new()
             {
                 Labels = labels
-                    .Select(x => new Label
-                    {
-                        Id = x.Id,
-                        Name = x.Name,
-                        Color = x.Color,
-                        Description = x.Description,
-                    })
+                    .Select(x => x.ConvertToLabel())
                     .ToList()
             };
         }
