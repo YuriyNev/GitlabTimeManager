@@ -1,16 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using GitLabApiClient.Models.Users.Responses;
 using JetBrains.Annotations;
 using Microsoft.Office.Interop.Excel;
 
 namespace GitLabTimeManager.Services
 {
-    public class ExcelExporter
+    public class ExcelExporter : IExporter
     {
-        private readonly string _path = Directory.GetCurrentDirectory() + "\\Resources\\ReportTemplate.xltx";
+        private readonly string _path = Directory.GetCurrentDirectory() + "\\Resources\\ReportTemplateModified.xltx";
 
         private const string IidTag = "Iid";
         private const string IssueNameTag = "IssueName";
@@ -23,49 +26,90 @@ namespace GitLabTimeManager.Services
         private const string SpendStartedInPeriodTag = "SpendStartedInPeriod";
         private const string SpendInPeriodTag = "SpendInPeriod";
         private const string WorkingTimeTag = "WorkingTime";
+        private const string UserTag = "User";
+        private const string TaskStateTag = "TaskState";
+        /// <summary> Интервал отчета </summary>
+        private const string TimeIntervalTag = "BeginTime";//
+        private const string IterationsTag = "Iterations";
+        /// <summary> Время задачи </summary>
+        private const string TimeStartTag = "StartTime";
+        private const string CloseTimeTag = "CloseTime";
+        private const string DueTimeTag = "DueTime";
 
-        public Task<bool> SaveAsync([NotNull] string outPath, [NotNull] ExportData data)
+        public Task<bool> SaveAsync([NotNull] string outPath, [NotNull] ExportData data,[NotNull] string timeInterval)
         {
-            return Task.Run(() => Save(outPath, data));
+            return Task.Run(() => Save(outPath, data,timeInterval));
         }
 
-        private bool Save([NotNull] string outPath, [NotNull] ExportData data)
+        private bool Save([NotNull] string outPath, [NotNull] ExportData data,[NotNull] string timeInterval)
         {
             Application excelApp = null;
             Workbook workbook = null;
             try
             {
-
                 excelApp = new Application {DisplayAlerts = false, Visible = false};
                 workbook = excelApp.Workbooks.Open(_path);
                 var workSheet = workbook.Worksheets[1];
-
+                
                 var issues = data.Issues;
-                var stats = data.Statistics;
-                var hours = data.WorkingTime;
-
-                for (int i = 0; i < issues.Count - 1; i++)
+                
+                var users = data.Users;
+                
+                int offset = 0;
+                workSheet.Range[TimeIntervalTag].Offset(offset, 0).Value = timeInterval;
+                
+                for (int j = 0; j < users.Count ; j++)
                 {
-                    var issue = issues[i];
 
-                    workSheet.Range[IidTag].Offset(i, 0).Value = issue.Iid;
-                    workSheet.Range[IssueNameTag].Offset(i, 0).Value = issue.Title;
-                    workSheet.Range[IssueSpendTag].Offset(i, 0).Value = issue.SpendForPeriod;
-                    workSheet.Range[IssueEstimateTag].Offset(i, 0).Value = issue.Estimate;
-
-                    if (issue.StartTime != null)
+                    if (offset > 0)
                     {
-                        var date = issue.StartTime.Value.Date.AddDays(1 - issue.StartTime.Value.Date.Day);
-                        workSheet.Range[IssuePeriodTag].Offset(i, 0).Value = date;
+                        offset += 2;
+                        workSheet.Range[UserTag].Offset(offset + 1, 0).Value = users[j];
+                    }
+                    else
+                    {
+                        offset++;
+                        workSheet.Range[UserTag].Offset(offset, 0).Value = users[j];
+                    }
+                    
+                    
+                    var userIssues = issues
+                        .Where(x => x.User == users[j])
+                        .ToList();
+
+                    for (int i = 0; i < userIssues.Count; i++)
+                    {
+                        var issue = userIssues[i];
+                        workSheet.Range[IidTag].Offset(offset, 0).Value = issue.Iid;
+                        workSheet.Range[IssueNameTag].Offset(offset, 0).Value = issue.Title;
+                        workSheet.Range[IssueEstimateTag].Offset(offset, 0).Value = issue.Estimate;
+                        
+                        if(issue.TaskState==null)
+                            workSheet.Range[TaskStateTag].Offset(offset, 0).Value = "-";
+                        else
+                            workSheet.Range[TaskStateTag].Offset(offset, 0).Value = issue.TaskState.Name;
+                        
+                        workSheet.Range[IterationsTag].Offset(offset, 0).Value = issue.Iterations;
+                        
+                        if (issue.StartTime == null)
+                            workSheet.Range[TimeStartTag].Offset(offset, 0).Value = "-";
+                        else
+                            workSheet.Range[TimeStartTag].Offset(offset, 0).Value = issue.StartTime;
+
+                        if (issue.EndTime == null)
+                            workSheet.Range[CloseTimeTag].Offset(offset, 0).Value = "-";
+                        else
+                            workSheet.Range[CloseTimeTag].Offset(offset, 0).Value = issue.EndTime;
+                        
+                        if 
+                            (issue.DueTime == null) workSheet.Range[DueTimeTag].Offset(offset, 0).Value = "-";
+                        else
+                            workSheet.Range[DueTimeTag].Offset(offset, 0).Value = issue.DueTime;
+                        
+                        offset++;
                     }
                 }
-
-                workSheet.Range[EstimateTag].Value = stats.AllEstimatesStartedInPeriod;
-                workSheet.Range[ClosedEstimateTag].Value = stats.ClosedEstimatesStartedInPeriod;
-                workSheet.Range[SpendStartedInPeriodTag].Value = stats.AllSpendsStartedInPeriod;
-                workSheet.Range[SpendInPeriodTag].Value = stats.AllSpendsForPeriod;
-                workSheet.Range[WorkingTimeTag].Value = hours.TotalHours;
-
+                
                 workbook.SaveAs(outPath);
                 return true;
             }
@@ -86,6 +130,11 @@ namespace GitLabTimeManager.Services
         }
     }
 
+    public interface IExporter
+    {
+        Task<bool> SaveAsync([NotNull] string outPath, [NotNull] ExportData data, [NotNull] string timeInterval);
+    }
+
     public class ExportData
     {
         [NotNull] 
@@ -93,5 +142,6 @@ namespace GitLabTimeManager.Services
         [NotNull]
         public ObservableCollection<ReportIssue> Issues { get; set; }
         public TimeSpan WorkingTime { get; set; }
+        public IReadOnlyList<string> Users { get; set; }
     }
 }

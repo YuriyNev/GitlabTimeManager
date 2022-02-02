@@ -203,19 +203,28 @@ namespace GitLabTimeManager.ViewModel
             _canSave = false;
             try
             {
-                var export = new ExcelExporter();
+                IExporter export = new ExcelExporter();
 
                 var defaultName = $"{StartTime.ToString("yyyy MMMM", CultureInfo.CurrentCulture)}-{EndTime.ToString("yyyy MMMM", CultureInfo.CurrentCulture)}";
+                var TimeInterval = $"{StartTime.ToString("d", CultureInfo.CurrentCulture)}-{EndTime.ToString("d", CultureInfo.CurrentCulture)}";
                 var extension = "xlsx";
                 var path = await FileHelper.SaveDialog(defaultName, extension).ConfigureAwait(false);
                 if (path == null)
                     throw new ArgumentNullException();
 
-                var data = new ExportData {Issues = ReportIssues, Statistics = Statistics, WorkingTime = WorkingTime};
+                var users = GetRealUsers(CurrentUser)
+                    .Select(x => x.Name)
+                    .ToList();
+
+                var data = new ExportData
+                {
+                    Issues = ReportIssues, Statistics = Statistics, WorkingTime = WorkingTime,
+                    Users = users,
+                };
 
                 IsProgress = true;
                 
-                var result = export.SaveAsync(path, data).ConfigureAwait(false);
+                var result = export.SaveAsync(path, data,TimeInterval).ConfigureAwait(false);
                 var awaiter = result.GetAwaiter();
                 awaiter.OnCompleted(OnSavingFinished);
             }
@@ -280,8 +289,8 @@ namespace GitLabTimeManager.ViewModel
                 //new("Временные затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
                 //new("из", statistics.AllSpendsForPeriod, "ч"),
 
-                new("В этом месяце рабочих часов", workingHours.TotalHours, "ч"),
-                new("не заполнено", Math.Max(workingHours.TotalHours - statistics.AllSpendsByWorkForPeriod, 0), "ч"),
+                new("В этом месяце затрачено", statistics.AllSpendsByWorkForPeriod, "ч"),
+                new("из", workingHours.TotalHours, "ч"),
                 new("Производительность", statistics.Productivity, "%"),
             };
 
@@ -347,31 +356,37 @@ namespace GitLabTimeManager.ViewModel
             if (CurrentUser == null)
                 return;
             
-            var users = CurrentUser.IsGroup()
-                ? ExtractUsersFromGroup(UserProfile.UserGroups, CurrentUser.Name) 
-                : new List<string> { CurrentUser.Username };
+            var users = GetRealUsers(CurrentUser)
+                .Select(x => x.Username)
+                .ToList();
 
             IsSingleUser = !CurrentUser.IsGroup();
 
             DataRequestService.Restart(StartTime, FullEndTime, users, selectedLabel);
         }
 
-        private List<string> ExtractUsersFromGroup([NotNull] Dictionary<string, IList<string>> userProfileUserGroups, [NotNull] string group)
+        private List<User> GetRealUsers(User user)
+        {
+            return user.IsGroup()
+                ? ExtractUsersFromGroup(UserProfile.UserGroups, user.Name) 
+                : new List<User> { user };
+        }
+
+        private List<User> ExtractUsersFromGroup([NotNull] Dictionary<string, IList<string>> userProfileUserGroups, [NotNull] string group)
         {
             if (userProfileUserGroups == null) throw new ArgumentNullException(nameof(userProfileUserGroups));
             if (group == null) throw new ArgumentNullException(nameof(group));
 
-            List<string> users;
+            List<User> users;
             if (userProfileUserGroups.TryGetValue(group, out var u))
             {
                 users = AllUsers
                     .Where(x => u.Contains(x.Name))
-                    .Select(x => x.Username)
                     .ToList();
             }
             else
             {
-                users = Array.Empty<string>().ToList();
+                users = Array.Empty<User>().ToList();
             }
 
             return users;

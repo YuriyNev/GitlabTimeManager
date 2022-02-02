@@ -148,14 +148,14 @@
 
             <ComboBox Grid.Column="0"
                       Margin="4"
-                      Width="100"
+                      Width="175"
                       mah:TextBoxHelper.Watermark="Метка"
                       mah:TextBoxHelper.ClearTextButton="True"
                       ItemsSource="{Binding AllLabels, Mode=OneWay}"
-                      SelectedItem="{Binding SelectedLabel, Mode=TwoWay}">
+                      SelectedItem="{Binding CurrentLabel, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type labels:Label}">
-                        <Grid Background="Transparent">
+                        <Grid  Background="Transparent">
                             <Rectangle RadiusX="8" RadiusY="8">
                                 <Rectangle.Fill>
                                     <SolidColorBrush Color="{Binding Color, Mode=OneWay}"/>
@@ -205,12 +205,13 @@
         <Grid Grid.Row="0"
               HorizontalAlignment="Left"
               Height="40">
-
+            
             <Button Content="{iconPacks:FeatherIcons Kind=Save}"
                     Command="{Binding ExportCsvCommand, Mode=OneWay}"/>
 
-            <mah:ProgressRing IsActive="{Binding IsProgress, Mode=OneWay}"
+            <mah:ProgressRing Grid.Column="0" IsActive="{Binding IsProgress, Mode=OneWay}"
                               Width="24"/>
+
         </Grid>
 
         <!--Main Table-->

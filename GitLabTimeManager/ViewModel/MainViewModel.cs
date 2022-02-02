@@ -175,8 +175,8 @@ namespace GitLabTimeManager.ViewModel
             DataSubscription.Requested += DataSubscription_Requested;
             DataSubscription.LoadingStatus += DataSubscription_LoadingStatus;
 
-            IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
-            SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
+            //IssueListVm = ViewModelFactory.CreateViewModel<IssueListViewModel>(null);
+            //SummaryVm = ViewModelFactory.CreateViewModel<SummaryViewModel>(null);
             ReportVm = ViewModelFactory.CreateViewModel<ReportViewModel>(null);
             GanttViewModel = ViewModelFactory.CreateViewModel<GanttViewModel>(null);
 

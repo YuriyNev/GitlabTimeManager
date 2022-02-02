@@ -211,44 +211,58 @@ namespace GitLabTimeManager.Services
         {
             if (issue == null) throw new ArgumentNullException(nameof(issue));
             if (labelService == null) throw new ArgumentNullException(nameof(labelService));
-
-            var labelEvents = issue.Events;
-
-            var events = labelEvents
+            
+            var events = issue.Events
                 .Where(ev => ev.Label != null)
-                .Where(ev => labelService.InWork(new List<string> {ev.Label.Name}));
+                .Where(ev => labelService.InWork(new List<string> {ev.Label.Name}))
+                .Where(ev => IsUserAdded(ev, issue.Issue.Assignee.Username) || ev.Action == EventAction.Remove)
+                .OrderBy(x => x.CreatedAt)
+                .ToList();
 
-            var eventList = events.ToList();
-
-            var count = eventList.Count;
+            var count = events.Count;
             var stageTime = TimeSpan.Zero;
 
-            for (int i = 0; i < count - 1; i++)
+            for (int i = 0; i < count; i++)
             {
-                var currentEvent = eventList[i];
-                var nextEvent = eventList[i + 1];
+                var startEvent = events[i];
+                var stageStart = startEvent.CreatedAt;
+                var nextIndex = i + 1;
 
-                if (currentEvent.Action != EventAction.Add)
+                var stageEnd = nextIndex < count 
+                    ? events[nextIndex].CreatedAt 
+                    : end;
+
+                if (startEvent.Action != EventAction.Add)
                     continue;
-
-                var s = currentEvent.CreatedAt;
-                var e = nextEvent.CreatedAt;
-
-                var spend = StatisticsExtractor.GetAnyDaysSpend(s, e);
-
-                stageTime += spend;
+                
+                if (stageStart < start && stageEnd < start)
+                   continue;
+                
+                if (stageStart > end && stageEnd > end)
+                   continue;
+                
+                if (stageStart < start && stageEnd > start)
+                   stageStart = start;
+                
+                if (stageEnd >= end && stageStart < end)
+                   stageEnd = end;
+                
+                stageTime += StatisticsExtractor.GetAnyDaysSpend(stageStart, stageEnd);
             }
 
-            var iterations = eventList
+            var iterations = events
                 .Where(x => x.CreatedAt >= start && x.CreatedAt <= end)
                 .Where(x => x.Action == EventAction.Add)
                 .Count(x => labelService.InWork(new List<string> { x.Label.Name }));
+            
             return new LabelStageMetric
             {
                 Iterations = iterations,
                 Duration = stageTime,
             };
         }
+
+        private static bool IsUserAdded(LabelEvent ev, string userName) => ev.Action == EventAction.Add && ev.User.UserName == userName;
     }
 
     public class LabelStageMetric
