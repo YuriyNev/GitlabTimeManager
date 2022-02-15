@@ -282,6 +282,7 @@ namespace GitLabTimeManager.ViewModel
         private static ObservableCollection<TimeStatsProperty> ExtractSums(GitStatistics statistics, TimeSpan workingHours) 
             => new()
             {
+                new("Всего коммитов", statistics.Commits, ""),
                 new("Выполнено задач", statistics.ClosedEstimatesStartedInPeriod, "ч"),
                 //new TimeStatsProperty("Оценка по открытым задачам", statistics.OpenEstimatesStartedInPeriod, "ч"),
                 new("из", statistics.AllEstimatesStartedInPeriod, "ч"),
@@ -291,7 +292,7 @@ namespace GitLabTimeManager.ViewModel
 
                 new("В этом месяце затрачено", statistics.AllSpendsByWorkForPeriod, "ч"),
                 new("из", workingHours.TotalHours, "ч"),
-                new("Производительность", statistics.Productivity, "%"),
+                //new("Производительность", statistics.Productivity, "%"),
             };
 
         private ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>
@@ -354,6 +355,9 @@ namespace GitLabTimeManager.ViewModel
                 selectedLabel = new List<string> { CurrentLabel.Name };
 
             if (CurrentUser == null)
+                return;
+
+            if (StartTime > FullEndTime)
                 return;
             
             var users = GetRealUsers(CurrentUser)

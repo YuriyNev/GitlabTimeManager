@@ -1,4 +1,5 @@
-﻿using GitLabTimeManager.Tools;
+﻿using System.Drawing;
+using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Models
 {

@@ -92,6 +92,7 @@ namespace GitLabTimeManager.Services
             statistics.AllSpendsByWorkForPeriod = issues
                 .Sum(x => x.GetMetric(labelProcessor, startTime, endTime).Duration.TotalHours);
             statistics.AllSpendsByWorkForPeriod = Math.Max(statistics.AllSpendsByWorkForPeriod, 0);
+            statistics.Commits = issues.Sum(x => x.Commits.Count);
 
             statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;
             statistics.AllSpendsStartedBefore = statistics.OpenSpendBefore + statistics.ClosedSpendBefore;
@@ -247,5 +248,8 @@ namespace GitLabTimeManager.Services
 
         /// <summary> Производительность </summary>
         public double Productivity { get; set; }
+
+        /// <summary> Коммитов </summary>
+        public int Commits { get; set; }
     }
 }

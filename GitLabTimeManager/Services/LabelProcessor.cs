@@ -247,6 +247,9 @@ namespace GitLabTimeManager.Services
                 if (stageEnd >= end && stageStart < end)
                    stageEnd = end;
                 
+                if (stageEnd < stageStart)
+                    continue;
+
                 stageTime += StatisticsExtractor.GetAnyDaysSpend(stageStart, stageEnd);
             }
 

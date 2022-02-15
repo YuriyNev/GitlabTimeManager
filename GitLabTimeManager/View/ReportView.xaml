@@ -114,7 +114,7 @@
                             HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock TextAlignment="Right"
-                                       Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F1}}" 
+                                       Text="{Binding Value, Mode=OneWay, StringFormat={}{0:F0}}" 
                                        FontSize="{DynamicResource MahApps.Font.Size.Default}"
                                        FontWeight="Bold" Margin="4"/>
                             <TextBlock TextAlignment="Right"

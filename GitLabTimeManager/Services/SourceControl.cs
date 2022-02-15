@@ -220,7 +220,7 @@ namespace GitLabTimeManager.Services
                         options.AssigneeUsername = new List<string> { user };
 
                         options.UpdatedAfter = StartTime;
-                        options.UpdatedBefore = EndTime;
+                        options.CreatedBefore = EndTime;
                         options.State = IssueState.All;
                         options.Labels = Labels.ToList();
                     }
