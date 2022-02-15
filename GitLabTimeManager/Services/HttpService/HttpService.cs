@@ -34,7 +34,7 @@ namespace GitLabTimeManager.Services
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            string route = $"{LabelEventsRoutePrefix}projects/{request.ProjectId}/issues/{request.IssueIid}/resource_label_events";
+            string route = $"{LabelEventsRoutePrefix}projects/{request.ProjectId}/issues/{request.IssueIid}/resource_label_events?per_page=100";
 
             return await HttpMethods.JsonGetAsync<List<LabelEvent>>(route, Parameters, JsonSerializerSettings, cancellationToken).ConfigureAwait(false);
         }

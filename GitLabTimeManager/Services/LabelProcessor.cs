@@ -211,11 +211,11 @@ namespace GitLabTimeManager.Services
         {
             if (issue == null) throw new ArgumentNullException(nameof(issue));
             if (labelService == null) throw new ArgumentNullException(nameof(labelService));
-            
+
             var events = issue.Events
                 .Where(ev => ev.Label != null)
                 .Where(ev => labelService.InWork(new List<string> {ev.Label.Name}))
-                .Where(ev => IsUserAdded(ev, issue.Issue.Assignee.Username) || ev.Action == EventAction.Remove)
+                //.Where(ev => IsUserAdded(ev, issue.Issue.Assignee.Username) || ev.Action == EventAction.Remove)
                 .OrderBy(x => x.CreatedAt)
                 .ToList();
 

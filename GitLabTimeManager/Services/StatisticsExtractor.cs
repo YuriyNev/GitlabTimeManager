@@ -92,7 +92,11 @@ namespace GitLabTimeManager.Services
             statistics.AllSpendsByWorkForPeriod = issues
                 .Sum(x => x.GetMetric(labelProcessor, startTime, endTime).Duration.TotalHours);
             statistics.AllSpendsByWorkForPeriod = Math.Max(statistics.AllSpendsByWorkForPeriod, 0);
-            statistics.Commits = issues.Sum(x => x.Commits.Count);
+            statistics.Commits = issues
+                .SelectMany(x => x.Commits)
+                .Where(x => x > startTime)
+                .Where(x => x < endTime)
+                .Count();
 
             statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;
             statistics.AllSpendsStartedBefore = statistics.OpenSpendBefore + statistics.ClosedSpendBefore;
@@ -111,8 +115,8 @@ namespace GitLabTimeManager.Services
             if (issue.StartTime > endDate)
                 return 0;
 
-            var start = startDate > issue.StartTime ? startDate : issue.StartTime;
-            var end = endDate < issue.EndTime ? endDate : issue.EndTime;
+            var start = startDate > issue.StartTime && issue.StartTime != null ? startDate : issue.StartTime;
+            var end = endDate < issue.EndTime && issue.EndTime!= null ? endDate : issue.EndTime;
 
             var spend = GetAnyDaysSpend(start, end);
             
