@@ -19,9 +19,9 @@ public class LabelSettingsViewModel : SettingsViewModelBase
 {
     public static readonly PropertyData AvailableLabelsProperty = RegisterProperty<LabelSettingsViewModel, ObservableCollection<Label>>(x => x.AvailableLabels);
     public static readonly PropertyData BoardLabelsProperty = RegisterProperty<LabelSettingsViewModel, ObservableCollection<Label>>(x => x.BoardLabels, () => new ObservableCollection<Label>());
-    public static readonly PropertyData StartLabelProperty = RegisterProperty<LabelSettingsViewModel, Label>(x => x.StartLabel);
-    public static readonly PropertyData PauseLabelProperty = RegisterProperty<LabelSettingsViewModel, Label>(x => x.PauseLabel);
-    public static readonly PropertyData FinishLabelProperty = RegisterProperty<LabelSettingsViewModel, Label>(x => x.FinishLabel);
+    public static readonly PropertyData StartLabelProperty = RegisterProperty<LabelSettingsViewModel, Label?>(x => x.StartLabel);
+    public static readonly PropertyData PauseLabelProperty = RegisterProperty<LabelSettingsViewModel, Label?>(x => x.PauseLabel);
+    public static readonly PropertyData FinishLabelProperty = RegisterProperty<LabelSettingsViewModel, Label?>(x => x.FinishLabel);
     public static readonly PropertyData PassedLabelsProperty = RegisterProperty<LabelSettingsViewModel, ObservableCollection<Label>>(x => x.PassedLabels);
 
     public ObservableCollection<Label> PassedLabels
@@ -30,18 +30,18 @@ public class LabelSettingsViewModel : SettingsViewModelBase
         set => SetValue(PassedLabelsProperty, value);
     }
 
-    public Label FinishLabel
+    public Label? FinishLabel
     {
         get => GetValue<Label>(FinishLabelProperty);
         set => SetValue(FinishLabelProperty, value);
     }
 
-    public Label PauseLabel
+    public Label? PauseLabel
     {
         get => GetValue<Label>(PauseLabelProperty);
         set => SetValue(PauseLabelProperty, value);
     }
-    public Label StartLabel
+    public Label? StartLabel
     {
         get => GetValue<Label>(StartLabelProperty);
         set => SetValue(StartLabelProperty, value);
@@ -149,11 +149,11 @@ public class LabelSettingsViewModel : SettingsViewModelBase
             }
         };
 
-    private void FinishLabel_Dropped(object sender, Label e) => FinishLabel = e;
+    private void FinishLabel_Dropped(object? sender, Label e) => FinishLabel = e;
 
-    private void PauseLabel_Dropped(object sender, Label e) => PauseLabel = e;
+    private void PauseLabel_Dropped(object? sender, Label e) => PauseLabel = e;
 
-    private void StartLabel_Dropped(object sender, Label e) => StartLabel = e;
+    private void StartLabel_Dropped(object? sender, Label e) => StartLabel = e;
 
     protected override Task CloseAsync()
     {

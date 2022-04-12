@@ -250,7 +250,7 @@ public class ReportViewModel : ViewModelBase
         MessageService.OnMessage(this, "Не удалось сохранить документ");
     }
         
-    private void DataSubscriptionOnNewData(object sender, GitResponse e)
+    private void DataSubscriptionOnNewData(object? sender, GitResponse e)
     {
         Data = e;
 

@@ -64,25 +64,25 @@ namespace GitLabTimeManager.Services
 
     public class LabelSettings
     {
-        public BoardStateLabels BoardStateLabels { get; set; }
+        public BoardStateLabels? BoardStateLabels { get; set; }
         
-        public IReadOnlyList<string> OtherBoardLabels { get; set; }
+        public IReadOnlyList<string?>? OtherBoardLabels { get; set; }
 
         [JsonIgnore]
-        public IReadOnlyList<string> AllBoardLabels { get; set; }
+        public IReadOnlyList<string?>? AllBoardLabels { get; set; }
 
-        public IReadOnlyList<string> ExcludeLabels { get; set; }
+        public IReadOnlyList<string>? ExcludeLabels { get; set; }
 
-        public IReadOnlyList<string> PassedLabels { get; set; }
+        public IReadOnlyList<string>? PassedLabels { get; set; }
     }
 
     public class BoardStateLabels
     {
-        public string ToDoLabel { get; set; }
+        public string? ToDoLabel { get; set; }
 
-        public string DoingLabel { get; set; }
+        public string? DoingLabel { get; set; }
 
-        public string DoneLabel { get; set; }
+        public string? DoneLabel { get; set; }
     }
 
     public class UserProfile : IUserProfile
@@ -115,12 +115,13 @@ namespace GitLabTimeManager.Services
             LabelSettings = userProfile.LabelSettings;
             LabelSettings.PassedLabels ??= Array.Empty<string>();
 
-            LabelSettings.AllBoardLabels = new List<string>(LabelSettings.OtherBoardLabels)
-            {
-                LabelSettings.BoardStateLabels.ToDoLabel, 
-                LabelSettings.BoardStateLabels.DoingLabel, 
-                LabelSettings.BoardStateLabels.DoneLabel, 
-            };
+            if (LabelSettings.OtherBoardLabels != null)
+                LabelSettings.AllBoardLabels = new List<string?>(LabelSettings.OtherBoardLabels)
+                {
+                    LabelSettings.BoardStateLabels?.ToDoLabel,
+                    LabelSettings.BoardStateLabels?.DoingLabel,
+                    LabelSettings.BoardStateLabels?.DoneLabel,
+                };
 
             UserGroups = userProfile.UserGroups ?? new Dictionary<string, IList<string>>();
         }
