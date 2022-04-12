@@ -131,9 +131,9 @@ namespace GitLabTimeManager.Services
 
     public class ExportData
     {
-        public GitStatistics Statistics { get; set; }
-        public ObservableCollection<ReportIssue> Issues { get; set; }
+        public GitStatistics? Statistics { get; set; }
+        public ObservableCollection<ReportIssue>? Issues { get; set; }
         public TimeSpan WorkingTime { get; set; }
-        public IReadOnlyList<string> Users { get; set; }
+        public IReadOnlyList<string>? Users { get; set; }
     }
 }

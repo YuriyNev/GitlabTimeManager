@@ -45,10 +45,10 @@ namespace GitLabTimeManager.Services
             LoadingStatus?.Invoke(this, message);
         }
 
-        public event EventHandler Requested;
-        public event EventHandler<GitResponse> NewData;
-        public event EventHandler<Exception> NewException;
-        public event EventHandler<string> LoadingStatus;
+        public event EventHandler? Requested;
+        public event EventHandler<GitResponse>? NewData;
+        public event EventHandler<Exception>? NewException;
+        public event EventHandler<string>? LoadingStatus;
     }
 
 

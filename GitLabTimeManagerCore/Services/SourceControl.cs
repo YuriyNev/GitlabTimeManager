@@ -19,7 +19,7 @@ namespace GitLabTimeManager.Services
     {
         IReadOnlyList<string> CurrentUsers { get; }
 
-        Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction = null);
+        Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string>? requestStatusAction = null);
         Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
         Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
@@ -193,7 +193,7 @@ namespace GitLabTimeManager.Services
 
         private bool _isAction;
 
-        private async Task<IReadOnlyList<WrappedIssue>> GetRawDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction = null)
+        private async Task<IReadOnlyList<WrappedIssue>?> GetRawDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string>? requestStatusAction = null)
         {
             if (_isAction)
                 return null;
@@ -419,7 +419,7 @@ namespace GitLabTimeManager.Services
             return CachedLabels;
         }
 
-        public async Task<IReadOnlyList<GroupLabel>> FetchGroupLabelsAsync(IReadOnlyList<GroupId> groups = null)
+        public async Task<IReadOnlyList<GroupLabel>> FetchGroupLabelsAsync(IReadOnlyList<GroupId>? groups = null)
         {
             if (groups != null)
                 throw new NotImplementedException();

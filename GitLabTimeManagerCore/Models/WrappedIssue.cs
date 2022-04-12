@@ -89,7 +89,7 @@ namespace GitLabTimeManager.Services
 
         public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{Estimate:F1}\t";
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (!(obj is WrappedIssue issue))
                 return false;
@@ -102,6 +102,22 @@ namespace GitLabTimeManager.Services
                    Issue.State == otherIssue.State;
         }
         
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+            hashCode.Add(_issue);
+            hashCode.Add(_labels);
+            hashCode.Add(_events);
+            hashCode.Add(StartTime);
+            hashCode.Add(PassTime);
+            hashCode.Add(EndTime);
+            hashCode.Add(Status);
+            hashCode.Add(Spends);
+            hashCode.Add(Commits);
+            return hashCode.ToHashCode();
+        }
+
+
         public WrappedIssue Clone()
         {
             return new(Issue)
@@ -164,7 +180,7 @@ namespace GitLabTimeManager.Services
             Index = index;
         }
 
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
         {
             if (obj is TaskStatus otherTask)
             {

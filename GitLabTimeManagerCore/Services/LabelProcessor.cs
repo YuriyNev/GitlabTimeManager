@@ -38,9 +38,9 @@ namespace GitLabTimeManager.Services
         private IUserProfile UserProfile { get; }
         private IProfileService ProfileService { get; }
 
-        private string ToDoLabel { get; set; }
-        private string DoingLabel { get; set; }
-        private string DoneLabel { get; set; }
+        private string? ToDoLabel { get; set; }
+        private string? DoingLabel { get; set; }
+        private string? DoneLabel { get; set; }
 
         private IReadOnlyList<string> AllBoardLabels { get; set; }
         private IReadOnlyList<string> ExcludeLabels { get; set; }
@@ -59,7 +59,7 @@ namespace GitLabTimeManager.Services
             ProfileService.Serialized += ProfileService_Serialized;
         }
 
-        private void ProfileService_Serialized(object sender, IUserProfile e)
+        private void ProfileService_Serialized(object? sender, IUserProfile e)
         {
             Update(UserProfile.LabelSettings);
         }

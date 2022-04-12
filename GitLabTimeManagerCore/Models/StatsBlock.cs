@@ -5,7 +5,7 @@ namespace GitLabTimeManager.Models
     public class StatsBlock : NotifyObject
     {
         public string Title { get; }
-        public string Description { get; }
+        public string? Description { get; }
 
         private double _value;
         public double Value
@@ -31,7 +31,7 @@ namespace GitLabTimeManager.Models
             }
         }
 
-        public StatsBlock(string title, double value, double total, string description = null)
+        public StatsBlock(string title, double value, double total, string? description = null)
         {
             Value = value;
             Total = total;
