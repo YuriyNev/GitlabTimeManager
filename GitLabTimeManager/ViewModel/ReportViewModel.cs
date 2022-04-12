@@ -316,7 +316,7 @@ namespace GitLabTimeManager.ViewModel
                             DueTime = x.DueTime,
                             Commits = x.Commits.Count(d => d >= startDate && d <= endDate),
                             User = x.Issue.Assignee.Name,
-                            Epic = x.Issue.Epic?.Title,
+                            //Epic = x.Issue.Epic?.Title,
                             WebUri = x.Issue.WebUrl,
                             TaskState = x.Status,
                         };

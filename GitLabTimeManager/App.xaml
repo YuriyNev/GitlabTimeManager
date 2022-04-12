@@ -1,142 +1,153 @@
 ﻿<Application x:Class="GitLabTimeManager.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:local="clr-namespace:GitLabTimeManager"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             xmlns:gitLabTimeManager="clr-namespace:GitLabTimeManager"
-             xmlns:responses="clr-namespace:GitLabApiClient.Models.Users.Responses;assembly=GitLabApiClient"
-             StartupUri="MainWindow.xaml"
-             ShutdownMode="OnExplicitShutdown">
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <!--  MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive!  -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
 
-                <ResourceDictionary Source="Resources/BaseStyles.xaml"/>
+                <ResourceDictionary Source="Resources/BaseStyles.xaml" />
 
-                <ResourceDictionary Source="Resources/TrayIconResources.xaml"/>
-                <ResourceDictionary Source="Resources/TinyScrollBarStyle.xaml"/>
+                <ResourceDictionary Source="Resources/TrayIconResources.xaml" />
+                <ResourceDictionary Source="Resources/TinyScrollBarStyle.xaml" />
                 <ResourceDictionary Source="Controls/PopupButtonTemplate.xaml" />
                 <ResourceDictionary Source="Resources/TabItemStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Storyboard x:Key="OverlayFastSemiFadeIn"
-                        AccelerationRatio=".97"
-                        BeginTime="0:0:0"
-                        SpeedRatio="10"
-                        Storyboard.TargetProperty="Opacity">
+            <Storyboard
+                x:Key="OverlayFastSemiFadeIn"
+                AccelerationRatio=".97"
+                BeginTime="0:0:0"
+                SpeedRatio="10"
+                Storyboard.TargetProperty="Opacity">
                 <DoubleAnimation To=".7" />
             </Storyboard>
 
-            <Storyboard x:Key="OverlayFastSemiFadeOut"
-                        AccelerationRatio=".97"
-                        BeginTime="0:0:0"
-                        SpeedRatio="10"
-                        Storyboard.TargetProperty="Opacity">
+            <Storyboard
+                x:Key="OverlayFastSemiFadeOut"
+                AccelerationRatio=".97"
+                BeginTime="0:0:0"
+                SpeedRatio="10"
+                Storyboard.TargetProperty="Opacity">
                 <DoubleAnimation To="0.0" />
             </Storyboard>
 
-            <Style x:Key="CustomLightMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.MetroWindow.Light}">
+            <Style
+                x:Key="CustomLightMetroWindowButtonStyle"
+                BasedOn="{StaticResource MahApps.Styles.Button.MetroWindow.Light}"
+                TargetType="{x:Type Button}">
                 <Setter Property="Foreground" Value="Black" />
                 <Setter Property="Width" Value="30" />
                 <Setter Property="Height" Value="30" />
                 <Setter Property="VerticalAlignment" Value="Top" />
             </Style>
 
-            <Style x:Key="CustomDarkMetroWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.MetroWindow.Light}">
+            <Style
+                x:Key="CustomDarkMetroWindowButtonStyle"
+                BasedOn="{StaticResource MahApps.Styles.Button.MetroWindow.Light}"
+                TargetType="{x:Type Button}">
                 <Setter Property="Foreground" Value="Gray" />
                 <Setter Property="Width" Value="30" />
                 <Setter Property="Height" Value="30" />
                 <Setter Property="VerticalAlignment" Value="Top" />
             </Style>
 
-            <Style x:Key="BrandedMainWindowStyle" TargetType="mah:MetroWindow" BasedOn="{StaticResource {x:Type mah:MetroWindow}}">
+            <Style
+                x:Key="BrandedMainWindowStyle"
+                BasedOn="{StaticResource {x:Type mah:MetroWindow}}"
+                TargetType="mah:MetroWindow">
 
-                <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
 
-                <Setter Property="OverlayFadeIn" Value="{StaticResource OverlayFastSemiFadeIn}"/>
-                <Setter Property="OverlayFadeOut" Value="{StaticResource OverlayFastSemiFadeOut}"/>
-                <Setter Property="MinWidth" Value="340"/>
-                <Setter Property="MinHeight" Value="420"/>
+                <Setter Property="OverlayFadeIn" Value="{StaticResource OverlayFastSemiFadeIn}" />
+                <Setter Property="OverlayFadeOut" Value="{StaticResource OverlayFastSemiFadeOut}" />
+                <Setter Property="MinWidth" Value="340" />
+                <Setter Property="MinHeight" Value="420" />
 
-                <!-- Window title settings -->
-                <Setter Property="WindowTitleBrush" Value="#88DDDDDD"/>
-                <Setter Property="NonActiveWindowTitleBrush" Value="#EEE"/>
-                <Setter Property="TitleForeground" Value="{DynamicResource AccentBaseColorBrush}"/>
-                <Setter Property="TitleCharacterCasing" Value="Normal"/>
-                <Setter Property="TitleAlignment" Value="Right"/>
-                <Setter Property="ShowIconOnTitleBar" Value="False"/>
+                <!--  Window title settings  -->
+                <Setter Property="WindowTitleBrush" Value="#88DDDDDD" />
+                <Setter Property="NonActiveWindowTitleBrush" Value="#EEE" />
+                <Setter Property="TitleForeground" Value="{DynamicResource AccentBaseColorBrush}" />
+                <Setter Property="TitleCharacterCasing" Value="Normal" />
+                <Setter Property="TitleAlignment" Value="Right" />
+                <Setter Property="ShowIconOnTitleBar" Value="False" />
 
-                <!-- Window border -->
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="BorderBrush" Value="{x:Null}"/>
-                <Setter Property="NonActiveBorderBrush" Value="{x:Null}"/>
+                <!--  Window border  -->
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{x:Null}" />
+                <Setter Property="NonActiveBorderBrush" Value="{x:Null}" />
 
-                <!-- Window glow -->
-                <Setter Property="GlowBrush" Value="LightSlateGray"/>
-                <Setter Property="NonActiveGlowBrush" Value="#33000000"/>
+                <!--  Window glow  -->
+                <Setter Property="GlowBrush" Value="LightSlateGray" />
+                <Setter Property="NonActiveGlowBrush" Value="#33000000" />
 
-                <Setter Property="WindowTransitionsEnabled" Value="True"/>
-                <Setter Property="IsWindowDraggable" Value="True"/>
-                <Setter Property="ShowTitleBar" Value="True"/>
-                <Setter Property="IgnoreTaskbarOnMaximize" Value="False"/>
-                <Setter Property="ShowSystemMenuOnRightClick" Value="True"/>
+                <Setter Property="WindowTransitionsEnabled" Value="True" />
+                <Setter Property="IsWindowDraggable" Value="True" />
+                <Setter Property="ShowTitleBar" Value="True" />
+                <Setter Property="IgnoreTaskbarOnMaximize" Value="False" />
+                <Setter Property="ShowSystemMenuOnRightClick" Value="True" />
 
-                <Setter Property="IsMinButtonEnabled" Value="True"/>
-                <Setter Property="IsMaxRestoreButtonEnabled" Value="True"/>
-                <Setter Property="IsCloseButtonEnabled" Value="True"/>
+                <Setter Property="IsMinButtonEnabled" Value="True" />
+                <Setter Property="IsMaxRestoreButtonEnabled" Value="True" />
+                <Setter Property="IsCloseButtonEnabled" Value="True" />
 
-                <Setter Property="ShowDialogsOverTitleBar" Value="True"/>
-                <Setter Property="IconOverlayBehavior" Value="Never"/>
-                <Setter Property="LeftWindowCommandsOverlayBehavior" Value="Never"/>
-                <Setter Property="RightWindowCommandsOverlayBehavior" Value="Never"/>
-                <Setter Property="WindowButtonCommandsOverlayBehavior" Value="Always"/>
+                <Setter Property="ShowDialogsOverTitleBar" Value="True" />
+                <Setter Property="IconOverlayBehavior" Value="Never" />
+                <Setter Property="LeftWindowCommandsOverlayBehavior" Value="Never" />
+                <Setter Property="RightWindowCommandsOverlayBehavior" Value="Never" />
+                <Setter Property="WindowButtonCommandsOverlayBehavior" Value="Always" />
 
-                <Setter Property="ShowMinButton" Value="True"/>
-                <Setter Property="WindowState" Value="Normal"/>
-                <Setter Property="Topmost" Value="False"/>
-                <Setter Property="TitleBarHeight" Value="30"/>
-                <Setter Property="SaveWindowPosition" Value="True"/>
-                <Setter Property="ShowMaxRestoreButton" Value="False"/>
+                <Setter Property="ShowMinButton" Value="True" />
+                <Setter Property="WindowState" Value="Normal" />
+                <Setter Property="Topmost" Value="False" />
+                <Setter Property="TitleBarHeight" Value="30" />
+                <Setter Property="SaveWindowPosition" Value="True" />
+                <Setter Property="ShowMaxRestoreButton" Value="False" />
                 <Setter Property="TitleTemplate">
                     <Setter.Value>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Button Grid.Column="1" 
-                                        Command="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.SwitchSettingsCommand}"
-                                        BorderThickness="0 0 1 0"
-                                        Margin="0 0 3 0"
-                                        Width="46">
+                                <Button
+                                    Grid.Column="1"
+                                    Width="46"
+                                    Margin="0,0,3,0"
+                                    BorderThickness="0,0,1,0"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow, Mode=FindAncestor}, Path=DataContext.SwitchSettingsCommand}">
                                     <Button.Style>
-                                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource CustomLightMetroWindowButtonStyle}">
+                                        <Style BasedOn="{StaticResource CustomLightMetroWindowButtonStyle}" TargetType="{x:Type Button}">
                                             <Setter Property="Content" Value="{iconPacks:MaterialLight Cog}" />
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=gitLabTimeManager:MainWindow, Mode=FindAncestor}, Path=DataContext.IsSettingsOpen}" Value="True">
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow, Mode=FindAncestor}, Path=DataContext.IsSettingsOpen}" Value="True">
                                                     <Setter Property="Content" Value="{iconPacks:MaterialLight Home, Width=15}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                 </Button>
-                                <Border Grid.Column="1"
-                                        BorderBrush="{StaticResource MahApps.Brushes.Gray5}"
-                                        BorderThickness="0 0 1 0"
-                                        Margin="0 5 1 5"/>
+                                <Border
+                                    Grid.Column="1"
+                                    Margin="0,5,1,5"
+                                    BorderBrush="{StaticResource MahApps.Brushes.Gray5}"
+                                    BorderThickness="0,0,1,0" />
                             </Grid>
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
 
-            <Style TargetType="{x:Type mah:WindowButtonCommands}" BasedOn="{StaticResource {x:Type mah:WindowButtonCommands}}">
+            <Style BasedOn="{StaticResource {x:Type mah:WindowButtonCommands}}" TargetType="{x:Type mah:WindowButtonCommands}">
                 <Setter Property="LightMinButtonStyle" Value="{StaticResource CustomLightMetroWindowButtonStyle}" />
                 <Setter Property="LightMaxButtonStyle" Value="{StaticResource CustomLightMetroWindowButtonStyle}" />
                 <Setter Property="LightCloseButtonStyle" Value="{StaticResource CustomLightMetroWindowButtonStyle}" />
@@ -148,25 +159,25 @@
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
-                            <Rectangle Margin="4"
-                                       SnapsToDevicePixels="True"
-                                       Stroke="{DynamicResource MahApps.Brushes.Button.Flat.Foreground}"
-                                       StrokeDashArray="1 2"
-                                       StrokeThickness="1"
-                                       UseLayoutRounding="True" />
+                            <Rectangle
+                                Margin="4"
+                                SnapsToDevicePixels="True"
+                                Stroke="{DynamicResource MahApps.Brushes.Button.Flat.Foreground}"
+                                StrokeDashArray="1 2"
+                                StrokeThickness="1"
+                                UseLayoutRounding="True" />
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
 
-            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button}">
+            <Style BasedOn="{StaticResource MahApps.Styles.Button}" TargetType="{x:Type Button}">
                 <Setter Property="Focusable" Value="False" />
-                <Setter Property="Width" Value="40"/>
-                <Setter Property="Height" Value="40"/>
-                <Setter Property="mah:ControlsHelper.CornerRadius" Value="0"/>
-                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray9}"/>
+                <Setter Property="Width" Value="40" />
+                <Setter Property="Height" Value="40" />
+                <Setter Property="mah:ControlsHelper.CornerRadius" Value="0" />
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Gray9}" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>
-
 </Application>

@@ -14,7 +14,6 @@ namespace GitLabTimeManager.View
             InitializeComponent();
         }
 
-
         private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             string navigateUri = (sender as Hyperlink)?.NavigateUri.ToString();

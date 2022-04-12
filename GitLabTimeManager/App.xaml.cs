@@ -26,19 +26,19 @@ namespace GitLabTimeManager
             base.OnStartup(e);
 
             BuildContainer();
-            
+
             InitTrayIcon();
 #if DEBUG
             LogManager.AddDebugListener();
 #endif
         }
-        
+
         private void InitTrayIcon()
         {
             var dependencyResolver = IoCConfiguration.DefaultDependencyResolver;
             ViewModelFactory = dependencyResolver.Resolve<IViewModelFactory>();
 
-            _notifyIcon = (TaskbarIcon) Current.FindResource("NotifyIcon");
+            _notifyIcon = (TaskbarIcon)Current.FindResource("NotifyIcon");
             if (_notifyIcon == null) return;
             var viewModel = ViewModelFactory.CreateViewModel<TrayViewModel>(null);
             _notifyIcon.DataContext = viewModel;
