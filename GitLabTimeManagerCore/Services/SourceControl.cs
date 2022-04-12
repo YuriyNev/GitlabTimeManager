@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Catel.Collections;
 using GitLabApiClient;
 using GitLabApiClient.Internal.Paths;
@@ -16,7 +11,7 @@ using GitLabApiClient.Models.Notes.Responses;
 using GitLabApiClient.Models.Projects.Responses;
 using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Helpers;
-using JetBrains.Annotations;
+
 
 namespace GitLabTimeManager.Services
 {
@@ -24,34 +19,34 @@ namespace GitLabTimeManager.Services
     {
         IReadOnlyList<string> CurrentUsers { get; }
 
-        [PublicAPI] Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction = null);
-        [PublicAPI] Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
-        [PublicAPI] Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
-        [PublicAPI] Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
-        [PublicAPI] Task<WrappedIssue> PauseIssueAsync(WrappedIssue issue);
-        [PublicAPI] Task<WrappedIssue> FinishIssueAsync(WrappedIssue issue);
-        [PublicAPI] Task<Issue> UpdateIssueAsync(Issue issue, UpdateIssueRequest request);
+        Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels, Action<string> requestStatusAction = null);
+        Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
+        Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
+        Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
+        Task<WrappedIssue> PauseIssueAsync(WrappedIssue issue);
+        Task<WrappedIssue> FinishIssueAsync(WrappedIssue issue);
+        Task<Issue> UpdateIssueAsync(Issue issue, UpdateIssueRequest request);
         
-        [PublicAPI] Task<IReadOnlyList<Label>> FetchLabelsAsync([CanBeNull] IReadOnlyList<ProjectId> projects = null);
-        [PublicAPI] IReadOnlyList<Label> GetLabels();
+        Task<IReadOnlyList<Label>> FetchLabelsAsync(IReadOnlyList<ProjectId>? projects = null);
+        IReadOnlyList<Label> GetLabels();
         
-        [PublicAPI] Task<IReadOnlyList<GroupLabel>> FetchGroupLabelsAsync([CanBeNull] IReadOnlyList<GroupId> groups = null);
-        [PublicAPI] IReadOnlyList<GroupLabel> GetGroupLabels();
+        Task<IReadOnlyList<GroupLabel>> FetchGroupLabelsAsync(IReadOnlyList<GroupId>? groups = null);
+        IReadOnlyList<GroupLabel> GetGroupLabels();
 
-        [PublicAPI] IReadOnlyList<ProjectId> FetchActiveProjects(IReadOnlyList<Issue> issues);
-        [PublicAPI] IReadOnlyList<ProjectId> GetActiveProjects();
+        IReadOnlyList<ProjectId> FetchActiveProjects(IReadOnlyList<Issue> issues);
+        IReadOnlyList<ProjectId> GetActiveProjects();
 
-        [PublicAPI] Task<IReadOnlyList<LabelEvent>> GetLabelsEventsAsync(int projectId, int issueIid);
+        Task<IReadOnlyList<LabelEvent>> GetLabelsEventsAsync(int projectId, int issueIid);
 
-        [PublicAPI] Task<IList<User>> FetchAllUsersAsync();
+        Task<IList<User>> FetchAllUsersAsync();
     }
 
     public class SourceControl : ISourceControl
     {
-        [NotNull] private IUserProfile UserProfile { get; }
-        [NotNull] private ILabelService LabelService { get; }
-        [NotNull] private IHttpService HttpService { get; }
-        [NotNull] private GitLabClient GitLabClient { get; }
+        private IUserProfile UserProfile { get; }
+        private ILabelService LabelService { get; }
+        private IHttpService HttpService { get; }
+        private GitLabClient GitLabClient { get; }
 
         private IReadOnlyList<Label> CachedLabels { get; set; }
         private IReadOnlyList<GroupLabel> CachedGroupLabels { get; set; }
@@ -67,9 +62,9 @@ namespace GitLabTimeManager.Services
         private bool IsSingleUser => CurrentUsers.Count == 1;
 
         public SourceControl(
-            [NotNull] IUserProfile userProfile,
-            [NotNull] ILabelService labelService,
-            [NotNull] IHttpService httpService)
+            IUserProfile userProfile,
+            ILabelService labelService,
+            IHttpService httpService)
         {
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
@@ -134,7 +129,7 @@ namespace GitLabTimeManager.Services
             return await UpdateIssueLabelsAsync(issue, newLabels).ConfigureAwait(false);
         }
 
-        private async Task<IReadOnlyList<Label>> GetLabelsCoreAsync([CanBeNull] IReadOnlyList<ProjectId> projects)
+        private async Task<IReadOnlyList<Label>> GetLabelsCoreAsync(IReadOnlyList<ProjectId>? projects)
         {
             var all = new Collection<Label>();
             IReadOnlyList<ProjectId> allProjects;
@@ -279,10 +274,10 @@ namespace GitLabTimeManager.Services
         }
 
         private IReadOnlyList<WrappedIssue> ExtentIssues(
-            [NotNull] IReadOnlyList<Issue> sourceIssues,
-            [NotNull] IReadOnlyDictionary<Issue, IReadOnlyList<Note>> notes,
-            [NotNull] IReadOnlyList<Label> labels,
-            [NotNull] IReadOnlyDictionary<Issue, IReadOnlyList<LabelEvent>> events)
+            IReadOnlyList<Issue> sourceIssues,
+            IReadOnlyDictionary<Issue, IReadOnlyList<Note>> notes,
+            IReadOnlyList<Label> labels,
+            IReadOnlyDictionary<Issue, IReadOnlyList<LabelEvent>> events)
         {
             var issues = new ObservableCollection<WrappedIssue>();
             foreach (var issue in sourceIssues)

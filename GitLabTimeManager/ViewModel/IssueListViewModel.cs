@@ -9,19 +9,18 @@ using Catel.Data;
 using Catel.MVVM;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Services;
-using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel
 {
-    [UsedImplicitly]
+    
     public class IssueListViewModel : ViewModelBase
     {
-        [UsedImplicitly] public static readonly PropertyData CurrentIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.CurrentIssue);
-        [UsedImplicitly] public static readonly PropertyData IssueTimerVmProperty = RegisterProperty<IssueListViewModel, IssueTimerViewModel>(x => x.IssueTimerVm);
-        [UsedImplicitly] public static readonly PropertyData SelectedIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.SelectedIssue);
-        [UsedImplicitly] public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueListViewModel, bool>(x => x.IsFullscreen);
+        public static readonly PropertyData CurrentIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.CurrentIssue);
+        public static readonly PropertyData IssueTimerVmProperty = RegisterProperty<IssueListViewModel, IssueTimerViewModel>(x => x.IssueTimerVm);
+        public static readonly PropertyData SelectedIssueProperty = RegisterProperty<IssueListViewModel, WrappedIssue>(x => x.SelectedIssue);
+        public static readonly PropertyData IsFullscreenProperty = RegisterProperty<IssueListViewModel, bool>(x => x.IsFullscreen);
 
-        [ViewModelToModel][UsedImplicitly]
+        [ViewModelToModel]
         public bool IsFullscreen
         {
             get => GetValue<bool>(IsFullscreenProperty);
@@ -34,8 +33,7 @@ namespace GitLabTimeManager.ViewModel
             set => SetValue(SelectedIssueProperty, value);
         }
 
-        [Model(SupportIEditableObject = false)][NotNull]
-        [UsedImplicitly]
+        [Model(SupportIEditableObject = false)]
         public IssueTimerViewModel IssueTimerVm
         {
             get => GetValue<IssueTimerViewModel>(IssueTimerVmProperty);
@@ -46,14 +44,14 @@ namespace GitLabTimeManager.ViewModel
 
         private ObservableCollection<WrappedIssue> WrappedIssues { get; }
 
-        [NotNull] private IDataRequestService DataRequestService { get; }
-        [NotNull] private IViewModelFactory ViewModelFactory { get; }
-        [NotNull] private ILabelService LabelService { get; }
-        [NotNull] private IDataSubscription DataSubscription { get; }
+        private IDataRequestService DataRequestService { get; }
+        private IViewModelFactory ViewModelFactory { get; }
+        private ILabelService LabelService { get; }
+        private IDataSubscription DataSubscription { get; }
 
-        [NotNull] public CollectionView IssueCollectionView { get; }
+        public CollectionView IssueCollectionView { get; }
 
-        public IssueListViewModel([NotNull] IDataRequestService dataRequestService, [NotNull] IViewModelFactory modelFactory, [NotNull] ILabelService labelService)
+        public IssueListViewModel(IDataRequestService dataRequestService, IViewModelFactory modelFactory, ILabelService labelService)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
             ViewModelFactory = modelFactory ?? throw new ArgumentNullException(nameof(modelFactory));

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GitLabTimeManager.Types
+﻿namespace GitLabTimeManager.Types
 {
     public class IncorrectProfileException : Exception
     {

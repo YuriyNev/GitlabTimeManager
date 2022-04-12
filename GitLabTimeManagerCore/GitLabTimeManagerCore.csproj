@@ -23,7 +23,6 @@
     <PackageReference Include="Catel.Core" Version="5.12.22" />
     <PackageReference Include="Catel.MVVM" Version="5.12.22" />
     <PackageReference Include="GitLabApiClient" Version="1.8.0" />
-    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

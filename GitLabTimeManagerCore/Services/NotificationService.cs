@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace GitLabTimeManager.Services
+﻿namespace GitLabTimeManager.Services
 {
     public class MessageSubscription : IMessageSubscription
     {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Catel.IoC;
-using JetBrains.Annotations;
+﻿using Catel.IoC;
 
 namespace GitLabTimeManager.Services
 {
@@ -67,7 +62,7 @@ namespace GitLabTimeManager.Services
     public class DataRequestService : IDataRequestService, IDisposable
     {
         private IReadOnlyList<DataSubscription> _dataSubscriptions = Array.Empty<DataSubscription>();
-        private CancellationTokenSource _cancellation = new CancellationTokenSource();
+        private CancellationTokenSource? _cancellation = new();
 
         public IDataSubscription CreateSubscription()
         {
@@ -96,7 +91,7 @@ namespace GitLabTimeManager.Services
             RunAsync(sourceControl, start, end, users,labels).ConfigureAwait(true);
         }
 
-        private ISourceControl InitializeSource()
+        private ISourceControl? InitializeSource()
         {
             try
             {
@@ -119,7 +114,7 @@ namespace GitLabTimeManager.Services
                 subscription.OnNewLoadingMessage(message);
         }
         
-        private async Task RunAsync([NotNull] ISourceControl sourceControl, DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels)
+        private async Task RunAsync(ISourceControl sourceControl, DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string> labels)
         {
             var data = await sourceControl.RequestDataAsync(start, end, users, labels ,RequestStatusChanged).ConfigureAwait(true);
 

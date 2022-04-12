@@ -1,17 +1,15 @@
-﻿using System;
-using GitLabTimeManager.Helpers;
-using JetBrains.Annotations;
+﻿using GitLabTimeManager.Helpers;
 
 namespace GitLabTimeManager.Services
 {
     public class MoneyCalculator : IMoneyCalculator
     {
-        [NotNull] private ICalendar Calendar { get; }
+        private ICalendar Calendar { get; }
         private DevelopLevel DevelopLevel { get; } = DevelopLevel.Middle;
         public double MinimalEarning { get; } = 20_000;
         public double DesiredEstimate { get; } = 100;
 
-        public MoneyCalculator([NotNull] ICalendar calendar)
+        public MoneyCalculator(ICalendar calendar)
         {
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
         }

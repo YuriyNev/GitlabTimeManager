@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows.Media;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabApiClient.Models.Projects.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Tools;
-using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
@@ -17,7 +14,7 @@ namespace GitLabTimeManager.Services
         private IReadOnlyList<Label> _labels;
         private IReadOnlyList<LabelEvent> _events;
 
-        public WrappedIssue([NotNull] Issue issue)
+        public WrappedIssue(Issue issue)
         {
             Issue = issue ?? throw new ArgumentNullException(nameof(issue));
         }
@@ -158,7 +155,7 @@ namespace GitLabTimeManager.Services
 
         private int Index { get; }
 
-        protected TaskStatus([NotNull] string name, [NotNull] Brush brush, int index)
+        protected TaskStatus(string name, Brush brush, int index)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Brush = brush ?? throw new ArgumentNullException(nameof(brush));
@@ -189,21 +186,21 @@ namespace GitLabTimeManager.Services
 
     public class ToDoStatus : TaskStatus
     {
-        public ToDoStatus([NotNull] string name, [NotNull] Brush brush, int index) : base(name, brush, index)
+        public ToDoStatus(string name, Brush brush, int index) : base(name, brush, index)
         {
         }
     }
 
     public class DoingStatus : TaskStatus
     {
-        public DoingStatus([NotNull] string name, [NotNull] Brush brush, int index) : base(name, brush, index)
+        public DoingStatus(string name, Brush brush, int index) : base(name, brush, index)
         {
         }
     }
 
     public class DoneStatus : TaskStatus
     {
-        public DoneStatus([NotNull] string name, [NotNull] Brush brush, int index) : base(name, brush, index)
+        public DoneStatus(string name, Brush brush, int index) : base(name, brush, index)
         {
         }
     }

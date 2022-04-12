@@ -1,10 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using GitLabApiClient.Models.Users.Responses;
-using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
@@ -16,7 +10,7 @@ namespace GitLabTimeManager.Services
         private JsonSerializerSettings JsonSerializerSettings { get; }
         private RequestParameters Parameters { get; }
 
-        public HttpService([NotNull] IUserProfile userProfile)
+        public HttpService(IUserProfile userProfile)
         {
             if (userProfile == null) throw new ArgumentNullException(nameof(userProfile));
 

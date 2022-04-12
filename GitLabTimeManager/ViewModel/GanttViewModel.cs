@@ -7,7 +7,6 @@ using Catel.Data;
 using Catel.MVVM;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Services;
-using JetBrains.Annotations;
 using LiveCharts;
 using LiveCharts.Configurations;
 using LiveCharts.Wpf;
@@ -16,9 +15,9 @@ namespace GitLabTimeManager.ViewModel
 {
     public class GanttViewModel : ViewModelBase
     {
-        [UsedImplicitly] public static readonly PropertyData WrappedIssuesProperty = RegisterProperty<GanttViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
-        [UsedImplicitly] public static readonly PropertyData FromProperty = RegisterProperty<GanttViewModel, double>(x => x.From);
-        [UsedImplicitly] public static readonly PropertyData ToProperty = RegisterProperty<GanttViewModel, double>(x => x.To);
+        public static readonly PropertyData WrappedIssuesProperty = RegisterProperty<GanttViewModel, ObservableCollection<WrappedIssue>>(x => x.WrappedIssues);
+        public static readonly PropertyData FromProperty = RegisterProperty<GanttViewModel, double>(x => x.From);
+        public static readonly PropertyData ToProperty = RegisterProperty<GanttViewModel, double>(x => x.To);
 
         public double To
         {
@@ -50,7 +49,7 @@ namespace GitLabTimeManager.ViewModel
         private IDataRequestService DataRequestService { get; }
         private IDataSubscription DataSubscription { get; }
 
-        public GanttViewModel([NotNull] IDataRequestService dataRequestService)
+        public GanttViewModel(IDataRequestService dataRequestService)
         {
             DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
 

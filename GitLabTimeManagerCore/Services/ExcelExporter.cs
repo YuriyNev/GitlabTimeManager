@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using GitLabApiClient.Models.Users.Responses;
-using JetBrains.Annotations;
 using Microsoft.Office.Interop.Excel;
 
 namespace GitLabTimeManager.Services
@@ -36,12 +30,12 @@ namespace GitLabTimeManager.Services
         private const string CloseTimeTag = "CloseTime";
         private const string DueTimeTag = "DueTime";
 
-        public Task<bool> SaveAsync([NotNull] string outPath, [NotNull] ExportData data,[NotNull] string timeInterval)
+        public Task<bool> SaveAsync(string outPath, ExportData data,string timeInterval)
         {
             return Task.Run(() => Save(outPath, data,timeInterval));
         }
 
-        private bool Save([NotNull] string outPath, [NotNull] ExportData data,[NotNull] string timeInterval)
+        private bool Save(string outPath, ExportData data,string timeInterval)
         {
             Application excelApp = null;
             Workbook workbook = null;
@@ -132,14 +126,12 @@ namespace GitLabTimeManager.Services
 
     public interface IExporter
     {
-        Task<bool> SaveAsync([NotNull] string outPath, [NotNull] ExportData data, [NotNull] string timeInterval);
+        Task<bool> SaveAsync(string outPath, ExportData data, string timeInterval);
     }
 
     public class ExportData
     {
-        [NotNull] 
         public GitStatistics Statistics { get; set; }
-        [NotNull]
         public ObservableCollection<ReportIssue> Issues { get; set; }
         public TimeSpan WorkingTime { get; set; }
         public IReadOnlyList<string> Users { get; set; }

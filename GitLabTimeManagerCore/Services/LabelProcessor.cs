@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using GitLabApiClient.Models.Groups.Responses;
 using GitLabApiClient.Models.Projects.Responses;
-using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
@@ -32,15 +28,15 @@ namespace GitLabTimeManager.Services
 
         bool ContainsBoardLabels(IReadOnlyList<Label> labels);
 
-        DateTime? GetStartTime([NotNull] IReadOnlyList<LabelEvent> labelEvents);
+        DateTime? GetStartTime(IReadOnlyList<LabelEvent> labelEvents);
 
-        DateTime? GetPassedTime([NotNull] IReadOnlyList<LabelEvent> labelEvents);
+        DateTime? GetPassedTime(IReadOnlyList<LabelEvent> labelEvents);
     }
 
     public class LabelProcessor : ILabelService, IDisposable
     {
-        [NotNull] private IUserProfile UserProfile { get; }
-        [NotNull] private IProfileService ProfileService { get; }
+        private IUserProfile UserProfile { get; }
+        private IProfileService ProfileService { get; }
 
         private string ToDoLabel { get; set; }
         private string DoingLabel { get; set; }
@@ -52,8 +48,8 @@ namespace GitLabTimeManager.Services
         private BoardStateLabels BoardStateLabels { get; set; }
 
         public LabelProcessor(
-            [NotNull] IUserProfile userProfile,
-            [NotNull] IProfileService profileService)
+            IUserProfile userProfile,
+            IProfileService profileService)
         {
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             ProfileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
@@ -207,7 +203,7 @@ namespace GitLabTimeManager.Services
 
     public static class LabelStageCalculator
     {
-        public static LabelStageMetric GetMetric([NotNull] this WrappedIssue issue, [NotNull] ILabelService labelService, DateTime start, DateTime end)
+        public static LabelStageMetric GetMetric(this WrappedIssue issue, ILabelService labelService, DateTime start, DateTime end)
         {
             if (issue == null) throw new ArgumentNullException(nameof(issue));
             if (labelService == null) throw new ArgumentNullException(nameof(labelService));

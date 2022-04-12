@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Catel.IoC;
+﻿using Catel.IoC;
 using GitLabApiClient.Models.Issues.Responses;
 using GitLabTimeManager.Helpers;
-using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {

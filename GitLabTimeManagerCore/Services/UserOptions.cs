@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using GitLabTimeManager.Types;
-using JetBrains.Annotations;
 
 namespace GitLabTimeManager.Services
 {
@@ -47,7 +44,7 @@ namespace GitLabTimeManager.Services
 
     public interface IProfileService
     {
-        [NotNull] IUserProfile Deserialize();
+        IUserProfile Deserialize();
 
         void Serialize(IUserProfile profile);
 
@@ -109,7 +106,7 @@ namespace GitLabTimeManager.Services
         {
         }
 
-        public UserProfile([NotNull] IProfileService profileService)
+        public UserProfile(IProfileService profileService)
         {
             var userProfile = profileService.Deserialize();
 
