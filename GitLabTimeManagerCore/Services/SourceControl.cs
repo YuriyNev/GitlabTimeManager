@@ -12,7 +12,6 @@ using GitLabApiClient.Models.Projects.Responses;
 using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Helpers;
 
-
 namespace GitLabTimeManager.Services
 {
     public interface ISourceControl

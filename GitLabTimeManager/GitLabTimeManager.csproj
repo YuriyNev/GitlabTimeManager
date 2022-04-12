@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
 	<ApplicationIcon>Resources\icons8_time_64_PRs_icon.ico</ApplicationIcon>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
