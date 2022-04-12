@@ -6,10 +6,11 @@
              xmlns:viewModel="clr-namespace:GitLabTimeManager.ViewModel"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:models="clr-namespace:GitLabTimeManager.Models"
+             xmlns:models1="clr-namespace:GitLabTimeManager.Models;assembly=GitLabTimeManagerCore"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance viewModel:SummaryViewModel}">
     <UserControl.Resources>
-        <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models:StatsBlock}">
+        <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models1:StatsBlock}">
             <Border BorderBrush="LightGray" BorderThickness="0 0 0 1" MaxWidth="240" Margin="12 0 0 0">
                 <Grid Margin="0 4 0 0">
                     <Grid.RowDefinitions>

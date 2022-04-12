@@ -13,6 +13,7 @@
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:responses="clr-namespace:GitLabApiClient.Models.Projects.Responses;assembly=GitLabApiClient"
+             xmlns:services1="clr-namespace:GitLabTimeManager.Services;assembly=GitLabTimeManagerCore"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              d:DataContext="{d:DesignInstance viewModel:IssueListViewModel}">
@@ -149,7 +150,7 @@
                 </Ellipse>
             </Grid>
         </DataTemplate>
-        <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services:WrappedIssue}">
+        <DataTemplate x:Key="IssueTemplate" DataType="{x:Type services1:WrappedIssue}">
            <Border BorderThickness="0 0 0 0"
                    BorderBrush="#99CCCCCC"
                    Margin="0 0 4 0">

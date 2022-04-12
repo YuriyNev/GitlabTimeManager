@@ -16,6 +16,8 @@
              xmlns:services="clr-namespace:GitLabTimeManager.Services"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:behavior="clr-namespace:GitLabTimeManager.Behavior"
+             xmlns:services1="clr-namespace:GitLabTimeManager.Services;assembly=GitLabTimeManagerCore"
+             xmlns:models1="clr-namespace:GitLabTimeManager.Models;assembly=GitLabTimeManagerCore"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance viewModel:ReportViewModel}">
@@ -25,7 +27,7 @@
             <Setter Property="Margin" Value="2 4"/>
         </Style>
 
-        <DataTemplate x:Key="IssueIdTemplate" DataType="{x:Type services:ReportIssue}">
+        <DataTemplate x:Key="IssueIdTemplate" DataType="{x:Type services1:ReportIssue}">
             <TextBlock HorizontalAlignment="Center"
                        VerticalAlignment="Top"
                        Margin="0 0 0 0">
@@ -40,10 +42,10 @@
             </TextBlock>
         </DataTemplate>
 
-        <DataTemplate x:Key="TaskTemplate" DataType="{x:Type services:ReportIssue}">
+        <DataTemplate x:Key="TaskTemplate" DataType="{x:Type services1:ReportIssue}">
             <ContentControl Content="{Binding TaskState}">
                 <ContentControl.ContentTemplate>
-                    <DataTemplate DataType="services:TaskStatus">
+                    <DataTemplate DataType="services1:TaskStatus">
                         <Grid HorizontalAlignment="Center"
                               VerticalAlignment="Top" 
                               Margin="8 2">
@@ -92,7 +94,7 @@
 
         <SolidColorBrush x:Key="GrayBrush" Color="LightGray"/>
 
-        <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models:TimeStatsProperty}">
+        <DataTemplate x:Key="StatsItemTemplate" DataType="{x:Type models1:TimeStatsProperty}">
             <Grid Margin="4 2 0 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

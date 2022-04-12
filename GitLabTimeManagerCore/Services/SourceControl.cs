@@ -46,7 +46,7 @@ namespace GitLabTimeManager.Services
         [PublicAPI] Task<IList<User>> FetchAllUsersAsync();
     }
 
-    internal class SourceControl : ISourceControl
+    public class SourceControl : ISourceControl
     {
         [NotNull] private IUserProfile UserProfile { get; }
         [NotNull] private ILabelService LabelService { get; }

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace GitLabTimeManager.Helpers
 {
-    internal static class TimeHelper
+    public static class TimeHelper
     {
         private const double HoursPerDay = 8;
         private const double DaysPerWeek = 5;
