@@ -90,8 +90,8 @@ namespace GitLabTimeManager.Services
             statistics.AllSpendsByWorkForPeriod = Math.Max(statistics.AllSpendsByWorkForPeriod, 0);
             statistics.Commits = issues
                 .SelectMany(x => x.Commits)
-                .Where(x => x > startTime)
-                .Where(x => x < endTime)
+                .Where(x => x.Time > startTime)
+                .Where(x => x.Time < endTime)
                 .Count();
 
             statistics.AllSpendsStartedInPeriod = statistics.OpenSpendInPeriod + statistics.ClosedSpendInPeriod;

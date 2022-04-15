@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows.Media;
 using GitLabApiClient.Models.Issues.Responses;
+using GitLabApiClient.Models.Notes.Responses;
 using GitLabApiClient.Models.Projects.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Tools;
@@ -85,7 +86,8 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public IReadOnlyList<DateTime> Commits { get; set; }
+        public IReadOnlyList<CommitInfo> Commits { get; set; }
+        public IReadOnlyList<Note> Comments { get; set; }
 
         public override string ToString() => $"{Issue.Iid}\t{Issue.Title}\t{StartTime}\t{EndTime}\t{Estimate:F1}\t";
 
@@ -114,6 +116,7 @@ namespace GitLabTimeManager.Services
             hashCode.Add(Status);
             hashCode.Add(Spends);
             hashCode.Add(Commits);
+            hashCode.Add(Comments);
             return hashCode.ToHashCode();
         }
 
@@ -128,6 +131,15 @@ namespace GitLabTimeManager.Services
                 Spends = new Dictionary<DateRange, double>(Spends),
             };
         }
+    }
+
+    public class CommitInfo
+    {
+        public DateTime Time { get; set; }
+
+        public CommitChanges Changes { get; set; }
+
+        public string Author { get; set; }
     }
 
     public class ReportIssue : NotifyObject
@@ -154,13 +166,23 @@ namespace GitLabTimeManager.Services
 
         public int Commits { get; init; }
 
+        public CommitChanges CommitChanges { get; init; }
+            
+        public TaskStatus TaskState { get; init; }
+
         public string User { get; init; }
-        
+
         public string Epic { get; init; }
 
         public string WebUri { get; init; }
 
-        public TaskStatus TaskState { get; init; }
+        public int Comments { get; init; }
+    }
+
+    public struct CommitChanges
+    {
+        public int Additions { get; init; }
+        public int Deletions { get; init; }
     }
     
     public abstract class TaskStatus : IComparable

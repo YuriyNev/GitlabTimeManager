@@ -85,6 +85,23 @@ namespace GitLabTimeManager.Helpers
             return text.Contains(Commit);
         }
 
+        public static (string? path, string sha) ParseCommitId(this string text)
+        {
+            var commitPrefixLength = Commit.Length+1;
+            var commitGuid = text[commitPrefixLength..];
+
+            var split = commitGuid.Split('@');
+            if (split == null)
+                throw new InvalidOperationException("Cannot parse commit!");
+
+            return split.Length switch
+            {
+                1 => (null, split[0]),
+                2 => (split[0], split[1]),
+                _ => throw new InvalidOperationException("Cannot parse commit!")
+            };
+        }
+
         // Parse spent time in hours
         public static double ParseSpent(this string textDate)
         {

@@ -16,4 +16,10 @@
     <ProjectReference Include="..\GitLabTimeManagerCore\GitLabTimeManagerCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="profile.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -5,6 +5,7 @@ using Catel.Logging;
 using Catel.MVVM;
 using GitLabTimeManager.Services;
 using GitLabTimeManager.ViewModel;
+using GitLabTimeManagerCore.Services;
 using Hardcodet.Wpf.TaskbarNotification;
 
 namespace GitLabTimeManager
@@ -63,6 +64,8 @@ namespace GitLabTimeManager
             serviceLocator.RegisterType<IUserProfile, UserProfile>();
             serviceLocator.RegisterType<INotificationMessageService, NotificationMessageService>();
             serviceLocator.RegisterType<IHttpService, HttpService>();
+            serviceLocator.RegisterType<IReportProvider, ReportProvider>();
+            serviceLocator.RegisterType<IUserService, UserService>();
         }
 
         private static void ServiceLocator_MissingType(object sender, MissingTypeEventArgs e)

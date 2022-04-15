@@ -15,6 +15,8 @@ using GitLabApiClient.Models.Users.Responses;
 using GitLabTimeManager.Helpers;
 using GitLabTimeManager.Models;
 using GitLabTimeManager.Services;
+using GitLabTimeManagerCore.Services;
+using JetBrains.Annotations;
 
 namespace GitLabTimeManager.ViewModel;
 
@@ -111,6 +113,8 @@ public class ReportViewModel : ViewModelBase
     private INotificationMessageService MessageService { get; }
     private ILabelService LabelService { get; }
     private ISourceControl SourceControl { get; }
+    private IReportProvider ReportProvider { get; }
+    private IUserService UserService { get; }
     private IDataSubscription DataSubscription { get; }
 
     private GitStatistics Statistics { get; set; }
@@ -133,7 +137,9 @@ public class ReportViewModel : ViewModelBase
         IUserProfile userProfile,
         INotificationMessageService messageService,
         ILabelService labelService,
-        ISourceControl sourceControl)
+        ISourceControl sourceControl,
+        IReportProvider reportProvider,
+        IUserService userService)
     {
         DataRequestService = dataRequestService ?? throw new ArgumentNullException(nameof(dataRequestService));
         Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
@@ -141,6 +147,8 @@ public class ReportViewModel : ViewModelBase
         MessageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
         SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
+        ReportProvider = reportProvider ?? throw new ArgumentNullException(nameof(reportProvider));
+        UserService = userService ?? throw new ArgumentNullException(nameof(userService));
 
         _changeNotificationWrapper = new ChangeNotificationWrapper(UserProfile);
         _changeNotificationWrapper.PropertyChanged += UserProfile_PropertyChanged;
@@ -158,34 +166,8 @@ public class ReportViewModel : ViewModelBase
 
     private async Task RequestDataAsync(CancellationToken cancellationToken)
     {
-        await FetchGroupLabelsAsync(cancellationToken).ConfigureAwait(true);
-
-        await FetchUsersAsync(cancellationToken).ConfigureAwait(true);
-    }
-
-    private async Task FetchGroupLabelsAsync(CancellationToken cancellationToken)
-    {
-        var labels = await SourceControl.FetchGroupLabelsAsync();
-        AllLabels = labels
-            .Select(groupLabel => groupLabel.ConvertToLabel())
-            .ToList();
-    }
-
-    private async Task FetchUsersAsync(CancellationToken cancellationToken)
-    {
-        var users = await SourceControl.FetchAllUsersAsync().ConfigureAwait(true);
-        users = users
-            .OrderBy(x => x.Name)
-            .ToList();
-
-        int position = 0;
-        foreach (var group in UserProfile.UserGroups)
-        {
-            users.Insert(position, UserGroupEx.CreateUserAsGroup(@group.Key));
-            position++;
-        }
-
-        AllUsers = users.ToList();
+        AllLabels = await UserService.FetchGroupLabelsAsync(cancellationToken).ConfigureAwait(true);
+        AllUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
     }
 
     private void UserProfile_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -210,7 +192,7 @@ public class ReportViewModel : ViewModelBase
             if (path == null)
                 throw new ArgumentNullException();
 
-            var users = GetRealUsers(CurrentUser)
+            var users = UserService.GetRealUsers(AllUsers, CurrentUser)
                 .Select(x => x.Name)
                 .ToList();
 
@@ -264,7 +246,7 @@ public class ReportViewModel : ViewModelBase
 
         WorkingTime = Calendar.GetWorkingTime(startTime, endTime);
 
-        ReportIssues = CreateCollection(response.WrappedIssues, startTime, endTime);
+        ReportIssues = ReportProvider.CreateCollection(response.WrappedIssues, startTime, endTime);
         IssuesCollection = (CollectionView)CollectionViewSource.GetDefaultView(ReportIssues);
         IssuesCollection.SortDescriptions.Add(new SortDescription(nameof(ReportIssue.User), ListSortDirection.Ascending));
         IssuesCollection.SortDescriptions.Add(new SortDescription(nameof(ReportIssue.TaskState), ListSortDirection.Ascending));
@@ -292,34 +274,7 @@ public class ReportViewModel : ViewModelBase
             new("из", workingHours.TotalHours, "ч"),
             //new("Производительность", statistics.Productivity, "%"),
         };
-
-    private ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>
-        new(
-            wrappedIssues
-                .Where(x => x.Issue.Assignee != null)
-                .Select(x =>
-                {
-                    var metrics = x.GetMetric(LabelService,startDate,endDate);
-                    return new ReportIssue
-                    {
-                        Iid = x.Issue.Iid,
-                        Title = x.Issue.Title,
-                        Estimate = TimeHelper.SecondsToHours(x.Issue.TimeStats.TimeEstimate),
-                        SpendForPeriodByStage = metrics.Duration.TotalHours,
-                        Iterations = metrics.Iterations,
-                        SpendForPeriod = StatisticsExtractor.SpendsSum(x, startDate, endDate),
-                        Activity = StatisticsExtractor.SpendsSumForPeriod(x, startDate, endDate),
-                        StartTime = x.StartTime == DateTime.MaxValue ? null : x.StartTime,
-                        EndTime = x.EndTime == DateTime.MinValue ? null : x.EndTime,
-                        DueTime = x.DueTime,
-                        Commits = x.Commits.Count(d => d >= startDate && d <= endDate),
-                        User = x.Issue.Assignee.Name,
-                        //Epic = x.Issue.Epic?.Title,
-                        WebUri = x.Issue.WebUrl,
-                        TaskState = x.Status,
-                    };
-                }));
-
+    
     protected override void OnPropertyChanged(AdvancedPropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
@@ -358,7 +313,7 @@ public class ReportViewModel : ViewModelBase
         if (StartTime > FullEndTime)
             return;
             
-        var users = GetRealUsers(CurrentUser)
+        var users = UserService.GetRealUsers(AllUsers, CurrentUser)
             .Select(x => x.Username)
             .ToList();
 
@@ -366,34 +321,7 @@ public class ReportViewModel : ViewModelBase
 
         DataRequestService.Restart(StartTime, FullEndTime, users, selectedLabel);
     }
-
-    private List<User> GetRealUsers(User user)
-    {
-        return user.IsGroup()
-            ? ExtractUsersFromGroup(UserProfile.UserGroups, user.Name) 
-            : new List<User> { user };
-    }
-
-    private List<User> ExtractUsersFromGroup(Dictionary<string, IList<string>> userProfileUserGroups, string group)
-    {
-        if (userProfileUserGroups == null) throw new ArgumentNullException(nameof(userProfileUserGroups));
-        if (group == null) throw new ArgumentNullException(nameof(group));
-
-        List<User> users;
-        if (userProfileUserGroups.TryGetValue(group, out var u))
-        {
-            users = AllUsers
-                .Where(x => u.Contains(x.Name))
-                .ToList();
-        }
-        else
-        {
-            users = Array.Empty<User>().ToList();
-        }
-
-        return users;
-    }
-
+    
     private void UpdatePropertiesAsync()
     {
         if (Data == null)
@@ -417,11 +345,3 @@ public class ReportViewModel : ViewModelBase
     }
 }
 
-public static class UserGroupEx
-{
-    private static string GroupMarker => "group";
-
-    public static bool IsGroup(this User user) => user.Organization == GroupMarker;
-
-    public static User CreateUserAsGroup(string name) => new() { Name = name, Organization = GroupMarker };
-}

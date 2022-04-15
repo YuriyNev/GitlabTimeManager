@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Requests;
+using Telegram.Bot.Requests.Abstractions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
@@ -63,6 +67,7 @@ namespace TelegramSender
 
             var action = message.Text!.Split(' ')[0] switch
             {
+                "/start" => AddUser(botClient, message),
                 "/inline" => SendInlineKeyboard(botClient, message),
                 "/keyboard" => SendReplyKeyboard(botClient, message),
                 "/remove" => RemoveKeyboard(botClient, message),
@@ -102,6 +107,24 @@ namespace TelegramSender
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                                                             text: "Choose",
                                                             replyMarkup: inlineKeyboard);
+            }
+
+            static async Task<Message> AddUser(ITelegramBotClient botClient, Message message)
+            {
+                await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+
+                // Simulate longer running task
+                await Task.Delay(500);
+
+                var botStorage = StorageProvider.Instance.Deserialize();
+                if (!botStorage.SubscriptionChats.Contains(message.Chat.Id))
+                {
+                    botStorage.SubscriptionChats.Add(message.Chat.Id);
+                }
+
+                StorageProvider.Instance.Serialize(botStorage);
+
+                return new Message();
             }
 
             static async Task<Message> SendReplyKeyboard(ITelegramBotClient botClient, Message message)
@@ -214,5 +237,17 @@ namespace TelegramSender
             Console.WriteLine($"Unknown update type: {update.Type}");
             return Task.CompletedTask;
         }
+    }
+
+   public class GetAllChatsRequest : RequestBase<GetAllChatsResponse>
+    {
+        public GetAllChatsRequest() : base("getMe")
+        {
+        }
+    }
+
+    public class GetAllChatsResponse
+    {
+        public IReadOnlyList<int> ChatIDs { get; set; }
     }
 }
