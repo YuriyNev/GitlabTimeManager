@@ -228,6 +228,10 @@ namespace GitLabTimeManager.Services
                     allIssues.AddRange(issuesByUser);
                 }
 
+                allIssues = allIssues
+                    .DistinctBy(x => x.Iid)
+                    .ToList();
+                
                 IReadOnlyList<User> users = await GetUsersAsync(userNames).ConfigureAwait(false);
                 
                 requestStatusAction?.Invoke($"Получение проектов");

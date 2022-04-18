@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Windows.Documents;
 using GitLabTimeManager.Services;
 using GitLabTimeManagerCore.Services;
 using Telegram.Bot;
@@ -28,12 +29,16 @@ namespace TelegramSender
             UserService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
+        private Dictionary<string, ReportCollection> _oldReports;
+
         public async Task RunAsync(ITelegramBotClient botClient, CancellationToken cancellationToken)
         {
             try
             {
-                DateTime startTime = DateTime.Now.Date.AddDays(-2);
-                DateTime endTime = DateTime.Now.Date.AddDays(-1);
+                DateTime startTime = DateTime.Now.Date;
+                DateTime endTime = DateTime.Now;
+
+                _oldReports = UserProfile.UserGroups.Keys.ToDictionary(x => x, _ => new ReportCollection());
 
                 while (true)
                 {
@@ -42,12 +47,20 @@ namespace TelegramSender
                         var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
                         var sortedReportCollection = await GetReportByGroup(allUsers, @group, startTime, endTime);
 
+                        if (sortedReportCollection.IsEmpty())
+                            continue;
+
+                        if (sortedReportCollection.SequenceEqual(_oldReports[@group], new ReportCollection()))
+                            continue;
+
                         var formattedReportHtml = CreateFormattedReport(sortedReportCollection);
 
                         await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
+
+                        _oldReports[@group] = sortedReportCollection.Clone();
                     }
 
-                    await Task.Delay(30_000, cancellationToken);
+                    await Task.Delay(1 * 30_000, cancellationToken);
                 }
             }
             catch (Exception e)
@@ -76,7 +89,7 @@ namespace TelegramSender
             }
         }
 
-        private async Task<List<ReportIssue>> GetReportByGroup(IReadOnlyList<User> allUsers, string @group, DateTime startTime, DateTime endTime)
+        private async Task<ReportCollection> GetReportByGroup(IReadOnlyList<User> allUsers, string @group, DateTime startTime, DateTime endTime)
         {
             var groupUser = allUsers.FirstOrDefault(x => x.Name == @group);
             if (groupUser == null)
@@ -101,9 +114,9 @@ namespace TelegramSender
                 })
                 .OrderBy(x => x.CommitChanges.Additions)
                 .ThenBy(x => x.CommitChanges.Deletions)
-                .ThenBy(x => x.Comments)
-                .ToList();
-            return sortedReportCollection;
+                .ThenBy(x => x.Comments);
+
+            return new ReportCollection(sortedReportCollection);
         }
 
         private async Task<IEnumerable<ReportIssue>> AppendZeroUserIssues(IReadOnlyCollection<User> realUsers, DateTime startTime, DateTime endTime)
@@ -140,7 +153,7 @@ namespace TelegramSender
                     return "<pre>empty list</pre>";
 
                 var maxNameSize = maxIssueUser.User.Length;
-                var tabUserSize = maxNameSize + 4;
+                var tabUserSize = maxNameSize + 2;
 
                 //stringBuilder.AppendLine($"{WithDynamicTab("user", tabSize)}{WithDynamicTab("commits", 7)}");
 

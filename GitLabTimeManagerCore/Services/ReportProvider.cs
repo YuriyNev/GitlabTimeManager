@@ -26,8 +26,9 @@ namespace GitLabTimeManagerCore.Services
 
             foreach (var assignee in issue.Issue.Assignees)
             {
+                
                 var metrics = issue.GetMetric(LabelService, startDate, endDate);
-
+                
                 var reportIssue = new ReportIssue
                 {
                     Iid = issue.Issue.Iid,
@@ -62,10 +63,7 @@ namespace GitLabTimeManagerCore.Services
                     WebUri = issue.Issue.WebUrl,
                     TaskState = issue.Status,
                 };
-                if (reportIssue.User == "Инна Елькина" && (reportIssue.CommitChanges.Additions > 0 || reportIssue.CommitChanges.Deletions > 0))
-                {
-
-                }
+                
                 yield return reportIssue;
             }
         }

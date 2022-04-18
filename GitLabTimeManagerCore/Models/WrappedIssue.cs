@@ -177,6 +177,76 @@ namespace GitLabTimeManager.Services
         public string WebUri { get; init; }
 
         public int Comments { get; init; }
+
+        public ReportIssue Clone()
+        {
+            return new ReportIssue
+            {
+                Commits = this.Commits,
+                Comments = this.Comments,
+                User = this.User,
+                CommitChanges = new CommitChanges
+                {
+                    Additions = this.CommitChanges.Additions,
+                    Deletions = this.CommitChanges.Deletions,
+                },
+                // todo 
+            };
+        }
+    }
+
+    public class ReportCollection : List<ReportIssue>, IEqualityComparer<ReportIssue>
+    {
+        public ReportCollection(IEnumerable<ReportIssue> issues) : base(issues)
+        {
+        }
+
+        public ReportCollection()
+        {
+        }
+
+        public ReportCollection Clone()
+        {
+            return new ReportCollection(this.Select(x => x.Clone()));
+        }
+
+        public bool IsEmpty() => this.Count <= 0;
+
+        public bool Equals(ReportIssue x, ReportIssue y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (ReferenceEquals(x, null)) return false;
+            if (ReferenceEquals(y, null)) return false;
+            if (x.GetType() != y.GetType()) return false;
+            return x.Iid == y.Iid && x.Title == y.Title && x.SpendForPeriod.Equals(y.SpendForPeriod) &&
+                   x.SpendForPeriodByStage.Equals(y.SpendForPeriodByStage) && x.Estimate.Equals(y.Estimate) && x.Activity.Equals(y.Activity) &&
+                   Nullable.Equals(x.StartTime, y.StartTime) && Nullable.Equals(x.EndTime, y.EndTime) && Nullable.Equals(x.DueTime, y.DueTime) &&
+                   x.Iterations == y.Iterations && x.Commits == y.Commits && x.CommitChanges.Equals(y.CommitChanges) && Equals(x.TaskState, y.TaskState) &&
+                   x.User == y.User && x.Epic == y.Epic && x.WebUri == y.WebUri && x.Comments == y.Comments;
+        }
+
+        public int GetHashCode(ReportIssue obj)
+        {
+            var hashCode = new HashCode();
+            hashCode.Add(obj.Iid);
+            hashCode.Add(obj.Title);
+            hashCode.Add(obj.SpendForPeriod);
+            hashCode.Add(obj.SpendForPeriodByStage);
+            hashCode.Add(obj.Estimate);
+            hashCode.Add(obj.Activity);
+            hashCode.Add(obj.StartTime);
+            hashCode.Add(obj.EndTime);
+            hashCode.Add(obj.DueTime);
+            hashCode.Add(obj.Iterations);
+            hashCode.Add(obj.Commits);
+            hashCode.Add(obj.CommitChanges);
+            hashCode.Add(obj.TaskState);
+            hashCode.Add(obj.User);
+            hashCode.Add(obj.Epic);
+            hashCode.Add(obj.WebUri);
+            hashCode.Add(obj.Comments);
+            return hashCode.ToHashCode();
+        }
     }
 
     public struct CommitChanges
