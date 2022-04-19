@@ -193,6 +193,8 @@ namespace GitLabTimeManager.Services
                 // todo 
             };
         }
+
+        public bool HasChanges => Comments > 0 || Commits > 0 || CommitChanges.Additions > 0 || CommitChanges.Deletions > 0;
     }
 
     public class ReportCollection : List<ReportIssue>, IEqualityComparer<ReportIssue>

@@ -59,6 +59,7 @@ public static class Program
         serviceLocator.RegisterType<IHttpService, HttpService>();
         serviceLocator.RegisterType<IReportProvider, ReportProvider>();
         serviceLocator.RegisterType<IUserService, UserService>();
+        serviceLocator.RegisterType<IStorageService, StorageService>();
     }
 
     private static void ServiceLocator_MissingType(object sender, MissingTypeEventArgs e)

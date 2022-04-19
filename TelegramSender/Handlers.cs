@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Catel.IoC;
+using GitLabTimeManager.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Telegram.Bot;
@@ -116,13 +118,14 @@ namespace TelegramSender
                 // Simulate longer running task
                 await Task.Delay(500);
 
-                var botStorage = StorageProvider.Instance.Deserialize();
+                var storage = IoCConfiguration.DefaultDependencyResolver.Resolve<IStorageService>();
+                var botStorage = storage.Deserialize();
                 if (!botStorage.SubscriptionChats.Contains(message.Chat.Id))
                 {
                     botStorage.SubscriptionChats.Add(message.Chat.Id);
                 }
 
-                StorageProvider.Instance.Serialize(botStorage);
+                storage.Serialize(botStorage);
 
                 return new Message();
             }
@@ -180,16 +183,18 @@ namespace TelegramSender
 
             static async Task<Message> Usage(ITelegramBotClient botClient, Message message)
             {
-                const string usage = "Usage:\n" +
-                                     "/inline   - send inline keyboard\n" +
-                                     "/keyboard - send custom keyboard\n" +
-                                     "/remove   - remove custom keyboard\n" +
-                                     "/photo    - send a photo\n" +
-                                     "/request  - request location or contact";
+                //const string usage = "Usage:\n" +
+                //                     "/inline   - send inline keyboard\n" +
+                //                     "/keyboard - send custom keyboard\n" +
+                //                     "/remove   - remove custom keyboard\n" +
+                //                     "/photo    - send a photo\n" +
+                //                     "/request  - request location or contact";
 
-                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                            text: usage,
-                                                            replyMarkup: new ReplyKeyboardRemove());
+                //return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                //                                            text: usage,
+                //                                            replyMarkup: new ReplyKeyboardRemove());
+                await Task.CompletedTask;
+                return new Message();
             }
         }
 

@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using System.Windows.Documents;
+using Catel.IoC;
 using GitLabTimeManager.Services;
 using GitLabTimeManagerCore.Services;
 using Telegram.Bot;
@@ -35,13 +35,14 @@ namespace TelegramSender
         {
             try
             {
-                DateTime startTime = DateTime.Now.Date;
-                DateTime endTime = DateTime.Now;
-
-                _oldReports = UserProfile.UserGroups.Keys.ToDictionary(x => x, _ => new ReportCollection());
-
                 while (true)
                 {
+                    DateTime startTime = DateTime.Now.Date.AddDays(-1);
+                    DateTime endTime = DateTime.Now;
+
+                    if (_oldReports == null)
+                        _oldReports = UserProfile.UserGroups.Keys.ToDictionary(x => x, _ => new ReportCollection());
+
                     foreach (var @group in UserProfile.UserGroups.Keys)
                     {
                         var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
@@ -50,10 +51,14 @@ namespace TelegramSender
                         if (sortedReportCollection.IsEmpty())
                             continue;
 
-                        if (sortedReportCollection.SequenceEqual(_oldReports[@group], new ReportCollection()))
-                            continue;
+                        // no changes -> ignore
+                        //if (sortedReportCollection.SequenceEqual(_oldReports[@group], new ReportCollection()))
+                        //    continue;
 
-                        var formattedReportHtml = CreateFormattedReport(sortedReportCollection);
+                        //sortedReportCollection.Add(new ReportIssue() { User = "DebugUser", CommitChanges = new CommitChanges { Additions = DateTime.Now.Second, Deletions = DateTime.Now.Millisecond } });
+                        var diffs = sortedReportCollection.Except(_oldReports[@group], new ReportCollection()).ToList();
+
+                        var formattedReportHtml = CreateFormattedReport(sortedReportCollection, diffs);
 
                         await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
 
@@ -71,7 +76,8 @@ namespace TelegramSender
 
         private static async Task SendToRecipients(ITelegramBotClient botClient, CancellationToken cancellationToken, string formattedReportHtml)
         {
-            var storage = StorageProvider.Instance.Deserialize();
+            var storageService = IoCConfiguration.DefaultDependencyResolver.Resolve<IStorageService>();
+            var storage = storageService.Deserialize();
             if (storage.SubscriptionChats == null)
                 return;
 
@@ -79,8 +85,7 @@ namespace TelegramSender
             {
                 try
                 {
-                    await botClient.SendTextMessageAsync(new ChatId(chat), formattedReportHtml, ParseMode.Html,
-                        cancellationToken: cancellationToken);
+                    await botClient.SendTextMessageAsync(new ChatId(chat), formattedReportHtml, ParseMode.Html, cancellationToken: cancellationToken);
                 }
                 catch (ApiRequestException e)
                 {
@@ -142,18 +147,19 @@ namespace TelegramSender
             return collection;
         }
 
-        private static string CreateFormattedReport(IReadOnlyList<ReportIssue> sortedReportCollection)
+        private static string CreateFormattedReport(IReadOnlyList<ReportIssue> sortedReportCollection, IReadOnlyList<ReportIssue> changesCollection)
         {
             var stringBuilder = new StringBuilder();
+            var monoFormat = "<pre>{0}</pre>";
+
             try
             {
-                stringBuilder.Append("<pre>");
                 var maxIssueUser = sortedReportCollection.MaxBy(x => x.User.Length);
                 if (maxIssueUser == null)
                     return "<pre>empty list</pre>";
 
                 var maxNameSize = maxIssueUser.User.Length;
-                var tabUserSize = maxNameSize + 2;
+                var tabUserSize = maxNameSize + 4;
 
                 //stringBuilder.AppendLine($"{WithDynamicTab("user", tabSize)}{WithDynamicTab("commits", 7)}");
 
@@ -162,6 +168,11 @@ namespace TelegramSender
                     stringBuilder.Append($"{Tab(reportIssue.User, tabUserSize)}");
                     stringBuilder.Append($"{Tab($"+{reportIssue.CommitChanges.Additions}/-{reportIssue.CommitChanges.Deletions}", 10)}");
                     stringBuilder.Append($"{Tab($"{reportIssue.Comments}", 3)}");
+
+                    var userHasChanged = changesCollection.Any(x => x.User == reportIssue.User);
+                    if (userHasChanged && reportIssue.HasChanges)
+                        stringBuilder.Append($"{Tab($"🔸", 3)}");
+
                     stringBuilder.AppendLine();
                 }
             }
@@ -170,14 +181,10 @@ namespace TelegramSender
                 Console.WriteLine(e.Message);
                 throw;
             }
-            finally
-            {
-                stringBuilder.Append("</pre>");
-            }
 
-            return stringBuilder.ToString();
+            return string.Format(monoFormat, stringBuilder);
         }
-
+        
         private static string Tab(string value, int maxSize) => $"{value}{new string(' ', maxSize - value.Length)}";
     }
     
@@ -185,4 +192,6 @@ namespace TelegramSender
     {
         Task RunAsync(ITelegramBotClient botClient, CancellationToken cancellationToken);
     }
+
+
 }

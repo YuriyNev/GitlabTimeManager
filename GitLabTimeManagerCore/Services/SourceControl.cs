@@ -220,7 +220,7 @@ namespace GitLabTimeManager.Services
                         options.UpdatedAfter = StartTime;
                         options.CreatedBefore = EndTime;
                         options.State = IssueState.All;
-                        options.Labels = Labels.ToList();
+                        //options.Labels = Labels.ToList();
                     }
                     requestStatusAction?.Invoke($"Получение задач для пользователя {user}");
 

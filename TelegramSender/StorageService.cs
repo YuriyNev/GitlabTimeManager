@@ -2,11 +2,6 @@
 
 namespace TelegramSender;
 
-public static class StorageProvider
-{
-    public static IStorageService Instance { get; } = new StorageService();
-}
-
 public class StorageService : IStorageService
 {
     private const string Location = "chat_list.json";
