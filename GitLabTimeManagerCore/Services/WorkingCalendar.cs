@@ -222,4 +222,5 @@ public interface ICalendar
 {
     TimeSpan GetHolidays(DateTime from, DateTime to);
     TimeSpan GetWorkingTime(DateTime from, DateTime to);
+
 }

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Catel.IoC;
+﻿using Catel.IoC;
 using GitLabTimeManager.Services;
 using GitLabTimeManagerCore.Services;
 using Telegram.Bot;
@@ -16,62 +15,75 @@ namespace TelegramSender
         private IReportProvider ReportProvider { get; }
         private IUserProfile UserProfile { get; }
         private IUserService UserService { get; }
+        private ICalendar Calendar { get; }
 
         public ReportSenderService(
             ISourceControl sourceControl, 
             IReportProvider reportProvider, 
             IUserProfile userProfile, 
-            IUserService userService)
+            IUserService userService,
+            ICalendar calendar)
         {
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             ReportProvider = reportProvider ?? throw new ArgumentNullException(nameof(reportProvider));
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             UserService = userService ?? throw new ArgumentNullException(nameof(userService));
+            Calendar = calendar;
         }
 
-        private Dictionary<string, ReportCollection> _oldReports;
+        private bool IsHoliday(DateTime dateTime) => Calendar.GetWorkingTime(dateTime.Date, dateTime) == TimeSpan.Zero;
 
         public async Task RunAsync(ITelegramBotClient botClient, CancellationToken cancellationToken)
         {
+            var scheduler = new Scheduler(IsHoliday);
             try
             {
-                while (true)
-                {
-                    DateTime startTime = DateTime.Now.Date.AddDays(-1);
-                    DateTime endTime = DateTime.Now;
+                scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await GetChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
+                scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await GetChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
 
-                    if (_oldReports == null)
-                        _oldReports = UserProfile.UserGroups.Keys.ToDictionary(x => x, _ => new ReportCollection());
-
-                    foreach (var @group in UserProfile.UserGroups.Keys)
-                    {
-                        var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
-                        var sortedReportCollection = await GetReportByGroup(allUsers, @group, startTime, endTime);
-
-                        if (sortedReportCollection.IsEmpty())
-                            continue;
-
-                        // no changes -> ignore
-                        //if (sortedReportCollection.SequenceEqual(_oldReports[@group], new ReportCollection()))
-                        //    continue;
-
-                        //sortedReportCollection.Add(new ReportIssue() { User = "DebugUser", CommitChanges = new CommitChanges { Additions = DateTime.Now.Second, Deletions = DateTime.Now.Millisecond } });
-                        var diffs = sortedReportCollection.Except(_oldReports[@group], new ReportCollection()).ToList();
-
-                        var formattedReportHtml = CreateFormattedReport(sortedReportCollection, diffs);
-
-                        await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
-
-                        _oldReports[@group] = sortedReportCollection.Clone();
-                    }
-
-                    await Task.Delay(1 * 30_000, cancellationToken);
-                }
+                await Task.Delay(-1, cancellationToken);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+            finally
+            {
+                scheduler.Dispose();
+            }
+        }
+
+        private async Task GetChangesReportAsync(ITelegramBotClient botClient, PeriodChecker periodChecker, CancellationToken cancellationToken)
+        {
+            var diffReporters = new List<IReporter>(UserProfile.UserGroups.Keys.Select(x => new DiffsReporter(x)))
+                .Where(x => x.Name == "Веб-разработчики")
+                .ToList();
+
+            var startTime = DateTime.Now.Date;
+            var endTime = DateTime.Now;
+            var newPeriod = periodChecker.IsNewDay;
+
+            foreach (var reporter in diffReporters)
+            {
+                if (newPeriod)
+                {
+                    await SendToRecipients(botClient, cancellationToken, "new day").ConfigureAwait(false);
+                    reporter.Reset();
+                }
+
+                var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
+                var sortedReportCollection = await GetReportByGroup(allUsers, reporter.Name, startTime, endTime);
+                //sortedReportCollection.Add(new ReportIssue
+                //    { User = "Debug User", CommitChanges = new CommitChanges { Additions = DateTime.Now.Second, Deletions = DateTime.Now.Millisecond } });
+
+                if (!reporter.CanShow(sortedReportCollection)) continue;
+                var formattedReportHtml = reporter.GenerateHtmlReport(sortedReportCollection);
+
+                await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
+            }
+
+            
+            periodChecker.RememberTime(endTime);
         }
 
         private static async Task SendToRecipients(ITelegramBotClient botClient, CancellationToken cancellationToken, string formattedReportHtml)
@@ -146,52 +158,10 @@ namespace TelegramSender
             var collection = reportCollection.Union(expected);
             return collection;
         }
-
-        private static string CreateFormattedReport(IReadOnlyList<ReportIssue> sortedReportCollection, IReadOnlyList<ReportIssue> changesCollection)
-        {
-            var stringBuilder = new StringBuilder();
-            var monoFormat = "<pre>{0}</pre>";
-
-            try
-            {
-                var maxIssueUser = sortedReportCollection.MaxBy(x => x.User.Length);
-                if (maxIssueUser == null)
-                    return "<pre>empty list</pre>";
-
-                var maxNameSize = maxIssueUser.User.Length;
-                var tabUserSize = maxNameSize + 4;
-
-                //stringBuilder.AppendLine($"{WithDynamicTab("user", tabSize)}{WithDynamicTab("commits", 7)}");
-
-                foreach (var reportIssue in sortedReportCollection)
-                {
-                    stringBuilder.Append($"{Tab(reportIssue.User, tabUserSize)}");
-                    stringBuilder.Append($"{Tab($"+{reportIssue.CommitChanges.Additions}/-{reportIssue.CommitChanges.Deletions}", 10)}");
-                    stringBuilder.Append($"{Tab($"{reportIssue.Comments}", 3)}");
-
-                    var userHasChanged = changesCollection.Any(x => x.User == reportIssue.User);
-                    if (userHasChanged && reportIssue.HasChanges)
-                        stringBuilder.Append($"{Tab($"🔸", 3)}");
-
-                    stringBuilder.AppendLine();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                throw;
-            }
-
-            return string.Format(monoFormat, stringBuilder);
-        }
-        
-        private static string Tab(string value, int maxSize) => $"{value}{new string(' ', maxSize - value.Length)}";
     }
     
     public interface IReportSenderService
     {
         Task RunAsync(ITelegramBotClient botClient, CancellationToken cancellationToken);
     }
-
-
 }
