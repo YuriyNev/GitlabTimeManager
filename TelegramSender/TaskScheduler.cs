@@ -30,7 +30,7 @@ namespace TelegramSender
                 Description = description,
             });
 
-            Debug.WriteLine($"Task '{description}' will be planned at {scheduleTime.Hours}:{scheduleTime.Minutes}:{scheduleTime.Seconds}");
+            Console.WriteLine($"Task '{description}' will be planned at {scheduleTime.Hours:D2}:{scheduleTime.Minutes:D2}:{scheduleTime.Seconds:D2}");
         }
 
         private bool CheckTime(ScheduleTime time)
@@ -78,8 +78,17 @@ namespace TelegramSender
 
                 foreach (var scheduleTask in allTasks)
                 {
+                    Console.WriteLine($"[{DateTime.Now}] Task '{scheduleTask.Description}' has been started!");
                     var task = scheduleTask.Action();
-                    await task;
+                    try
+                    {
+                        await task;
+                        Console.WriteLine($"[{DateTime.Now}] Task '{scheduleTask.Description}' completed!");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"[{DateTime.Now}] Task '{scheduleTask.Description}' ran with exception: {e.Message}!");
+                    }
                 }
 
                 foreach (var scheduleTask in allTasks)
@@ -93,6 +102,7 @@ namespace TelegramSender
 
                 _taskRan = false;
             });
+
             compositeTask.RunSynchronously();
         }
 

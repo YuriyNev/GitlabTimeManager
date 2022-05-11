@@ -1,17 +1,14 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace GitLabTimeManager.Services
 {
     public static class HttpMethods
     {
-        public static HttpClient HttpClient { get; } = new HttpClient(
+        public static HttpClient HttpClient { get; } = new(
             new TimeoutHandler { InnerHandler = new HttpClientHandler() })
         {
             Timeout = Timeout.InfiniteTimeSpan

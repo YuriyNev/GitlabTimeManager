@@ -9,5 +9,5 @@ public class PeriodChecker
         _old = time;
     }
 
-    public bool IsNewDay => !_old.HasValue || _old.Value.Minute != DateTime.Now.Minute;
+    public bool IsNewDay => !_old.HasValue || _old.Value.Day != DateTime.Now.Day;
 }

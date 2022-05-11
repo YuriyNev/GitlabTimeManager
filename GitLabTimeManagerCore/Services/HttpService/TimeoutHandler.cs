@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net.Http;
 
 namespace GitLabTimeManager.Services
 {
@@ -25,7 +22,7 @@ namespace GitLabTimeManager.Services
             }
         }
 
-        public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(100);
+        public TimeSpan DefaultTimeout { get; } = TimeSpan.FromSeconds(100);
 
         private CancellationTokenSource GetCancellationTokenSource(
             HttpRequestMessage request,

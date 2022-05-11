@@ -137,6 +137,8 @@ namespace GitLabTimeManager.Services
     {
         public DateTime Time { get; set; }
 
+        public string CommitId { get; set; }
+
         public CommitChanges Changes { get; set; }
 
         public string Author { get; set; }
@@ -194,8 +196,10 @@ namespace GitLabTimeManager.Services
             };
         }
 
-        public bool HasChanges => Comments > 0 || Commits > 0 || CommitChanges.Additions > 0 || CommitChanges.Deletions > 0;
+        public bool HasChanges => CommitChanges.Additions > 0 || CommitChanges.Deletions > 0;
+        public bool HasComments => Comments > 0;
     }
+
 
     public class ReportCollection : List<ReportIssue>, IEqualityComparer<ReportIssue>
     {
