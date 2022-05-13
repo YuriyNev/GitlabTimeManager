@@ -21,6 +21,7 @@ namespace GitLabTimeManager.Services
         IReadOnlyList<string> CurrentUsers { get; }
 
         Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string>? labels, Action<string>? requestStatusAction = null);
+
         Task AddSpendAsync(Issue issue, TimeSpan timeSpan);
         Task SetEstimateAsync(Issue issue, TimeSpan timeSpan);
         Task<WrappedIssue> StartIssueAsync(WrappedIssue issue);
@@ -79,11 +80,38 @@ namespace GitLabTimeManager.Services
         public async Task<GitResponse> RequestDataAsync(DateTime start, DateTime end, IReadOnlyList<string> users, IReadOnlyList<string>? labels, Action<string> requestStatusAction)
         {
             var wrappedIssues = await GetRawDataAsync(start, end, users, labels, requestStatusAction).ConfigureAwait(false);
-
+            var commits = await GetCommitsAsync(start, end).ConfigureAwait(false);
             return new GitResponse
             {
                 WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues),
+                Commits = commits,
             };
+        }
+
+        private async Task<IReadOnlyList<Commit>> GetCommitsAsync(DateTime startTime, DateTime endTime)
+        {
+            var allProjects = await GetAllProjectsAsync();
+            var allCommits = new List<Commit>();
+            foreach (var project in allProjects)
+            {
+                try
+                {
+                    var commits = await GitLabClient.Commits.GetAsync(project.Id, options =>
+                    {
+                        options.Since = startTime;
+                        options.Until = endTime;
+                        options.WithStats = true;
+                    });
+                    allCommits.AddRange(commits);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
+            return allCommits;
+            
         }
 
         public async Task AddSpendAsync(Issue issue, TimeSpan timeSpan)
@@ -639,5 +667,6 @@ namespace GitLabTimeManager.Services
     public class GitResponse
     {
         public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
+        public IReadOnlyList<Commit> Commits { get; set; }
     }
 }

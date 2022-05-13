@@ -44,13 +44,13 @@ public class ChangesReporter : IReporter
     private static string CreateFormattedReport(IReadOnlyList<ReportIssue> sortedReportCollection, IReadOnlyList<ReportIssue> changesCollection)
     {
         var stringBuilder = new StringBuilder();
-        var monoFormat = "<pre>{0}</pre>";
+        var monoFormat = "<code>{0}</code>";
 
         try
         {
             var maxIssueUser = sortedReportCollection.MaxBy(x => x.User.Length);
             if (maxIssueUser == null)
-                return "<pre>empty list</pre>";
+                return "<code>empty list</code>";
 
             var maxNameSize = maxIssueUser.User.Length;
             var tabUserSize = maxNameSize + 4;
@@ -124,7 +124,7 @@ public class SummaryReporter : IReporter
     private static string CreateFormattedReport(IReadOnlyList<ReportIssue> sortedReportCollection, IReadOnlyList<ReportIssue> _)
     {
         var stringBuilder = new StringBuilder();
-        var monoFormat = "<pre>{0}</pre>";
+        var monoFormat = "<code>{0}</code>";
 
         try
         {
@@ -134,7 +134,7 @@ public class SummaryReporter : IReporter
 
             var maxIssueUser = collection.MaxBy(x => x.User.Length);
             if (maxIssueUser == null)
-                return "<pre>empty list</pre>";
+                return "<code>empty list</code>";
 
             var maxNameSize = maxIssueUser.User.Length;
             var tabUserSize = maxNameSize + 4;
@@ -148,13 +148,15 @@ public class SummaryReporter : IReporter
                     stringBuilder.AppendLine($"{reportIssue.User.FitTo(tabUserSize)}");
                 }
 
-                //stringBuilder.Append("</pre>");
+                //stringBuilder.Append("</code>");
                 //stringBuilder.Append($"<a href=\"{reportIssue.WebUri}\">{reportIssue.Iid}</a>");
-                //stringBuilder.Append("<pre>");
+                //stringBuilder.Append("<code>");
                 if (reportIssue.Iid == 0)
                     stringBuilder.Append("-");
                 else
-                    stringBuilder.Append($"{$"#{reportIssue.Iid}".FitTo(4)}  {$"{reportIssue.Commits}".FitTo(3)}{$"{reportIssue.Comments}".FitTo(3)}");
+                {
+                    stringBuilder.Append($"</code><a href=\"{reportIssue.WebUri}\">#{reportIssue.Iid}</a><code>{new string(' ', 5 - reportIssue.Iid.ToString("D").Length)}{$"{reportIssue.Commits}".FitTo(3)}{$"{reportIssue.Comments}".FitTo(3)}");
+                }
 
                 if (reportIssue.Commits + reportIssue.Comments > 0) 
                     stringBuilder.Append("👍");
@@ -209,7 +211,7 @@ public class WithoutWorkReporter : IReporter
     private static string CreateFormattedReport(IReadOnlyList<ReportIssue> sortedReportCollection, IReadOnlyList<ReportIssue> _)
     {
         var stringBuilder = new StringBuilder();
-        var monoFormat = "<pre>{0}</pre>";
+        var monoFormat = "<code>{0}</code>";
 
         try
         {
@@ -219,15 +221,15 @@ public class WithoutWorkReporter : IReporter
 
             var maxIssueUser = collection.MaxBy(x => x.User.Length);
             if (maxIssueUser == null)
-                return "<pre>empty list</pre>";
+                return "<code>empty list</code>";
 
             var maxNameSize = maxIssueUser.User.Length;
             var tabUserSize = maxNameSize + 4;
 
-            stringBuilder.AppendLine("Без работы:");
+            //stringBuilder.AppendLine("Без работы:");
             foreach (var reportIssue in collection)
             {
-                stringBuilder.AppendLine($"{reportIssue.User.FitTo(tabUserSize)}");
+                stringBuilder.AppendLine($"{reportIssue.User.FitTo(tabUserSize)} 😴");
             }
         }
         catch (Exception e)

@@ -1,4 +1,5 @@
-﻿using Catel.IoC;
+﻿using Catel.Collections;
+using Catel.IoC;
 using GitLabTimeManager.Services;
 using GitLabTimeManagerCore.Services;
 using Telegram.Bot;
@@ -16,19 +17,22 @@ namespace TelegramSender
         private IUserProfile UserProfile { get; }
         private IUserService UserService { get; }
         private ICalendar Calendar { get; }
+        private ITimeManager TimeManager { get; }
 
         public ReportSenderService(
             ISourceControl sourceControl,
             IReportProvider reportProvider,
             IUserProfile userProfile,
             IUserService userService,
-            ICalendar calendar)
+            ICalendar calendar,
+            ITimeManager timeManager)
         {
             SourceControl = sourceControl ?? throw new ArgumentNullException(nameof(sourceControl));
             ReportProvider = reportProvider ?? throw new ArgumentNullException(nameof(reportProvider));
             UserProfile = userProfile ?? throw new ArgumentNullException(nameof(userProfile));
             UserService = userService ?? throw new ArgumentNullException(nameof(userService));
             Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
+            TimeManager = timeManager ?? throw new ArgumentNullException(nameof(timeManager));
         }
 
         private bool IsHoliday(DateTime dateTime) => Calendar.GetWorkingTime(dateTime.Date, dateTime) == TimeSpan.Zero;
@@ -38,26 +42,34 @@ namespace TelegramSender
             var scheduler = new Scheduler(IsHoliday);
             try
             {
+
+                //await SendToRecipients(botClient, cancellationToken, "<code>text</code><a href=\"ya.ru\">yandex</a><code>text</code>").ConfigureAwait(false);
+
                 //scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
                 //scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
                 //await SendSummaryReportAsync(botClient, cancellationToken);
                 await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken);
                 //await SendNoWorkIssuesReportAsync(botClient, cancellationToken);
 
+                scheduler.AddTask(new ScheduleTime(11, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 0");
                 scheduler.AddTask(new ScheduleTime(12, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 1");
-                scheduler.AddTask(new ScheduleTime(15, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 2");
-                scheduler.AddTask(new ScheduleTime(18, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 3");
+                scheduler.AddTask(new ScheduleTime(13, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 2");
+                scheduler.AddTask(new ScheduleTime(14, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 3");
+                scheduler.AddTask(new ScheduleTime(15, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 4");
+                scheduler.AddTask(new ScheduleTime(16, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 5");
+                scheduler.AddTask(new ScheduleTime(17, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 6");
+                scheduler.AddTask(new ScheduleTime(18, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 7");
 
-                scheduler.AddTask(new ScheduleTime(10, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 1");
-                scheduler.AddTask(new ScheduleTime(11, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 2");
-                scheduler.AddTask(new ScheduleTime(12, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 3");
-                scheduler.AddTask(new ScheduleTime(13, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 4");
-                scheduler.AddTask(new ScheduleTime(14, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 5");
-                scheduler.AddTask(new ScheduleTime(15, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 6");
-                scheduler.AddTask(new ScheduleTime(16, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 7");
-                scheduler.AddTask(new ScheduleTime(17, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 8");
+                scheduler.AddTask(new ScheduleTime(10, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 0");
+                scheduler.AddTask(new ScheduleTime(11, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 1");
+                scheduler.AddTask(new ScheduleTime(12, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 2");
+                scheduler.AddTask(new ScheduleTime(13, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 3");
+                scheduler.AddTask(new ScheduleTime(14, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 4");
+                scheduler.AddTask(new ScheduleTime(15, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 5");
+                scheduler.AddTask(new ScheduleTime(16, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 6");
+                scheduler.AddTask(new ScheduleTime(17, 00, 00), async () => await SendNoWorkIssuesReportAsync(botClient, cancellationToken), "Отчет по отсутствию задач 7");
 
-                scheduler.AddTask(new ScheduleTime(17, 00, 00), async () => await SendSummaryReportAsync(botClient, cancellationToken), "Итоговый отчет 1");
+                scheduler.AddTask(new ScheduleTime(17, 00, 00), async () => await SendSummaryReportAsync(botClient, cancellationToken), "Итоговый отчет 0");
 
                 await Task.Delay(-1, cancellationToken);
             }
@@ -74,11 +86,11 @@ namespace TelegramSender
         private async Task SendChangesReportAsync(ITelegramBotClient botClient, PeriodChecker periodChecker, CancellationToken cancellationToken)
         {
             var diffReporters = new List<IReporter>(UserProfile.UserGroups.Keys.Select(x => new ChangesReporter(x)))
-                .Where(x => x.Name == "Веб-разработчики")
+                //.Where(x => x.Name == "Веб-разработчики")
                 .ToList();
 
-            var startTime = DateTime.Now.Date;
-            var endTime = DateTime.Now;
+            var startTime = TimeManager.StartTime;
+            var endTime = TimeManager.EndTime;
             var newPeriod = periodChecker.IsNewDay;
 
             foreach (var reporter in diffReporters)
@@ -92,7 +104,7 @@ namespace TelegramSender
                 var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
                 var sortedReportCollection = await GetReportDataByGroup(allUsers, reporter.Name, startTime, endTime);
                 //sortedReportCollection.Add(new ReportIssue
-                //    { User = "Debug User", CommitChanges = new CommitChanges { Additions = DateTime.Now.Second, Deletions = DateTime.Now.Millisecond } });
+                //    { User = "Debug User", CommitChanges = new CommitChanges { Additions = TimeManager.EndTime.Second, Deletions = TimeManager.EndTime.Millisecond } });
 
                 if (!reporter.CanShow(sortedReportCollection)) continue;
                 var formattedReportHtml = reporter.GenerateHtmlReport(sortedReportCollection);
@@ -110,8 +122,8 @@ namespace TelegramSender
                 //.Where(x => x.Name == "Веб-разработчики")
                 .ToList();
 
-            var startTime = DateTime.Now.Date;
-            var endTime = DateTime.Now;
+            var startTime = TimeManager.StartTime;
+            var endTime = TimeManager.EndTime;
 
             foreach (var reporter in diffReporters)
             {
@@ -231,8 +243,22 @@ namespace TelegramSender
                 .Select(x => x.Username)
                 .ToList();
 
-            var issues = await SourceControl.RequestDataAsync(startTime, endTime, users, labels);
-            var reportCollection = ReportProvider.CreateCollection(issues.WrappedIssues, startTime, endTime);
+            var gitResponse = await SourceControl.RequestDataAsync(startTime, endTime, users, labels);
+            var commits = gitResponse.Commits;
+
+            var reportCollection = ReportProvider.CreateCollection(gitResponse.WrappedIssues, startTime, endTime);
+
+            var commitReports = commits.Select(x => new ReportIssue
+            {
+                User = realUsers.First(y => y.Email == x.CommitterEmail).Name,
+                CommitChanges = new CommitChanges
+                {
+                    Additions = x.CommitStats.Additions,
+                    Deletions = x.CommitStats.Deletions,
+                }
+            });
+
+            //reportCollection.AddRange(commitReports);
 
             var fullUserNames = realUsers
                 .Select(x => x.Name)
@@ -245,6 +271,8 @@ namespace TelegramSender
                 .ToList();
 
             var collection = reportCollection.Union(expected);
+
+            collection = collection.Where(x => realUsers.Any(y => y.Name == x.User));
             return collection;
         }
 
@@ -254,8 +282,8 @@ namespace TelegramSender
                 .Select(x => x.Username)
                 .ToList();
 
-            var startTime = DateTime.Now.AddMonths(-1);
-            var endTime = DateTime.Now;
+            var startTime = TimeManager.EndTime.AddMonths(-1);
+            var endTime = TimeManager.EndTime;
             var issues = await SourceControl.RequestDataAsync(startTime, endTime, users, labels);
             var reportCollection = ReportProvider.CreateCollection(issues.WrappedIssues, startTime, endTime);
 

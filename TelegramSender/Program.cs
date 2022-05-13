@@ -60,6 +60,7 @@ public static class Program
         serviceLocator.RegisterType<IReportProvider, ReportProvider>();
         serviceLocator.RegisterType<IUserService, UserService>();
         serviceLocator.RegisterType<IStorageService, StorageService>();
+        serviceLocator.RegisterType<ITimeManager, TimeManager>();
     }
 
     private static void ServiceLocator_MissingType(object sender, MissingTypeEventArgs e)

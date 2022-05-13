@@ -8,7 +8,7 @@ using GitLabTimeManager.Tools;
 
 namespace GitLabTimeManager.Services
 {
-    [DebuggerDisplay("{Issue.Title} {StartTime} - {EndTime} {Estimate}")]
+    [DebuggerDisplay("#{Issue.Iid} {Issue.Title} {StartTime} - {EndTime} {Estimate}")]
     public class WrappedIssue : NotifyObject
     {
         private Issue _issue;
@@ -144,6 +144,7 @@ namespace GitLabTimeManager.Services
         public string Author { get; set; }
     }
 
+    [DebuggerDisplay("{User}")]
     public class ReportIssue : NotifyObject
     {
         public int Iid { get; init; }
@@ -169,7 +170,7 @@ namespace GitLabTimeManager.Services
         public int Commits { get; init; }
 
         public CommitChanges CommitChanges { get; init; }
-            
+        
         public TaskStatus TaskState { get; init; }
 
         public string User { get; init; }
@@ -257,8 +258,8 @@ namespace GitLabTimeManager.Services
 
     public struct CommitChanges
     {
-        public int Additions { get; init; }
-        public int Deletions { get; init; }
+        public int Additions { get; set; }
+        public int Deletions { get; set; }
     }
     
     public abstract class TaskStatus : IComparable

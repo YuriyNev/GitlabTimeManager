@@ -13,11 +13,46 @@ namespace GitLabTimeManagerCore.Services
             LabelService = labelService ?? throw new ArgumentNullException(nameof(labelService));
         }
 
-        public ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>
-            new(
-                wrappedIssues
+        public ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate)
+        {
+            var issues = wrappedIssues.ToList();
+            //var issuesCopy = issues.ToList();
+
+            //foreach (var issue in issues)
+            //{
+            //    var duplicates = issuesCopy
+            //        //.Where(x => x.Issue.Iid != issue.Issue.Iid)
+            //        .SelectMany(x => x.Commits
+            //            .Where(info => issue.Commits
+            //            .Any(y => y.CommitId == info.CommitId)));
+                
+            //    // has common commits for some issues -> reset changes for one 
+            //    var commitInfos = duplicates.ToList();
+            //    if (commitInfos.Count > 1)
+            //    {
+            //        var notZeroChanges = commitInfos.Where(x => x.Changes.Additions > 0 || x.Changes.Deletions > 0);
+            //        var zeroChanges = notZeroChanges.ToList();
+            //        if (zeroChanges.Count == 1)
+            //        {
+            //            // its ok
+            //        }
+            //        else
+            //        {
+            //            // need reset other
+            //            //notZeroChanges
+            //            foreach (var commitInfo in zeroChanges.Skip(1))
+            //            {
+            //                commitInfo.Changes = new CommitChanges();
+            //            }
+            //        }
+            //    }
+            //}
+
+            return new(
+                issues
                     .Where(issue => issue.Issue.Assignee != null)
                     .SelectMany(issue => CreateReportIssue(issue, startDate, endDate)));
+        }
 
         private IEnumerable<ReportIssue> CreateReportIssue(WrappedIssue issue, DateTime startDate, DateTime endDate)
         {
