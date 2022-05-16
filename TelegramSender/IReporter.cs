@@ -1,14 +1,15 @@
 ﻿using GitLabTimeManager.Services;
+using TelegramSender.Reports;
 
 namespace TelegramSender;
 
-public interface IReporter
+public interface IReporter<T> where T : IReportItem<T>
 {
-    string Name { get; }
+    public string Name { get; }
 
-    bool CanShow(ReportCollection data);
+    public bool CanShow(IReadOnlyList<T> data);
 
-    string GenerateHtmlReport(ReportCollection data);
+    public string GenerateHtmlReport(IReadOnlyList<T> data);
 
-    void Reset();
+    public void Reset();
 }

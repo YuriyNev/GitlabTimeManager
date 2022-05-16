@@ -167,7 +167,7 @@ namespace GitLabTimeManager.Services
 
         public int Iterations { get; init; }
 
-        public int Commits { get; init; }
+        public int CommitsCount { get; init; }
 
         public CommitChanges CommitChanges { get; init; }
         
@@ -185,7 +185,7 @@ namespace GitLabTimeManager.Services
         {
             return new ReportIssue
             {
-                Commits = this.Commits,
+                CommitsCount = this.CommitsCount,
                 Comments = this.Comments,
                 User = this.User,
                 CommitChanges = new CommitChanges
@@ -199,6 +199,7 @@ namespace GitLabTimeManager.Services
 
         public bool HasChanges => CommitChanges.Additions > 0 || CommitChanges.Deletions > 0;
         public bool HasComments => Comments > 0;
+        public List<CommitInfo> Commits { get; set; }
     }
 
 
@@ -228,7 +229,7 @@ namespace GitLabTimeManager.Services
             return x.Iid == y.Iid && x.Title == y.Title && x.SpendForPeriod.Equals(y.SpendForPeriod) &&
                    x.SpendForPeriodByStage.Equals(y.SpendForPeriodByStage) && x.Estimate.Equals(y.Estimate) && x.Activity.Equals(y.Activity) &&
                    Nullable.Equals(x.StartTime, y.StartTime) && Nullable.Equals(x.EndTime, y.EndTime) && Nullable.Equals(x.DueTime, y.DueTime) &&
-                   x.Iterations == y.Iterations && x.Commits == y.Commits && x.CommitChanges.Equals(y.CommitChanges) && Equals(x.TaskState, y.TaskState) &&
+                   x.Iterations == y.Iterations && x.CommitsCount == y.CommitsCount && x.CommitChanges.Equals(y.CommitChanges) && Equals(x.TaskState, y.TaskState) &&
                    x.User == y.User && x.Epic == y.Epic && x.WebUri == y.WebUri && x.Comments == y.Comments;
         }
 
@@ -245,7 +246,7 @@ namespace GitLabTimeManager.Services
             hashCode.Add(obj.EndTime);
             hashCode.Add(obj.DueTime);
             hashCode.Add(obj.Iterations);
-            hashCode.Add(obj.Commits);
+            hashCode.Add(obj.CommitsCount);
             hashCode.Add(obj.CommitChanges);
             hashCode.Add(obj.TaskState);
             hashCode.Add(obj.User);
@@ -258,8 +259,14 @@ namespace GitLabTimeManager.Services
 
     public struct CommitChanges
     {
-        public int Additions { get; set; }
-        public int Deletions { get; set; }
+        public int Additions { get; init; }
+        public int Deletions { get; init; }
+
+        public CommitChanges(int additions, int deletions)
+        {
+            Additions = additions;
+            Deletions = deletions;
+        }
     }
     
     public abstract class TaskStatus : IComparable

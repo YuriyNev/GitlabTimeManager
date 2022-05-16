@@ -81,10 +81,23 @@ namespace GitLabTimeManager.Services
         {
             var wrappedIssues = await GetRawDataAsync(start, end, users, labels, requestStatusAction).ConfigureAwait(false);
             var commits = await GetCommitsAsync(start, end).ConfigureAwait(false);
+            var unrelatedCommits = new List<Commit>();
+
+            if (wrappedIssues != null)
+            {
+                var issuesCommitsCollection = wrappedIssues.SelectMany(x => x.Commits).ToList();
+                unrelatedCommits = commits
+                    .Where(x => !x.Message.Contains("merge"))
+                    .Where(x => !x.Message.Contains("Merge"))
+                    .Where(x => issuesCommitsCollection
+                        .All(y => y.CommitId != x.ShortId))
+                    .ToList();
+            }
+
             return new GitResponse
             {
-                WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues),
-                Commits = commits,
+                WrappedIssues = new ObservableCollection<WrappedIssue>(wrappedIssues ?? Array.Empty<WrappedIssue>().ToList()),
+                UnrelatedCommits = unrelatedCommits,
             };
         }
 
@@ -666,7 +679,7 @@ namespace GitLabTimeManager.Services
 
     public class GitResponse
     {
-        public ObservableCollection<WrappedIssue> WrappedIssues { get; set; }
-        public IReadOnlyList<Commit> Commits { get; set; }
+        public ObservableCollection<WrappedIssue> WrappedIssues { get; init; }
+        public IReadOnlyList<Commit> UnrelatedCommits { get; init; }
     }
 }

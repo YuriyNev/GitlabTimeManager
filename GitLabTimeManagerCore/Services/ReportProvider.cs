@@ -76,10 +76,13 @@ namespace GitLabTimeManagerCore.Services
                     StartTime = issue.StartTime == DateTime.MaxValue ? null : issue.StartTime,
                     EndTime = issue.EndTime == DateTime.MinValue ? null : issue.EndTime,
                     DueTime = issue.DueTime,
+                    Commits = issue.Commits
+                        .Where(commitInfo => commitInfo.Time >= startDate && commitInfo.Time <= endDate)
+                        .ToList(),
                     Comments = issue.Comments
                         .Where(d => d.Author.Username == assignee.Username)
                         .Count(d => d.CreatedAt >= startDate && d.CreatedAt <= endDate),
-                    Commits = issue.Commits
+                    CommitsCount = issue.Commits
                         .Where(commitInfo => commitInfo.Author == assignee.Username)
                         .Count(commitInfo => commitInfo.Time >= startDate && commitInfo.Time <= endDate),
                     CommitChanges = new CommitChanges

@@ -6,6 +6,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TelegramSender.Reports;
 using User = GitLabApiClient.Models.Users.Responses.User;
 
 namespace TelegramSender
@@ -47,8 +48,8 @@ namespace TelegramSender
 
                 //scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
                 //scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
-                //await SendSummaryReportAsync(botClient, cancellationToken);
-                await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken);
+                await SendSummaryReportAsync(botClient, cancellationToken);
+                //await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken);
                 //await SendNoWorkIssuesReportAsync(botClient, cancellationToken);
 
                 scheduler.AddTask(new ScheduleTime(11, 00, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Отчет по изменениям в коде 0");
@@ -85,9 +86,8 @@ namespace TelegramSender
 
         private async Task SendChangesReportAsync(ITelegramBotClient botClient, PeriodChecker periodChecker, CancellationToken cancellationToken)
         {
-            var diffReporters = new List<IReporter>(UserProfile.UserGroups.Keys.Select(x => new ChangesReporter(x)))
+            var diffReporters = UserProfile.UserGroups.Keys.Select(x => new ChangesReporter(x)).ToList();
                 //.Where(x => x.Name == "Веб-разработчики")
-                .ToList();
 
             var startTime = TimeManager.StartTime;
             var endTime = TimeManager.EndTime;
@@ -102,12 +102,18 @@ namespace TelegramSender
                 }
 
                 var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
-                var sortedReportCollection = await GetReportDataByGroup(allUsers, reporter.Name, startTime, endTime);
+                var collection = await GetChangesReportByGroup(allUsers, reporter.Name, startTime, endTime);
                 //sortedReportCollection.Add(new ReportIssue
                 //    { User = "Debug User", CommitChanges = new CommitChanges { Additions = TimeManager.EndTime.Second, Deletions = TimeManager.EndTime.Millisecond } });
 
-                if (!reporter.CanShow(sortedReportCollection)) continue;
-                var formattedReportHtml = reporter.GenerateHtmlReport(sortedReportCollection);
+                var reportCollection = collection.Select(x => new ChangesReportItem()
+                {
+                    User = x.User,
+                    Changes = new CommitChanges(x.CommitChanges.Additions, x.CommitChanges.Deletions)
+                }).ToList();
+
+                if (!reporter.CanShow(reportCollection)) continue;
+                var formattedReportHtml = reporter.GenerateHtmlReport(reportCollection);
 
                 await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
             }
@@ -118,7 +124,7 @@ namespace TelegramSender
 
         private async Task SendSummaryReportAsync(ITelegramBotClient botClient, CancellationToken cancellationToken)
         {
-            var diffReporters = new List<IReporter>(UserProfile.UserGroups.Keys.Select(x => new SummaryReporter(x)))
+            var diffReporters = new List<SummaryReporter>(UserProfile.UserGroups.Keys.Select(x => new SummaryReporter(x)))
                 //.Where(x => x.Name == "Веб-разработчики")
                 .ToList();
 
@@ -128,10 +134,19 @@ namespace TelegramSender
             foreach (var reporter in diffReporters)
             {
                 var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
-                var sortedReportCollection = await GetReportData(allUsers, reporter.Name, startTime, endTime);
+                var collection = await GetReportData(allUsers, reporter.Name, startTime, endTime);
 
-                if (!reporter.CanShow(sortedReportCollection)) continue;
-                var formattedReportHtml = reporter.GenerateHtmlReport(sortedReportCollection);
+                var reportCollection = collection.Select(x => new IssuesReportItem
+                {
+                    User = x.User,
+                    Comments = x.Comments,
+                    Commits = x.CommitsCount,
+                    Iid = x.Iid,
+                    WebUri = x.WebUri,
+                }).ToList();
+
+                if (!reporter.CanShow(reportCollection)) continue;
+                var formattedReportHtml = reporter.GenerateHtmlReport(reportCollection);
 
                 await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
             }
@@ -139,7 +154,7 @@ namespace TelegramSender
 
         private async Task SendNoWorkIssuesReportAsync(ITelegramBotClient botClient, CancellationToken cancellationToken)
         {
-            var diffReporters = new List<IReporter>(UserProfile.UserGroups.Keys.Select(x => new WithoutWorkReporter(x)))
+            var diffReporters = new List<WithoutWorkReporter>(UserProfile.UserGroups.Keys.Select(x => new WithoutWorkReporter(x)))
                 //.Where(x => x.Name == "Веб-разработчики")
                 .ToList();
 
@@ -147,10 +162,15 @@ namespace TelegramSender
             {
                 var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
                 //var sortedReportCollection = await GetReportData(allUsers, reporter.Name, startTime, endTime);
-                var sortedReportCollection = await GetIssuesReportData(allUsers, reporter.Name);
+                var collection = await GetIssuesReportData(allUsers, reporter.Name);
 
-                if (!reporter.CanShow(sortedReportCollection)) continue;
-                var formattedReportHtml = reporter.GenerateHtmlReport(sortedReportCollection);
+                var reportCollection = collection.Select(x => new UnemployedReportItem()
+                {
+                    User = x.User,
+                }).ToList();
+
+                if (!reporter.CanShow(reportCollection)) continue;
+                var formattedReportHtml = reporter.GenerateHtmlReport(reportCollection);
 
                 await SendToRecipients(botClient, cancellationToken, formattedReportHtml).ConfigureAwait(false);
             }
@@ -176,7 +196,7 @@ namespace TelegramSender
             }
         }
 
-        private async Task<ReportCollection> GetReportDataByGroup(IReadOnlyList<User> allUsers, string @group, DateTime startTime, DateTime endTime)
+        private async Task<IReadOnlyList<ReportIssue>> GetChangesReportByGroup(IReadOnlyList<User> allUsers, string @group, DateTime startTime, DateTime endTime)
         {
             var groupUser = allUsers.FirstOrDefault(x => x.Name == @group);
             if (groupUser == null)
@@ -186,13 +206,13 @@ namespace TelegramSender
 
             var collection = await AppendZeroUserIssues(realUsers, startTime, endTime);
 
-            var sortedReportCollection = collection
+            var reportCollection = collection
                 .GroupBy(x => x.User)
                 .Select(x => new ReportIssue
                 {
                     User = x.Key,
                     Comments = x.Sum(y => y.Comments),
-                    Commits = x.Sum(y => y.Commits),
+                    CommitsCount = x.Sum(y => y.CommitsCount),
                     CommitChanges = new CommitChanges
                     {
                         Additions = x.Sum(y => y.CommitChanges.Additions),
@@ -201,9 +221,10 @@ namespace TelegramSender
                 })
                 .OrderBy(x => x.CommitChanges.Additions)
                 .ThenBy(x => x.CommitChanges.Deletions)
-                .ThenBy(x => x.Comments);
+                .ThenBy(x => x.Comments)
+                .ToList();
 
-            return new ReportCollection(sortedReportCollection);
+            return reportCollection;
         }
 
         private async Task<ReportCollection> GetReportData(IReadOnlyList<User> allUsers, string @group, DateTime startTime, DateTime endTime)
@@ -244,19 +265,36 @@ namespace TelegramSender
                 .ToList();
 
             var gitResponse = await SourceControl.RequestDataAsync(startTime, endTime, users, labels);
-            var commits = gitResponse.Commits;
+            var commits = gitResponse.UnrelatedCommits;
 
             var reportCollection = ReportProvider.CreateCollection(gitResponse.WrappedIssues, startTime, endTime);
 
-            var commitReports = commits.Select(x => new ReportIssue
+            var commitReports = commits
+                .Where(x => realUsers.Any(y => y.Email == x.CommitterEmail))
+                .Select(x => new ReportIssue
             {
                 User = realUsers.First(y => y.Email == x.CommitterEmail).Name,
+                Commits = new List<CommitInfo>
+                {
+                    new()
+                    {
+                        CommitId = x.ShortId,
+                    }
+                },
                 CommitChanges = new CommitChanges
                 {
                     Additions = x.CommitStats.Additions,
                     Deletions = x.CommitStats.Deletions,
                 }
             });
+
+            var reportIssues = commitReports.ToList();
+            if (reportIssues.Any())
+            {
+
+            }
+
+            reportCollection.AddRange(reportIssues);
 
             //reportCollection.AddRange(commitReports);
 
