@@ -48,7 +48,7 @@ namespace TelegramSender
 
                 //scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
                 //scheduler.AddTask(new ScheduleTime(18, 29, 00), async () => await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken), "Changes Report"); 
-                await SendSummaryReportAsync(botClient, cancellationToken);
+                //await SendSummaryReportAsync(botClient, cancellationToken);
                 //await SendChangesReportAsync(botClient, new PeriodChecker(), cancellationToken);
                 //await SendNoWorkIssuesReportAsync(botClient, cancellationToken);
 
@@ -136,14 +136,17 @@ namespace TelegramSender
                 var allUsers = await UserService.FetchUsersAsync(cancellationToken).ConfigureAwait(true);
                 var collection = await GetReportData(allUsers, reporter.Name, startTime, endTime);
 
-                var reportCollection = collection.Select(x => new IssuesReportItem
-                {
-                    User = x.User,
-                    Comments = x.Comments,
-                    Commits = x.CommitsCount,
-                    Iid = x.Iid,
-                    WebUri = x.WebUri,
-                }).ToList();
+                var reportCollection = collection
+                    //.Where(x => x.Iid != 0)
+                    .Select(x => new IssuesReportItem 
+                    {
+                        User = x.User,
+                        Comments = x.Comments,
+                        Commits = x.CommitsCount,
+                        Iid = x.Iid,
+                        WebUri = x.WebUri,
+                    })
+                    .ToList();
 
                 if (!reporter.CanShow(reportCollection)) continue;
                 var formattedReportHtml = reporter.GenerateHtmlReport(reportCollection);
@@ -285,7 +288,7 @@ namespace TelegramSender
                 {
                     Additions = x.CommitStats.Additions,
                     Deletions = x.CommitStats.Deletions,
-                }
+                },
             });
 
             var reportIssues = commitReports.ToList();

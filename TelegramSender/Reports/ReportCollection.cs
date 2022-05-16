@@ -119,7 +119,11 @@ public class IssuesReportItem : IReportItem<IssuesReportItem>, IEqualityComparer
     public string WebUri { get; set; }
     public int Iid { get; set; }
 
-    public bool IsEmpty => Comments == 0 && Commits == 0;
+    public bool NoIssue => Iid == 0;
+    public bool HasCommits => Commits > 0;
+
+    public bool IsEmpty => NoIssue && !HasCommits;
+    public bool IsOut => NoIssue && HasCommits;
 
     public IssuesReportItem Clone()
     {

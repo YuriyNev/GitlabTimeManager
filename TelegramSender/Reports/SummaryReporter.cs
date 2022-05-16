@@ -66,10 +66,17 @@ public class SummaryReporter : IReporter<IssuesReportItem>
                 //stringBuilder.Append($"<a href=\"{reportIssue.WebUri}\">{reportIssue.Iid}</a>");
                 //stringBuilder.Append("<code>");
                 if (reportIssue.IsEmpty)
-                    stringBuilder.Append("-");
+                {
+                    stringBuilder.Append("🤷‍♂️");
+                }
                 else
                 {
-                    stringBuilder.Append($"</code><a href=\"{reportIssue.WebUri}\">#{reportIssue.Iid}</a><code>{new string(' ', 5 - reportIssue.Iid.ToString("D").Length)}{$"{reportIssue.Commits}".FitTo(3)}{$"{reportIssue.Comments}".FitTo(3)}");
+                    if (reportIssue.IsOut)
+                        stringBuilder.Append(
+                            $"-{new string(' ', 5 - "-".Length)}{$"{reportIssue.Commits}".FitTo(3)}");
+                    else
+                        stringBuilder.Append(
+                            $"</code><a href=\"{reportIssue.WebUri}\">#{reportIssue.Iid}</a><code>{new string(' ', 5 - reportIssue.Iid.ToString("D").Length)}{$"{reportIssue.Commits}".FitTo(3)}{$"{reportIssue.Comments}".FitTo(3)}");
                 }
 
                 if (reportIssue.Commits + reportIssue.Comments > 0) 
