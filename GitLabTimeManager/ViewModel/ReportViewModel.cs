@@ -131,7 +131,7 @@ public class ReportViewModel : ViewModelBase
         }
     }
 
-    private void OnSavingFinished() => MessageService.OnMessage(this, "Документ сохранен");
+    private void OnSavingFinished() => MessageService.OnMessage(this, "The document is saved");
 
     private ObservableCollection<DateTime> AddLastMonths()
     {
@@ -167,17 +167,16 @@ public class ReportViewModel : ViewModelBase
     }
 
     private static ObservableCollection<TimeStatsProperty> ExtractSums(GitStatistics statistics, TimeSpan workingHours) 
-        => new ObservableCollection<TimeStatsProperty>
+        => new()
         {
-            new TimeStatsProperty("Выполнено задач", statistics.ClosedEstimatesStartedInPeriod, "ч"),
-            //new TimeStatsProperty("Оценка по открытым задачам", statistics.OpenEstimatesStartedInPeriod, "ч"),
-            new TimeStatsProperty("из", statistics.AllEstimatesStartedInPeriod, "ч"),
+            new("Completed issues", statistics.ClosedEstimatesStartedInPeriod, "h"),
+            new("from", statistics.AllEstimatesStartedInPeriod, "h"),
 
-            new TimeStatsProperty("Временные затраты на текущие задачи", statistics.AllSpendsStartedInPeriod, "ч"),
-            new TimeStatsProperty("из", statistics.AllSpendsForPeriod, "ч"),
+            new("Time spent on current issues", statistics.AllSpendsStartedInPeriod, "h"),
+            new("from", statistics.AllSpendsForPeriod, "h"),
 
-            new TimeStatsProperty("В этом месяце рабочих часов", workingHours.TotalHours, "ч"),
-            new TimeStatsProperty("не заполнено", workingHours.TotalHours - statistics.AllSpendsForPeriod, "ч"),
+            new("Working hours this month", workingHours.TotalHours, "h"),
+            new("not filled in", workingHours.TotalHours - statistics.AllSpendsForPeriod, "h"),
         };
 
     private static ObservableCollection<ReportIssue> CreateCollection(IEnumerable<WrappedIssue> wrappedIssues, DateTime startDate, DateTime endDate) =>

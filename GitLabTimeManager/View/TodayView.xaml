@@ -12,7 +12,7 @@
         <WrapPanel HorizontalAlignment="Center"
                    VerticalAlignment="Center">
 
-            <mah:Tile KeepDragging="True" Title="Средняя производительность"
+            <mah:Tile KeepDragging="True" Title="Average performance"
                       TitleFontSize="11"
                       Width="150" Height="150">
                 <StackPanel Orientation="Horizontal">
@@ -28,7 +28,7 @@
                                FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
                 </StackPanel>
             </mah:Tile>
-            <mah:Tile KeepDragging="True" Title="Рекомендованное оценочное время за сутки"
+            <mah:Tile KeepDragging="True" Title="Recommended estimated time per day"
                       TitleFontSize="11" Background="Black"
                       Width="150" Height="150">
                 <StackPanel Orientation="Horizontal">
@@ -36,14 +36,14 @@
                                FontSize="36"
                                FontWeight="Bold"
                                FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
-                    <TextBlock Text="ч"
+                    <TextBlock Text="h"
                                FontSize="18"
                                Margin="2 0 0 4"
                                VerticalAlignment="Bottom"
                                FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
                 </StackPanel>
             </mah:Tile>
-            <mah:Tile KeepDragging="True" Title="Оценочное время за сегодня"
+            <mah:Tile KeepDragging="True" Title="Estimated time for today"
                       TitleFontSize="11" Background="Crimson"
                       Width="150" Height="150">
                 <StackPanel Orientation="Horizontal">
@@ -51,7 +51,7 @@
                                FontSize="36"
                                FontWeight="Bold"
                                FontFamily="{StaticResource MahApps.Fonts.Family.Control}"/>
-                    <TextBlock Text="ч"
+                    <TextBlock Text="h"
                                FontSize="18"
                                Margin="2 0 0 4"
                                VerticalAlignment="Bottom"

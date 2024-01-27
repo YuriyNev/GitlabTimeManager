@@ -137,11 +137,11 @@ public class LabelSettingsViewModel : SettingsViewModelBase
 
             ProfileService.Serialize(UserProfile);
 
-            MessageService.OnMessage(this, "Настройки сохранены");
+            MessageService.OnMessage(this, "Saved");
         }
         catch
         {
-            MessageService.OnMessage(this, "Не удалось сохранить настройки!");
+            MessageService.OnMessage(this, "Failed to save settings!");
         }
         finally
         {

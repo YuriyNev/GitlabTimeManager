@@ -282,13 +282,13 @@ public class SummaryViewModel : ViewModelBase
         Earning = 1_000_000; 
         //Earning = MoneyCalculator.Calculate(TimeSpan.FromHours(stats.AllEstimatesStartedInPeriod));
 
-        UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Открытые", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
-        UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Закрытые", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);
-        UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Всего", TotalSpendsStartedInPeriod, TotalEstimatesStartedInPeriod);
+        UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Open", OpenSpendsStartedInPeriod, OpenEstimatesStartedInPeriod);
+        UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "Closed", ClosedSpendsStartedInPeriod, ClosedEstimatesStartedInPeriod);
+        UpdateOrAddStatsBlock(OnlyMonthStatsBlocks, "All", TotalSpendsStartedInPeriod, TotalEstimatesStartedInPeriod);
 
-        UpdateOrAddStatsBlock(EarlyStatsBlocks, "Открытые", OpenSpendsStartedBefore, OpenEstimatesStartedBefore);
-        UpdateOrAddStatsBlock(EarlyStatsBlocks, "Закрытые", ClosedSpendsStartedBefore, ClosedEstimatesStartedBefore);
-        UpdateOrAddStatsBlock(EarlyStatsBlocks, "Всего", TotalSpendsStartedBefore, TotalEstimatesStartedBefore);
+        UpdateOrAddStatsBlock(EarlyStatsBlocks, "Open", OpenSpendsStartedBefore, OpenEstimatesStartedBefore);
+        UpdateOrAddStatsBlock(EarlyStatsBlocks, "Closed", ClosedSpendsStartedBefore, ClosedEstimatesStartedBefore);
+        UpdateOrAddStatsBlock(EarlyStatsBlocks, "All", TotalSpendsStartedBefore, TotalEstimatesStartedBefore);
 
         FillCharts();
 
@@ -318,11 +318,11 @@ public class SummaryViewModel : ViewModelBase
 
         SpendSeries = new SeriesCollection
         {
-            CreatePieSeries(OpenSpendInPeriod, "Открытые"),
-            CreatePieSeries(ClosedSpendInPeriod, "Закрытые"),
-            CreatePieSeries(ClosedSpendBefore, "Закрытые (старые)"),
-            CreatePieSeries(OpenSpendBefore, "Открытые (старые)"),
-            CreatePieSeries(remained, "Пропущенные часы", new SolidColorBrush(Colors.DarkGray)),
+            CreatePieSeries(OpenSpendInPeriod, "Open"),
+            CreatePieSeries(ClosedSpendInPeriod, "Closed"),
+            CreatePieSeries(ClosedSpendBefore, "Closed (old)"),
+            CreatePieSeries(OpenSpendBefore, "Open (old)"),
+            CreatePieSeries(remained, "Skipped hours", new SolidColorBrush(Colors.DarkGray)),
         };
     }
         

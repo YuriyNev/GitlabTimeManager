@@ -159,22 +159,22 @@
                                     Binding="{Binding Iid, Mode=OneWay}"
                                     ElementStyle="{StaticResource IdTextStyle}"/>
 
-                <DataGridTextColumn Header="Описание"
+                <DataGridTextColumn Header="Title"
                                     Width="*"
                                     Binding="{Binding Title, Mode=OneWay}"
                                     ElementStyle="{StaticResource TitleTextStyle}"/>
 
-                <DataGridTextColumn Header="Затрачено"
+                <DataGridTextColumn Header="Spend"
                                     Width="80"
                                     Binding="{Binding SpendForPeriod, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
-                <DataGridTextColumn Header="Оценка"
+                <DataGridTextColumn Header="Estimate"
                                     Width="80"
                                     Binding="{Binding Estimate, Mode=OneWay, StringFormat={}{0:F1}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>
 
-                <DataGridTextColumn Header="Начало"
+                <DataGridTextColumn Header="Begin"
                                     Width="80"
                                     Binding="{Binding StartTime, Mode=OneWay, StringFormat='{}{0:MMMM}', ConverterCulture={x:Static gl:CultureInfo.CurrentCulture}}"
                                     ElementStyle="{StaticResource TimeStatTextStyle}"/>

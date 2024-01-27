@@ -90,28 +90,28 @@
                     </Style>
                 </mah:MetroAnimatedTabControl.Style>
 
-                <!-- <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}"  -->
+                <!-- <TabItem Header="Today" HeaderTemplate="{StaticResource TabHeaderTemplate}"  -->
                 <!--          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"> -->
                 <!--     <ContentControl Content="{Binding TodayVm, Mode=OneWay}" -->
                 <!--                     Margin="0 4 0 0"/> -->
                 <!-- </TabItem> -->
-                <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                <TabItem Header="Issues" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
                                     Margin="0 4 0 0"/>
                 </TabItem>
-                <TabItem Header="Статистика" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                <TabItem Header="Statistics" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding SummaryVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
-                <TabItem Header="Отчет" HeaderTemplate="{StaticResource TabHeaderTemplate}"
+                <TabItem Header="Report" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding ReportVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
 
-                <!-- <TabItem Header="Диаграма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}" -->
+                <!-- <TabItem Header="Gantt Chart" HeaderTemplate="{StaticResource TabHeaderTemplate}" -->
                 <!--          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"> -->
                 <!--     <ContentControl Content="{Binding GanttViewModel, Mode=OneWay}" -->
                 <!--                     Margin="0 4 0 0"/> -->
@@ -145,12 +145,12 @@
                     </Style>
                 </mah:MetroAnimatedTabControl.Style>
 
-                <TabItem Header="Подключение" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                <TabItem Header="Connection" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding ConnectionSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>
 
-                <TabItem Header="Метки" HeaderTemplate="{StaticResource TabHeaderTemplate}">
+                <TabItem Header="Labels" HeaderTemplate="{StaticResource TabHeaderTemplate}">
                     <ContentControl Content="{Binding LabelSettingsVm, Mode=OneWay}"
                                     Margin="0 4 0 0"/>
                 </TabItem>

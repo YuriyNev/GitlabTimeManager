@@ -45,7 +45,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
-                       Text="Все метки"/>
+                       Text="Labels"/>
 
             <ListBox Grid.Row="1"
                      ItemsSource="{Binding AvailableLabels, Mode=TwoWay}"
@@ -81,7 +81,7 @@
 
             <TextBlock Grid.Row="0"
                        Margin="0 8 0 0"
-                       Text="Используемые на доске"/>
+                       Text="Labels on the board"/>
 
             <ListBox Grid.Row="1"
                      ItemsSource="{Binding BoardLabels, Mode=TwoWay}"
@@ -108,7 +108,7 @@
 
             <TextBlock Grid.Row="1"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
-                       Text="Перетащите сюда метки"
+                       Text="Drag here"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
                        IsHitTestVisible="False"
@@ -127,7 +127,7 @@
             <!--Header-->
             <TextBlock Grid.Row="0"
                    Margin="0 8 0 4"
-                   Text="Действия"
+                   Text="Actions"
                    Visibility="{Binding Labels, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfNotNull}}"/>
 
             <!--Set Start Label-->
@@ -154,7 +154,7 @@
                 </Grid>
 
                 <TextBlock Grid.Row="1" Grid.Column="1"
-                       Text="Не задано"
+                       Text="Not specified"
                        FontSize="16"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
                        Margin="8 0 0 0"
@@ -201,7 +201,7 @@
                 </Grid>
 
                 <TextBlock Grid.Row="1" Grid.Column="1"
-                       Text="Не задано"
+                       Text="Not specified"
                        FontSize="16"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
                        Margin="8 0 0 0"
@@ -248,7 +248,7 @@
                 </Grid>
 
                 <TextBlock Grid.Row="1" Grid.Column="1"
-                       Text="Не задано"
+                       Text="Not specified"
                        FontSize="16"
                        Foreground="{StaticResource MahApps.Brushes.Gray2}"
                        Margin="8 0 0 0"

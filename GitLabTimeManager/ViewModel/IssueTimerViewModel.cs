@@ -179,11 +179,11 @@ public class IssueTimerViewModel : ViewModelBase
             IssueTitle = newIssue.Title;
             Issue.Issue.Title = IssueTitle;
 
-            MessageService.OnMessage(this, "Задача обновлена");
+            MessageService.OnMessage(this, "The issue has been updated");
         }
         catch
         {
-            MessageService.OnMessage(this, "Не удалось отредактировать задачу");
+            MessageService.OnMessage(this, "The issue could not be edited");
         }
         finally
         {

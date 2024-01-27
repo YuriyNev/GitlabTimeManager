@@ -58,13 +58,13 @@
 
         
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-                   Text="Начатые в этом месяце"
+                   Text="Started this month"
                    FontFamily="{DynamicResource MahApps.Fonts.Family.Header}"
                    FontSize="14" 
                    Visibility="Collapsed"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                   Text="Начатые в этом месяце"
+                   Text="Started this month"
                    FontFamily="{DynamicResource MahApps.Fonts.Family.Header}"
                    FontSize="14" 
                    Visibility="Collapsed"/>
@@ -81,7 +81,7 @@
         </ItemsControl>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                   Text="Задачи начатые ранее"
+                   Text="Started earlier"
                    FontFamily="{DynamicResource MahApps.Fonts.Family.Header}"
                    FontSize="14" Margin="4"
                    Visibility="Collapsed"/>
