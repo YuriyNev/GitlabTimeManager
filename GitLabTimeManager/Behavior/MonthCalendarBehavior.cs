@@ -1,33 +1,32 @@
 ﻿using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace GitLabTimeManager.Behavior
+namespace GitLabTimeManager.Behavior;
+
+public class MonthCalendarBehavior : Behavior<Calendar>
 {
-    public class MonthCalendarBehavior : Behavior<Calendar>
+    protected override void OnAttached()
     {
-        protected override void OnAttached()
+        if (AssociatedObject != null)
         {
-            if (AssociatedObject != null)
-            {
-                AssociatedObject.DisplayModeChanged += AssociatedObjectOnDisplayModeChanged;
-                AssociatedObject.DisplayMode = CalendarMode.Year;
-            }
-
-            base.OnAttached();
+            AssociatedObject.DisplayModeChanged += AssociatedObjectOnDisplayModeChanged;
+            AssociatedObject.DisplayMode = CalendarMode.Year;
         }
 
-        protected override void OnDetaching()
-        {
-            if (AssociatedObject != null) AssociatedObject.DisplayModeChanged -= AssociatedObjectOnDisplayModeChanged;
-
-            base.OnDetaching();
-        }
-
-        private static void AssociatedObjectOnDisplayModeChanged(object sender, CalendarModeChangedEventArgs e)
-        {
-            if (sender is Calendar calendar)
-                calendar.DisplayMode = CalendarMode.Year;
-        }
-
+        base.OnAttached();
     }
+
+    protected override void OnDetaching()
+    {
+        if (AssociatedObject != null) AssociatedObject.DisplayModeChanged -= AssociatedObjectOnDisplayModeChanged;
+
+        base.OnDetaching();
+    }
+
+    private static void AssociatedObjectOnDisplayModeChanged(object sender, CalendarModeChangedEventArgs e)
+    {
+        if (sender is Calendar calendar)
+            calendar.DisplayMode = CalendarMode.Year;
+    }
+
 }

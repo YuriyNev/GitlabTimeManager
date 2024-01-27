@@ -1,10 +1,9 @@
-﻿namespace GitLabTimeManager.View
+﻿namespace GitLabTimeManager.View;
+
+public partial class ReportView
 {
-    public partial class ReportView
+    public ReportView()
     {
-        public ReportView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

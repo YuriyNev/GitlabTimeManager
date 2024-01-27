@@ -4,27 +4,26 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace GitLabTimeManager.Services
+namespace GitLabTimeManager.Services;
+
+public class PointFConverter : JsonConverter
 {
-    public class PointFConverter : JsonConverter
+    public override bool CanConvert(Type objectType)
     {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(PointF);
-        }
+        return objectType == typeof(PointF);
+    }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            var pointF = (PointF)value;
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+        var pointF = (PointF)value;
 
-            JValue jv = new JValue($"{pointF.X.ToString(CultureInfo.InvariantCulture)}, {pointF.Y.ToString(CultureInfo.InvariantCulture)}");
-            jv.WriteTo(writer);
-        }
+        JValue jv = new JValue($"{pointF.X.ToString(CultureInfo.InvariantCulture)}, {pointF.Y.ToString(CultureInfo.InvariantCulture)}");
+        jv.WriteTo(writer);
+    }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var jTokenString = JToken.Load(reader).ToString();
-            return Converters.ConvertToPointF(jTokenString);
-        }
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    {
+        var jTokenString = JToken.Load(reader).ToString();
+        return Converters.ConvertToPointF(jTokenString);
     }
 }

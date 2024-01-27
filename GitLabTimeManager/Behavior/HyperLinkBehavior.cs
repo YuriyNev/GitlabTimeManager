@@ -3,31 +3,30 @@ using System.Windows.Navigation;
 using GitLabTimeManager.Helpers;
 using Microsoft.Xaml.Behaviors;
 
-namespace GitLabTimeManager.Behavior
+namespace GitLabTimeManager.Behavior;
+
+public class HyperLinkBehavior : Behavior<Hyperlink>
 {
-    public class HyperLinkBehavior : Behavior<Hyperlink>
+    protected override void OnAttached()
     {
-        protected override void OnAttached()
-        {
-            base.OnAttached();
+        base.OnAttached();
 
-            AssociatedObject.RequestNavigate += AssociatedObject_RequestNavigate;
-        }
+        AssociatedObject.RequestNavigate += AssociatedObject_RequestNavigate;
+    }
 
-        private static void AssociatedObject_RequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            var uri = (sender as Hyperlink)?.NavigateUri;
+    private static void AssociatedObject_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        var uri = (sender as Hyperlink)?.NavigateUri;
             
-            uri.GoToBrowser();
+        uri.GoToBrowser();
             
-            e.Handled = true;
-        }
+        e.Handled = true;
+    }
 
-        protected override void OnDetaching()
-        {
-            AssociatedObject.RequestNavigate -= AssociatedObject_RequestNavigate;
+    protected override void OnDetaching()
+    {
+        AssociatedObject.RequestNavigate -= AssociatedObject_RequestNavigate;
 
-            base.OnDetaching();
-        }
+        base.OnDetaching();
     }
 }

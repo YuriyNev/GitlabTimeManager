@@ -1,29 +1,14 @@
 ﻿using System;
 
-namespace GitLabTimeManager.Types
-{
-    public class IncorrectProfileException : Exception
-    {
-        public IncorrectProfileException()
-        {
-        }
-        
-        public IncorrectProfileException(Exception exception) : base(exception.Message, exception)
-        {
-        }
-    }
+namespace GitLabTimeManager.Types;
 
-    public class UnableConnectionException : Exception
+public class IncorrectProfileException : Exception
+{
+    public IncorrectProfileException()
     {
-        public UnableConnectionException(Exception exception) : base(exception.Message, exception)
-        {
-        }
-    }
-    
-    public class AuthorizationException : Exception
-    {
-        public AuthorizationException(Exception exception) : base(exception.Message, exception)
-        {
-        }
     }
 }
+
+public class UnableConnectionException(Exception exception) : Exception(exception.Message, exception);
+    
+public class AuthorizationException(Exception exception) : Exception(exception.Message, exception);

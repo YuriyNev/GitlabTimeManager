@@ -1,15 +1,14 @@
 ﻿using System.Windows.Controls;
 
-namespace GitLabTimeManager.View
+namespace GitLabTimeManager.View;
+
+/// <summary>
+/// Interaction logic for GanttView.xaml
+/// </summary>
+public partial class GanttView : UserControl
 {
-    /// <summary>
-    /// Interaction logic for GanttView.xaml
-    /// </summary>
-    public partial class GanttView : UserControl
+    public GanttView()
     {
-        public GanttView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

@@ -90,11 +90,11 @@
                     </Style>
                 </mah:MetroAnimatedTabControl.Style>
 
-                <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}" 
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                    <ContentControl Content="{Binding TodayVm, Mode=OneWay}"
-                                    Margin="0 4 0 0"/>
-                </TabItem>
+                <!-- <TabItem Header="Сегодня" HeaderTemplate="{StaticResource TabHeaderTemplate}"  -->
+                <!--          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"> -->
+                <!--     <ContentControl Content="{Binding TodayVm, Mode=OneWay}" -->
+                <!--                     Margin="0 4 0 0"/> -->
+                <!-- </TabItem> -->
                 <TabItem Header="Задачи" HeaderTemplate="{StaticResource TabHeaderTemplate}"
                          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
                     <ContentControl Content="{Binding IssueListVm, Mode=OneWay}" 
@@ -111,11 +111,11 @@
                                     Margin="0 4 0 0"/>
                 </TabItem>
 
-                <TabItem Header="Диаграма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}"
-                         Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}">
-                    <ContentControl Content="{Binding GanttViewModel, Mode=OneWay}"
-                                    Margin="0 4 0 0"/>
-                </TabItem>
+                <!-- <TabItem Header="Диаграма Ганта" HeaderTemplate="{StaticResource TabHeaderTemplate}" -->
+                <!--          Visibility="{Binding IsFullscreen, Mode=OneWay, Converter={x:Static converters:Converter.VisibleIfFalse}}"> -->
+                <!--     <ContentControl Content="{Binding GanttViewModel, Mode=OneWay}" -->
+                <!--                     Margin="0 4 0 0"/> -->
+                <!-- </TabItem> -->
             </mah:MetroAnimatedTabControl>
 
             <mah:MetroAnimatedTabControl mah:TabControlHelper.Underlined="TabItems" 

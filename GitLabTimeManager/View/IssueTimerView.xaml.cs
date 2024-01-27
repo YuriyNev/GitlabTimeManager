@@ -1,13 +1,12 @@
-﻿namespace GitLabTimeManager.View
+﻿namespace GitLabTimeManager.View;
+
+/// <summary>
+/// Interaction logic for IssueTimer.xaml
+/// </summary>
+public partial class IssueTimerView 
 {
-    /// <summary>
-    /// Interaction logic for IssueTimer.xaml
-    /// </summary>
-    public partial class IssueTimerView 
+    public IssueTimerView()
     {
-        public IssueTimerView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

@@ -1,11 +1,10 @@
 ﻿// ReSharper disable once CheckNamespace
-namespace GitLabTimeManager.View
+namespace GitLabTimeManager.View;
+
+public partial class ConnectionSettingsView 
 {
-    public partial class ConnectionSettingsView 
+    public ConnectionSettingsView()
     {
-        public ConnectionSettingsView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

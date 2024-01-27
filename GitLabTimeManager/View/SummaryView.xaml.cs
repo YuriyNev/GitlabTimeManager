@@ -1,15 +1,14 @@
 ﻿using System.Windows.Controls;
 
-namespace GitLabTimeManager.View
+namespace GitLabTimeManager.View;
+
+/// <summary>
+/// Interaction logic for SummaryView.xaml
+/// </summary>
+public partial class SummaryView : UserControl
 {
-    /// <summary>
-    /// Interaction logic for SummaryView.xaml
-    /// </summary>
-    public partial class SummaryView : UserControl
+    public SummaryView()
     {
-        public SummaryView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

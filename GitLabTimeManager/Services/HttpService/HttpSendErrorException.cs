@@ -1,19 +1,8 @@
 ﻿using System.Net;
 
-namespace GitLabTimeManager.Services
+namespace GitLabTimeManager.Services;
+
+public sealed class HttpSendErrorException(HttpStatusCode statusCode) : HttpApiException
 {
-    public sealed class HttpSendErrorException : HttpApiException
-    {
-        public HttpStatusCode StatusCode { get; }
-
-        public HttpSendErrorException(HttpStatusCode statusCode)
-        {
-            StatusCode = statusCode;
-        }
-
-        public HttpSendErrorException(string message, HttpStatusCode statusCode) : base(message)
-        {
-            StatusCode = statusCode;
-        }
-    }
+    public HttpStatusCode StatusCode { get; } = statusCode;
 }

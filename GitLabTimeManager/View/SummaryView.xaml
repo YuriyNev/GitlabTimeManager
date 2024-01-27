@@ -159,7 +159,7 @@
                 FontSize="14"
                 Width="25" Height="25"
                 Padding="0"
-                Content="₽" BorderThickness="0"
+                Content="$" BorderThickness="0"
                 Command="{Binding ShowEarningsCommand, Mode=OneWay}"
                 Style="{StaticResource MahApps.Styles.Button.Circle}"/>
 
